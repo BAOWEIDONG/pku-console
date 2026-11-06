@@ -131,6 +131,7 @@
         });
       });
       db.meta.publishedAt = at;
+      db.meta.version = (parseFloat(db.meta.version) + 0.01).toFixed(2);
       const n = dirty.length;
       dirty = [];
       this.persist(); this.emit();

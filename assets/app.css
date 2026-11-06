@@ -542,3 +542,7 @@ table.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size
 .tbl .clip-sm { display: block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tbl .nw { white-space: nowrap; }
 .tbl tbody td { line-height: 1.45; }
+
+/* focus visibility */
+:focus-visible { outline: 2px solid #7cb6ff; outline-offset: 2px; border-radius: 6px; }
+button:focus:not(:focus-visible) { outline: none; }
