@@ -106,6 +106,16 @@
     ]
   };
 
+  /* 默认开关与设置（避免首次点击前状态不确定） */
+  S.versionall.rankingOn = true;
+  S.versionall.questionnaire = {
+    intro: '为了给你更合适的方案，请用 3 分钟完成以下问题。答案仅用于健康评估。',
+    force: true, editable: false, questions: []
+  };
+  S.employee.site.autoPlay = true;
+  S.employee.site.dots = true;
+  S.meta.settings = { validate: true, pushGithub: false, notify: true };
+
   /* 模块台账：权限矩阵与影响面共用 */
   S.shared.groups = [
     { key: 'shared.brand', label: '品牌与主体', scope: 'all', desc: '品牌名、slogan、联系方式' },

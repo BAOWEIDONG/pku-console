@@ -60,6 +60,16 @@
     run: '<circle cx="13" cy="4" r="2"/><path d="m5 21 3-7 4 2 2-5 4 2 2-3"/><path d="m9 11 3-4"/>'
   };
 
+  /** 索引兜底：表格行常是副本，indexOf 会返回 -1，这里按 id/key 再找一次 */
+  function ix(list, o) {
+    if (!list) return -1;
+    const i = list.indexOf(o);
+    if (i >= 0) return i;
+    if (o && o.id != null) return list.findIndex((x) => x && x.id === o.id);
+    if (o && o.key != null) return list.findIndex((x) => x && x.key === o.key);
+    return -1;
+  }
+
   function icon(name, size) {
     const s = size || 16;
     const p = P[name] || P.grid;
@@ -294,6 +304,38 @@
     t.remove();
   }
 
+
+  /** 通用新建表单抽屉：字段值不直接写库，由 onSave 统一入库 */
+  function formDrawer(o) {
+    const f = (x) => {
+      const k = 'data-f="' + x.key + '"';
+      if (x.type === 'select') return '<div class="field"><label>' + esc(x.label) + '</label><select class="input" ' + k + '>' +
+        (x.options || []).map((op) => { const v = typeof op === 'string' ? op : op.v, l = typeof op === 'string' ? op : op.l; return '<option value="' + esc(v) + '">' + esc(l) + '</option>'; }).join('') + '</select></div>';
+      if (x.type === 'num') return '<div class="field"><label>' + esc(x.label) + '</label><input class="input tnum" type="number" ' + k + ' value="' + (x.value == null ? 0 : x.value) + '"></div>';
+      if (x.type === 'area') return '<div class="field"><label>' + esc(x.label) + '</label><textarea class="input" rows="' + (x.rows || 3) + '" ' + k + '>' + esc(x.value || '') + '</textarea></div>';
+      if (x.type === 'bool') return '<div class="row" style="justify-content:space-between;padding:9px 0"><div style="font-size:12.5px">' + esc(x.label) + '</div><button class="switch ' + (x.value ? 'on' : '') + '" data-f="' + x.key + '" data-bool="1"></button></div>';
+      return '<div class="field"><label>' + esc(x.label) + '</label><input class="input" ' + k + ' value="' + esc(x.value == null ? '' : x.value) + '" placeholder="' + esc(x.ph || '') + '"></div>';
+    };
+    UI.drawer({
+      title: o.title, sub: o.sub, icon: o.icon || 'plus',
+      body: '<div class="formsec">' + (o.section ? '<h4>' + esc(o.section) + '</h4>' : '') + o.fields.map(f).join('') + '</div>' +
+        (o.hint ? '<div class="note">' + o.hint + '</div>' : '') + (o.impact || ''),
+      okText: o.okText || '创建',
+      mount(n) { n.querySelectorAll('[data-bool]').forEach((b) => b.addEventListener('click', () => b.classList.toggle('on'))); },
+      onOk(n) {
+        const v = {};
+        o.fields.forEach((x) => {
+          const el = n.querySelector('[data-f="' + x.key + '"]');
+          if (!el) return;
+          if (x.type === 'bool') v[x.key] = el.classList.contains('on');
+          else if (x.type === 'num') v[x.key] = Number(el.value || 0);
+          else v[x.key] = el.value.trim();
+        });
+        o.onSave(v);
+      }
+    });
+  }
+
   /** 影响面提示：这次改动会落到哪些前端页面 */
   function impact(list, label) {
     if (!list || !list.length) return '';
@@ -302,7 +344,7 @@
   }
 
   window.UI = {
-    icon, esc, drawer, modal, confirm, toast, closeOverlay, impact,
+    icon, esc, drawer, modal, confirm, toast, closeOverlay, impact, ix, formDrawer,
     fInput, fArea, fSelect, fNum, fSwitch, fRange,
     table, lineChart, donut, sparkbars, avatar, pill, statusPill, copy
   };

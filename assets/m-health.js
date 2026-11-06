@@ -78,14 +78,27 @@
           { label: '模块', render: (s) => '<span class="nw">' + UI.pill(MOD(s.mod), 'grey') + '</span>' },
           { label: '履约', render: (s) => '<span class="small nw">' + E(s.scope.replace('履约', '')) + '</span>' },
           { label: '标签', render: (s) => '<span class="clip-sm">' + s.tags.slice(0, 2).map((t) => UI.pill(t, 'blue')).join(' ') + '</span>' },
-          { label: '可预约', render: (s) => '<button class="switch ' + (s.bookable ? 'on' : '') + '" data-toggle="employee.services.' + h.services.indexOf(s) + '.bookable"></button>' },
-          { label: '在架', render: (s) => '<button class="switch ' + (s.on ? 'on' : '') + '" data-toggle="employee.services.' + h.services.indexOf(s) + '.on"></button>' },
+          { label: '可预约', render: (s) => '<button class="switch ' + (s.bookable ? 'on' : '') + '" data-toggle="employee.services.' + UI.ix(h.services, s) + '.bookable"></button>' },
+          { label: '在架', render: (s) => '<button class="switch ' + (s.on ? 'on' : '') + '" data-toggle="employee.services.' + UI.ix(h.services, s) + '.on"></button>' },
           { label: '预约量', align: 'right', render: (s) => '<span class="tnum">' + s.sold + '</span>' },
           { label: '', align: 'right', render: (s) => '<div class="rowact"><button data-act="editSvc" data-id="' + s.id + '">' + I('edit', 14) + '</button></div>' }
         ], list.map((s) => Object.assign({ _id: s.id }, s))) });
     },
     actions: {
-      newSvc() { UI.toast('新增服务表单已打开'); },
+      newSvc() {
+        UI.formDrawer({ title: '新增服务', sub: '保存后可在服务目录中继续完善详情', icon: 'package', section: '基本信息',
+          fields: [
+            { key: 'name', label: '服务名称' }, { key: 'en', label: '英文名' },
+            { key: 'mod', label: '所属模块', type: 'select', options: H().modules.map((m) => ({ v: m.id, l: m.name })) },
+            { key: 'scope', label: '履约范围', type: 'select', options: ['属地履约', '全国履约'] },
+            { key: 'intro', label: '服务介绍', type: 'area', rows: 3 },
+            { key: 'duration', label: '服务时长', ph: '半天' }, { key: 'resp', label: '报告时效', ph: '1 个工作日' }
+          ],
+          onSave(v) {
+            Store.pushItem('employee.services', { id: 's' + Date.now(), mod: v.mod, name: v.name || '新服务', en: v.en, scope: v.scope, payer: ['企康'], tags: [], intro: v.intro, duration: v.duration, resp: v.resp, bookable: true, on: true, hot: false, order: 99, orgs: [], price: 0, sold: 0 }, '新增服务');
+            UI.toast('服务已创建'); App.refresh();
+          } });
+      },
       svcFilter(d) { P['e-services'].state.mod = d.id; App.refresh(); },
       editSvc(d) {
         const s = H().services.find((x) => x.id === d.id), i = H().services.indexOf(s);
@@ -131,7 +144,20 @@
         '<div style="height:16px"></div>' +
         K.panel({ title: '展示规则', body: '<div class="note">首页五宫格按排序值升序展示，仅展示启用模块。模块关闭时，其下服务在搜索与详情页也不可访问，但历史预约记录保留。</div>' });
     },
-    actions: { newMod() { UI.toast('新增模块'); } }
+    actions: {
+      newMod() {
+        UI.formDrawer({ title: '新增模块', sub: '对应首页五宫格的一个入口', icon: 'layers',
+          fields: [
+            { key: 'name', label: '模块名称' }, { key: 'stab', label: '短名（2 字）' },
+            { key: 'sub', label: '一句话说明', ph: '如 长期干预控费' },
+            { key: 'ink', label: '强调色', type: 'select', options: ['#F5520A', '#0A7A55', '#1F4FD1', '#BE2A5E', '#A86A06'] }
+          ],
+          onSave(v) {
+            Store.pushItem('employee.modules', { id: 'md' + Date.now(), name: v.name || '新模块', stab: v.stab || '新', sub: v.sub, icon: 'grid', tint: '#F1F5FA', ink: v.ink, on: true, order: 9 }, '新增模块');
+            UI.toast('模块已创建'); App.refresh();
+          } });
+      }
+    }
   };
 
   /* ------------------------------------------------------- 预约配置 */
@@ -150,7 +176,7 @@
             { label: '类型', render: (f) => UI.pill({ select: '下拉选择', radio: '单选', date: '日期', time: '时段', number: '数字', text: '文本' }[f.type], 'grey') },
             { label: '适用模块', render: (f) => f.mods.map((m) => MOD(m)).join('、') },
             { label: '必填', render: (f) => f.required ? UI.pill('必填', 'amber') : '<span class="muted">选填</span>' },
-            { label: '启用', render: (f) => '<button class="switch ' + (f.on ? 'on' : '') + '" data-toggle="employee.bookingFields.' + h.bookingFields.indexOf(f) + '.on"></button>' },
+            { label: '启用', render: (f) => '<button class="switch ' + (f.on ? 'on' : '') + '" data-toggle="employee.bookingFields.' + UI.ix(h.bookingFields, f) + '.on"></button>' },
             { label: '', align: 'right', render: (f) => '<div class="rowact"><button data-act="editField" data-id="' + f.key + '">' + I('edit', 14) + '</button></div>' }
           ], h.bookingFields.map((f) => Object.assign({ _id: f.key }, f))) });
       } else if (st.tab === 'schedule') {
@@ -188,7 +214,19 @@
     actions: {
       bkTab(d) { P['e-booking'].state.tab = d.id; App.refresh(); },
       publishBooking() { App.openPublish('预约设置更新'); },
-      newField() { UI.toast('新增字段'); },
+      newField() {
+        UI.formDrawer({ title: '新增表单字段', sub: '会出现在对应模块的预约页', icon: 'sliders',
+          fields: [
+            { key: 'label', label: '字段名称', ph: '如 是否需要接送' },
+            { key: 'type', label: '类型', type: 'select', options: [{ v: 'select', l: '下拉选择' }, { v: 'radio', l: '单选' }, { v: 'text', l: '文本' }, { v: 'number', l: '数字' }] },
+            { key: 'mods', label: '适用模块', type: 'select', options: H().modules.map((m) => ({ v: m.id, l: m.name })) },
+            { key: 'required', label: '必填', type: 'bool', value: true }
+          ],
+          onSave(v) {
+            Store.pushItem('employee.bookingFields', { key: 'f' + Date.now(), label: v.label || '新字段', type: v.type, mods: [v.mods], required: v.required, on: true }, '新增字段');
+            UI.toast('字段已添加'); App.refresh();
+          } });
+      },
       editField(d) {
         const f = H().bookingFields.find((x) => x.key === d.id), i = H().bookingFields.indexOf(f);
         UI.drawer({ title: '编辑字段', sub: f.label, icon: 'sliders',
@@ -271,7 +309,7 @@
               { label: '分类', render: (a) => UI.pill(a.cat, 'grey') },
               { label: '发布时间', render: (a) => '<span class="small tnum muted">' + a.date + '</span>' },
               { label: '阅读', align: 'right', render: (a) => '<span class="tnum">' + a.views + '</span>' },
-              { label: '上线', render: (a) => '<button class="switch ' + (a.on ? 'on' : '') + '" data-toggle="employee.articles.' + h.articles.indexOf(a) + '.on"></button>' }
+              { label: '上线', render: (a) => '<button class="switch ' + (a.on ? 'on' : '') + '" data-toggle="employee.articles.' + UI.ix(h.articles, a) + '.on"></button>' }
             ], h.articles.map((a) => Object.assign({ _id: a.id }, a))) });
       return K.head('内容运营', '内容只影响展示，不改变服务与预约能力',
         K.btn('发布', 'publishContent', { icon: 'send', cls: 'primary' })) +
@@ -285,8 +323,22 @@
     actions: {
       ctTab(d) { P['e-content'].state.tab = d.id; App.refresh(); },
       publishContent() { App.openPublish('内容运营更新'); },
-      newBanner() { UI.toast('新增 Banner'); },
-      newArticle() { UI.toast('新建文章'); }
+      newBanner() {
+        UI.formDrawer({ title: '新增 Banner', sub: '首页轮播位', icon: 'image',
+          fields: [{ key: 'title', label: '标题' }, { key: 'sub', label: '副标题' }, { key: 'order', label: '排序', type: 'num', value: 4 }],
+          onSave(v) {
+            Store.pushItem('employee.banners', { id: 'bn' + Date.now(), title: v.title || '新 Banner', sub: v.sub, on: true, order: v.order, tone: 'blue' }, '新增 Banner');
+            UI.toast('Banner 已创建'); App.refresh();
+          } });
+      },
+      newArticle() {
+        UI.formDrawer({ title: '新建健康资讯', sub: '展示在「发现」页', icon: 'file',
+          fields: [{ key: 'title', label: '标题' }, { key: 'cat', label: '分类', type: 'select', options: ['慢病', '体检', '运动', '营养'] }, { key: 'author', label: '作者/科室' }],
+          onSave(v) {
+            Store.pushItem('employee.articles', { id: 'ar' + Date.now(), title: v.title || '未命名文章', cat: v.cat, author: v.author, date: '2026-11-06', views: 0, on: true }, '新建文章');
+            UI.toast('文章已创建'); App.refresh();
+          } });
+      }
     }
   };
 
@@ -307,12 +359,23 @@
           { label: '问题', render: (q) => '<div class="strong">' + E(q.q) + '</div><div class="small muted" style="margin-top:2px">' + E(q.answer).slice(0, 46) + '…</div>' },
           { label: '分类', render: (q) => UI.pill(q.cat, 'grey') },
           { label: '命中', align: 'right', render: (q) => '<span class="tnum">' + q.hits + '</span>' },
-          { label: '启用', render: (q) => '<button class="switch ' + (q.on ? 'on' : '') + '" data-toggle="employee.qa.' + h.qa.indexOf(q) + '.on"></button>' },
+          { label: '启用', render: (q) => '<button class="switch ' + (q.on ? 'on' : '') + '" data-toggle="employee.qa.' + UI.ix(h.qa, q) + '.on"></button>' },
           { label: '', align: 'right', render: (q) => '<div class="rowact"><button data-act="editQa" data-id="' + q.id + '">' + I('edit', 14) + '</button></div>' }
         ], h.qa.map((q) => Object.assign({ _id: q.id }, q))) });
     },
     actions: {
-      newQa() { UI.toast('新增问答'); },
+      newQa() {
+        UI.formDrawer({ title: '新增问答', sub: '深度问答的知识库条目', icon: 'message',
+          fields: [
+            { key: 'q', label: '问题', type: 'area', rows: 2 },
+            { key: 'answer', label: '答案', type: 'area', rows: 5 },
+            { key: 'cat', label: '分类', type: 'select', options: ['体检解读', '慢病管理', '运动康复', '营养'] }
+          ],
+          onSave(v) {
+            Store.pushItem('employee.qa', { id: 'q' + Date.now(), q: v.q || '新问题', answer: v.answer, cat: v.cat, hits: 0, on: true }, '新增问答');
+            UI.toast('问答已创建'); App.refresh();
+          } });
+      },
       editQa(d) {
         const q = H().qa.find((x) => x.id === d.id), i = H().qa.indexOf(q);
         UI.drawer({ title: '编辑问答', sub: q.cat, icon: 'message',

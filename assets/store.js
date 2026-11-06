@@ -43,6 +43,7 @@
           if (saved && saved.db && saved.db.meta && saved.db.meta.version) {
             db = saved.db;
             dirty = saved.dirty || [];
+            this.migrate();
             return;
           }
         }
@@ -50,6 +51,40 @@
       db = deep(window.SEED);
       dirty = [];
       this.persist();
+    },
+
+    /** 旧版本缓存补齐新增结构，避免升级后按钮报错 */
+    migrate() {
+      const S = window.SEED;
+      let changed = false;
+      const fill = (obj, src, key) => {
+        if (obj[key] == null) { obj[key] = deep(src[key]); changed = true; }
+      };
+      fill(db, S, 'shared');
+      fill(db, S, 'rbac');
+      if (db.meta && S.meta.settings) fill(db.meta, S.meta, 'settings');
+      fill(db, S, 'publishes');
+      if (db.versionall) {
+        if (db.versionall.rankingOn == null) { db.versionall.rankingOn = true; changed = true; }
+        if (!db.versionall.questionnaire) { db.versionall.questionnaire = deep(S.versionall.questionnaire); changed = true; }
+        if (!db.versionall.questionnaire.questions || !db.versionall.questionnaire.questions.length) {
+          db.versionall.questionnaire.questions = deep(S.versionall.questionnaire.questions || []);
+        }
+      }
+      if (db.employee && db.employee.site) {
+        if (db.employee.site.autoPlay == null) { db.employee.site.autoPlay = true; changed = true; }
+        if (db.employee.site.dots == null) { db.employee.site.dots = true; changed = true; }
+      }
+      if (db.brand && db.brand.institutions) {
+        db.brand.institutions.forEach((i) => {
+          if (!i.platforms) { i.platforms = i.on ? ['brand'] : []; changed = true; }
+          if (i.bookable == null) { i.bookable = false; changed = true; }
+        });
+      }
+      if (db.rbac && db.rbac.roles) {
+        if (!db.rbac.roles.some((r) => r.id === db.rbac.current)) { db.rbac.current = 'super'; changed = true; }
+      }
+      if (changed) this.persist();
     },
 
     get db() { return db; },

@@ -127,7 +127,15 @@
     },
     actions: {
       preview() { App.openPreview(); },
-      addYear() { UI.toast('新增节点表单已打开'); },
+      addYear() {
+        UI.formDrawer({ title: '新增大事记', sub: '按年份展示在品牌页时间轴', icon: 'calendar',
+          fields: [{ key: 'year', label: '年份', ph: '2027' }, { key: 'title', label: '标题' }, { key: 'desc', label: '说明', type: 'area', rows: 2 }],
+          onSave(v) {
+            B().info.timeline.push({ year: v.year || '2027', title: v.title || '新节点', desc: v.desc });
+            B().info.timeline.sort((a, b) => a.year - b.year);
+            Store.mark('brand.info.timeline', '新增历程'); UI.toast('已添加'); App.refresh();
+          } });
+      },
       editYear(d) { UI.toast('编辑 ' + B().info.timeline[+d.id].year + ' 年节点'); }
     }
   };
@@ -151,12 +159,24 @@
           { label: '类型', render: (i) => UI.pill({ general: '综合医院', rehab: '康复医院', specialty: '专科医院', center: '健康管理中心' }[i.type], 'grey') },
           { label: '等级', render: (i) => '<span class="small">' + E(i.level) + '</span>' },
           { label: '床位', align: 'right', render: (i) => '<span class="tnum">' + (i.beds || '—') + '</span>' },
-          { label: '上线', render: (i) => '<button class="switch ' + (i.on ? 'on' : '') + '" data-toggle="brand.institutions.' + b.institutions.indexOf(i) + '.on"></button>' },
+          { label: '上线', render: (i) => '<button class="switch ' + (i.on ? 'on' : '') + '" data-toggle="brand.institutions.' + UI.ix(b.institutions, i) + '.on"></button>' },
           { label: '', align: 'right', render: (i) => '<div class="rowact"><button data-act="editInst" data-id="' + i.id + '">' + I('edit', 14) + '</button></div>' }
         ], b.institutions.map((i) => Object.assign({ _id: i.id }, i))) });
     },
     actions: {
-      newInst() { UI.toast('新增机构表单已打开'); },
+      newInst() {
+        UI.formDrawer({ title: '新增机构', sub: '保存后可在投放端中选择展示位置', icon: 'hospital',
+          fields: [
+            { key: 'name', label: '机构全称' }, { key: 'city', label: '城市', ph: '北京 · 昌平' },
+            { key: 'region', label: '所属地区', type: 'select', options: B().regions.map((r) => ({ v: r.id, l: r.name })) },
+            { key: 'type', label: '机构类型', type: 'select', options: [{ v: 'general', l: '综合医院' }, { v: 'rehab', l: '康复医院' }, { v: 'specialty', l: '专科医院' }, { v: 'center', l: '健康管理中心' }] },
+            { key: 'level', label: '等级', ph: '三级综合' }, { key: 'beds', label: '开放床位', type: 'num', value: 0 }
+          ],
+          onSave(v) {
+            Store.pushItem('brand.institutions', { id: 'i' + Date.now(), region: v.region, type: v.type, name: v.name || '新机构', short: v.name, city: v.city, beds: v.beds, level: v.level, open: '2027', tags: [], desc: '', on: true, platforms: ['brand'], bookable: false }, '新增机构');
+            UI.toast('机构已创建'); App.refresh();
+          } });
+      },
       editInst(d) {
         const i = B().institutions.find((x) => x.id === d.id), idx = B().institutions.indexOf(i);
         UI.drawer({ title: '编辑机构', sub: i.name, icon: 'hospital',
@@ -195,7 +215,19 @@
         ], list.map((d) => Object.assign({ _id: d.id }, d))) });
     },
     actions: {
-      newDep() { UI.toast('新增科室表单已打开'); },
+      newDep() {
+        UI.formDrawer({ title: '新增科室', sub: '保存后出现在科室列表', icon: 'layers',
+          fields: [
+            { key: 'name', label: '科室名称' },
+            { key: 'cat', label: '分类', type: 'select', options: ['内科', '外科', '妇儿', '五官', '专科', '医技'] },
+            { key: 'doctors', label: '医师人数', type: 'num', value: 0 },
+            { key: 'intro', label: '科室简介', type: 'area', rows: 3 }
+          ],
+          onSave(v) {
+            Store.pushItem('brand.departments', { id: 'dep' + Date.now(), cat: v.cat, name: v.name || '新科室', on: true, featured: false, doctors: v.doctors, intro: v.intro, features: [] }, '新增科室');
+            UI.toast('科室已创建'); App.refresh();
+          } });
+      },
       depFilter(d) { UI.toast('筛选：' + (d.id === 'all' ? '全部' : d.id)); },
       editDep(d) {
         const x = B().departments.find((y) => y.id === d.id), i = B().departments.indexOf(x);
@@ -232,14 +264,27 @@
           { label: '科室', render: (d) => E(d.dept) },
           { label: '所属医院', render: (d) => '<span class="small">' + E(d.hospital) + '</span>' },
           { label: '擅长', render: (d) => '<span class="small muted">' + E(d.specialty).slice(0, 26) + '…</span>' },
-          { label: '首页', render: (d) => '<button class="switch ' + (d.featured ? 'on' : '') + '" data-toggle="brand.doctors.' + list.indexOf(d) + '.featured"></button>' },
-          { label: '在线', render: (d) => '<button class="switch ' + (d.on ? 'on' : '') + '" data-toggle="brand.doctors.' + list.indexOf(d) + '.on"></button>' },
+          { label: '首页', render: (d) => '<button class="switch ' + (d.featured ? 'on' : '') + '" data-toggle="brand.doctors.' + UI.ix(list, d) + '.featured"></button>' },
+          { label: '在线', render: (d) => '<button class="switch ' + (d.on ? 'on' : '') + '" data-toggle="brand.doctors.' + UI.ix(list, d) + '.on"></button>' },
           { label: '', align: 'right', render: (d) => '<div class="rowact"><button data-act="editDoc" data-id="' + d.id + '">' + I('edit', 14) + '</button></div>' }
         ], rows.map((d) => Object.assign({ _id: d.id }, d))) });
     },
     actions: {
       teamTab(d) { P['b-team'].state.tab = d.id; App.refresh(); },
-      newDoc() { UI.toast('新增成员表单已打开'); },
+      newDoc() {
+        UI.formDrawer({ title: '新增团队成员', sub: '可标注专家与首页精选', icon: 'user',
+          fields: [
+            { key: 'name', label: '姓名' }, { key: 'title', label: '职称', ph: '主任医师' },
+            { key: 'dept', label: '科室' }, { key: 'hospital', label: '所属医院' },
+            { key: 'specialty', label: '擅长领域', type: 'area', rows: 2 },
+            { key: 'expert', label: '标注为专家', type: 'bool', value: false },
+            { key: 'featured', label: '首页精选', type: 'bool', value: false }
+          ],
+          onSave(v) {
+            Store.pushItem('brand.doctors', { id: 'doc' + Date.now(), name: v.name || '新成员', title: v.title, dept: v.dept, hospital: v.hospital, expert: v.expert, featured: v.featured, on: true, tags: [], specialty: v.specialty, photo: '' }, '新增成员');
+            UI.toast('成员已创建'); App.refresh();
+          } });
+      },
       editDoc(d) {
         const x = B().doctors.find((y) => y.id === d.id), i = B().doctors.indexOf(x);
         UI.drawer({ title: '编辑成员', sub: x.name + ' · ' + x.title, icon: 'user',

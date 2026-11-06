@@ -22,7 +22,7 @@
 
   /* --------------------------------------------------- 1 品牌与主体 */
   P['g-brand'] = {
-    app: 'all', grp: 'shared.brand', title: '品牌与主体', sub: '品牌名、主张与联系方式，三端共用一处',
+    app: 'all', papp: 'pku', grp: 'shared.brand', title: '品牌与主体', sub: '品牌名、主张与联系方式，三端共用一处',
     preview: 'pku-home',
     render() {
       const s = SH();
@@ -71,7 +71,7 @@
 
   /* --------------------------------------------------- 2 跨端内容 */
   P['g-content'] = {
-    app: 'all', grp: 'shared.content', title: '跨端内容', sub: '一条内容可同时投放到多个端，不必重复配置',
+    app: 'all', papp: 'pku', grp: 'shared.content', title: '跨端内容', sub: '一条内容可同时投放到多个端，不必重复配置',
     preview: 'pku-home',
     state: { tab: 'all' },
     render() {
@@ -95,7 +95,7 @@
           { label: '投放端', render: (c) => '<span class="nw">' + appChips(c.apps) + '</span>' },
           { label: '生效期', render: (c) => '<span class="small tnum muted">' + E(c.start) + ' → ' + E(c.end) + '</span>' },
           { label: '曝光', align: 'right', render: (c) => '<span class="tnum">' + (c.views || 0).toLocaleString() + '</span>' },
-          { label: '状态', render: (c) => '<button class="switch ' + (c.on ? 'on' : '') + '" data-toggle="shared.contents.' + list.indexOf(c) + '.on"></button>' },
+          { label: '状态', render: (c) => '<button class="switch ' + (c.on ? 'on' : '') + '" data-toggle="shared.contents.' + UI.ix(list, c) + '.on"></button>' },
           { label: '', align: 'right', render: (c) => '<div class="rowact"><button data-act="editContent" data-id="' + c.id + '">' + I('edit', 14) + '</button></div>' }
         ], rows.map((c) => Object.assign({ _id: c.id }, c))) });
     },
@@ -110,7 +110,7 @@
   function openContent(id) {
     const list = SH().contents;
     const c = id ? list.find((x) => x.id === id) : { type: 'banner', title: '', sub: '', apps: ['pku'], start: '2026-11-06', end: '2026-12-31', on: true, tone: 'blue' };
-    const i = id ? list.indexOf(c) : -1;
+    const i = id ? UI.ix(list, c) : -1;
     UI.drawer({
       title: id ? '编辑内容' : '新建内容', sub: id ? c.title : '选择投放端后可多端复用', icon: 'image',
       body: '<div class="formsec"><h4>内容</h4>' +
@@ -150,7 +150,7 @@
 
   /* --------------------------------------------------- 3 服务机构 */
   P['g-orgs'] = {
-    app: 'all', grp: 'shared.orgs', title: '服务机构', sub: '一家医院一处维护，按投放端出现在不同产品里',
+    app: 'all', papp: 'pku', grp: 'shared.orgs', title: '服务机构', sub: '一家医院一处维护，按投放端出现在不同产品里',
     preview: 'pku-hospitals',
     render() {
       const list = Store.db.brand.institutions;
@@ -166,17 +166,30 @@
         K.panel({ flush: true, body: UI.table([
           { label: '机构', render: (i) => '<div class="cellflex"><div class="ava g" style="border-radius:9px">' + I('hospital', 14) + '</div><div><div class="strong">' + E(i.name) + '</div><div class="small muted">' + E(i.city) + ' · ' + E(i.level) + '</div></div></div>' },
           { label: '投放端', render: (i) => '<span class="nw">' + (i.platforms || []).map((p) => '<span class="pill ' + (p === 'brand' ? 'green' : p === 'employee' ? 'amber' : 'blue') + '">' + ({ brand: '品牌站', employee: '职工端', camp: '健康营' }[p]) + '</span>').join(' ') + '</span>' },
-          { label: '可预约', render: (i) => '<button class="switch ' + (i.bookable ? 'on' : '') + '" data-toggle="brand.institutions.' + list.indexOf(i) + '.bookable"></button>' },
+          { label: '可预约', render: (i) => '<button class="switch ' + (i.bookable ? 'on' : '') + '" data-toggle="brand.institutions.' + UI.ix(list, i) + '.bookable"></button>' },
           { label: '床位', align: 'right', render: (i) => '<span class="tnum">' + (i.beds || '—') + '</span>' },
-          { label: '上线', render: (i) => '<button class="switch ' + (i.on ? 'on' : '') + '" data-toggle="brand.institutions.' + list.indexOf(i) + '.on"></button>' },
+          { label: '上线', render: (i) => '<button class="switch ' + (i.on ? 'on' : '') + '" data-toggle="brand.institutions.' + UI.ix(list, i) + '.on"></button>' },
           { label: '', align: 'right', render: (i) => '<div class="rowact"><button data-act="editOrg" data-id="' + i.id + '">' + I('edit', 14) + '</button></div>' }
         ], list.map((i) => Object.assign({ _id: i.id }, i))) });
     },
     actions: {
-      newOrg() { UI.toast('新增机构'); },
+      newOrg() {
+        UI.formDrawer({ title: '新增服务机构', sub: '创建后可勾选投放端', icon: 'hospital',
+          fields: [
+            { key: 'name', label: '机构全称' }, { key: 'city', label: '城市', ph: '北京 · 昌平' },
+            { key: 'region', label: '所属地区', type: 'select', options: Store.db.brand.regions.map((r) => ({ v: r.id, l: r.name })) },
+            { key: 'type', label: '机构类型', type: 'select', options: [{ v: 'general', l: '综合医院' }, { v: 'rehab', l: '康复医院' }, { v: 'specialty', l: '专科医院' }, { v: 'center', l: '健康管理中心' }] },
+            { key: 'level', label: '等级', ph: '三级综合' }
+          ],
+          impact: UI.impact(['品牌站 · 分院网络', '职工端 · 预约机构']),
+          onSave(v) {
+            Store.pushItem('brand.institutions', { id: 'i' + Date.now(), region: v.region, type: v.type, name: v.name || '新机构', short: v.name, city: v.city, beds: 0, level: v.level, open: '2027', tags: [], desc: '', on: true, platforms: ['brand'], bookable: false }, '新增机构');
+            UI.toast('机构已创建'); App.refresh();
+          } });
+      },
       editOrg(d) {
         const list = Store.db.brand.institutions;
-        const o = list.find((x) => x.id === d.id), i = list.indexOf(o);
+        const o = list.find((x) => x.id === d.id), i = UI.ix(list, o);
         UI.drawer({ title: '编辑机构', sub: o.name, icon: 'hospital',
           body: '<div class="formsec"><h4>基本信息</h4>' +
             UI.fInput({ label: '机构全称', value: o.name, path: 'brand.institutions.' + i + '.name' }) +
@@ -204,7 +217,7 @@
 
   /* --------------------------------------------------- 4 主题与入口 */
   P['g-theme'] = {
-    app: 'all', grp: 'shared.theme', title: '主题与入口', sub: '品牌色与三端功能入口的唯一来源',
+    app: 'all', papp: 'employee', grp: 'shared.theme', title: '主题与入口', sub: '品牌色与三端功能入口的唯一来源',
     preview: 'emp-home',
     render() {
       const t = SH().theme;
@@ -250,7 +263,7 @@
 
   /* --------------------------------------------------- 5 统一账号 */
   P['g-accounts'] = {
-    app: 'all', grp: 'accounts', title: '账号管理', sub: '一个手机号可在三端拥有不同身份',
+    app: 'all', papp: 'versionall', grp: 'accounts', title: '账号管理', sub: '一个手机号可在三端拥有不同身份',
     preview: 'student-home',
     state: { tab: 'staff' },
     render() {
@@ -302,7 +315,7 @@
           } });
       },
       editMember(d) {
-        const list = Store.db.rbac.members, m = list.find((x) => x.id === d.id), i = list.indexOf(m);
+        const list = Store.db.rbac.members, m = list.find((x) => x.id === d.id), i = UI.ix(list, m);
         UI.drawer({ title: '编辑账号', sub: m.name + ' · ' + m.phone, icon: 'user',
           body: '<div class="formsec"><h4>基本信息</h4>' + UI.fInput({ label: '姓名', value: m.name, path: 'rbac.members.' + i + '.name' }) +
             UI.fInput({ label: '部门', value: m.dept, path: 'rbac.members.' + i + '.dept' }) +
@@ -325,7 +338,7 @@
 
   /* --------------------------------------------------- 6 角色与权限 */
   P['g-roles'] = {
-    app: 'all', grp: 'roles', title: '角色与权限', sub: '按模块分配查看、编辑与发布权限',
+    app: 'all', papp: 'pku', grp: 'roles', title: '角色与权限', sub: '按模块分配查看、编辑与发布权限',
     preview: 'pku-home',
     state: { role: 'ops' },
     render() {

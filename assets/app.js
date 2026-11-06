@@ -24,10 +24,10 @@
 
   const LIVE = {
     versionall: 'https://baoweidong.github.io/versionall/',
-    pku: 'https://baoweidong.github.io/PKU-introduce/',
+    pku: 'https://baoweidong.github.io/PKU-introduce/mobile.html',
     employee: 'https://baoweidong.github.io/pku-employee-health/'
   };
-  const PKU_PAGE = { 'pku-home': 'index.html', 'pku-hospitals': 'hospitals.html', 'pku-team': 'team.html', 'pku-camp': 'camp.html' };
+  const PKU_PAGE = { 'pku-home': '', 'pku-hospitals': '', 'pku-team': '', 'pku-camp': '' };
 
   const APPS = {
     versionall: { name: '减重营', dot: '#3f8cff' },
@@ -167,7 +167,7 @@
       '<div class="seg">' + [['live', '实况'], ['mock', '模拟']].map((m) => '<button data-act="previewMode" data-id="' + m[0] + '" class="' + (state.previewMode === m[0] ? 'on' : '') + '">' + m[1] + '</button>').join('') + '</div>' +
       '<button class="iconbtn" data-act="closePreview" style="width:26px;height:26px">' + I('x', 14) + '</button></div></div>' +
       (live ? '<div class="live-hint"><i></i>已连接线上 H5，与用户所见一致' + (state.autoMocked ? ' · 改动已切到模拟' : '') + '</div>' : '') +
-      '<div style="padding:2px 16px 8px">' + K.seg((live && state.previewApp !== 'pku' ? [{ id: scr[0].id, label: '线上首页' }] : scr).map((s) => ({ id: s.id, label: s.label })), state.previewScreen, 'previewScreen') + '</div>' +
+      '<div style="padding:2px 16px 8px">' + K.seg((live ? [{ id: scr[0].id, label: '线上页面' }] : scr).map((s) => ({ id: s.id, label: s.label })), state.previewScreen, 'previewScreen') + '</div>' +
       '<div class="dock-b"><div class="device"><div class="device-screen">' +
         (live ? liveFrame() : '<div class="pv" id="pv-root">' + Preview.render(state.previewScreen, state.previewCtx) + '</div>') +
       '</div></div></div>' +
@@ -177,7 +177,7 @@
       '</aside>';
   }
   function liveUrl() {
-    if (state.previewApp === 'pku') return LIVE.pku + (PKU_PAGE[state.previewScreen] || 'index.html');
+    if (state.previewApp === 'pku') return LIVE.pku + (PKU_PAGE[state.previewScreen] || '');
     return LIVE[state.previewApp] || LIVE.pku;
   }
   function liveFrame() {
@@ -198,7 +198,8 @@
       '<header class="topbar">' + topbarHTML() + '</header>' +
       '<div class="canvas ' + (state.previewOpen ? 'has-dock' : '') + '">' +
       '<div class="scrollarea scroll"><div class="page ' + (readonly ? 'readonly' : '') + '">' +
-      (readonly ? '<div class="readonly-bar">' + I('lock', 14) + '<b>' + E(Store.role.name) + '</b> 对该模块仅有查看权限，编辑与发布已关闭</div>' : '') +
+      (readonly ? '<div class="readonly-bar">' + I('lock', 14) + '<b>' + E(Store.role.name) + '</b> 对该模块仅有查看权限，编辑与发布已关闭' +
+        '<button class="btn sm" data-act="switchSuper" style="margin-left:auto">切换为超级管理员</button></div>' : '') +
       page.render(state.ctx) + '</div></div>' +
       dockHTML() + '</div></div></div>';
     const sc = document.querySelector('.scrollarea');
@@ -213,7 +214,14 @@
     const fb = document.getElementById('live-fallback');
     let done = false;
     f.addEventListener('load', () => { done = true; if (fb) fb.style.display = 'none'; });
-    setTimeout(() => { if (!done && fb) fb.innerHTML = '当前环境无法加载外部页面<br><span style="opacity:.7">点击下方「打开新窗口」查看真实 H5</span>'; }, 5000);
+    setTimeout(() => {
+      if (done) return;
+      if (fb) fb.innerHTML = '线上页面加载超时<br><span style="opacity:.7">已切换到配置模拟，可点「实况」重试</span>';
+      state.previewMode = 'mock';
+      state.autoMocked = true;
+      render(true);
+      UI.toast('线上页面加载超时，已切换到配置模拟', 'warn');
+    }, 6000);
   }
 
   function syncPreview() {
@@ -232,7 +240,7 @@
       state.app = appOf(route);
       state.ctx = ctx || {};
       const page = currentPage();
-      const app = page.app && page.app !== 'all' ? page.app : state.previewApp;
+      const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
       if (Preview.SCREENS[app]) {
         state.previewApp = app;
         const want = typeof page.preview === 'function' ? page.preview(state.ctx) : page.preview;
@@ -367,7 +375,7 @@
   window.App = App;
 
   /* ---------------------------------------------------------- events */
-  const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|impact|search|filter|tab|seg|pickRole|previewRole)/;
+  const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|switchSuper|impact|search|filter|tab|seg|pickRole|previewRole)/;
 
   document.addEventListener('click', (e) => {
     const sw = e.target.closest('[data-app]');
@@ -406,6 +414,7 @@
     if (name === 'previewScreen') { state.previewScreen = act.dataset.id; render(true); return; }
     if (name === 'cmdk') { App.cmdOpen(); return; }
     if (name === 'roleMenu') { App.roleMenu(act); return; }
+    if (name === 'switchSuper') { Store.setRole('super'); UI.toast('已切换为超级管理员'); App.refresh(); return; }
     if (name === 'publish') { App.openPublish(''); return; }
     if (name === 'goPublish') { App.go('s-publish'); return; }
     if (name === 'notify') { UI.toast('暂无新通知'); return; }
@@ -468,7 +477,7 @@
         state.ctx[decodeURIComponent(k)] = decodeURIComponent(v || '');
       });
       const page = currentPage();
-      const app = page.app && page.app !== 'all' ? page.app : state.previewApp;
+      const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
       if (Preview.SCREENS[app]) {
         state.previewApp = app;
         const want = typeof page.preview === 'function' ? page.preview(state.ctx) : page.preview;

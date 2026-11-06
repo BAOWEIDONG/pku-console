@@ -135,14 +135,14 @@
         UI.drawer({
           title: '编辑营期', sub: c.code, icon: 'calendar',
           body: '<div class="formsec"><h4>基本信息</h4>' +
-            UI.fInput({ label: '营期名称', value: c.name, path: 'versionall.camps.' + V().camps.indexOf(c) + '.name' }) +
-            '<div class="frow">' + UI.fInput({ label: '开营日期', value: c.start, path: 'versionall.camps.' + V().camps.indexOf(c) + '.start' }) +
-            UI.fInput({ label: '结营日期', value: c.end, path: 'versionall.camps.' + V().camps.indexOf(c) + '.end' }) + '</div>' +
-            UI.fSelect({ label: '状态', value: c.status, options: [{ v: 'draft', l: '草稿' }, { v: 'upcoming', l: '待开营' }, { v: 'active', l: '进行中' }, { v: 'ended', l: '已结营' }], path: 'versionall.camps.' + V().camps.indexOf(c) + '.status' }) +
-            UI.fNum({ label: '学员容量', value: c.capacity, path: 'versionall.camps.' + V().camps.indexOf(c) + '.capacity' }) +
+            UI.fInput({ label: '营期名称', value: c.name, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.name' }) +
+            '<div class="frow">' + UI.fInput({ label: '开营日期', value: c.start, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.start' }) +
+            UI.fInput({ label: '结营日期', value: c.end, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.end' }) + '</div>' +
+            UI.fSelect({ label: '状态', value: c.status, options: [{ v: 'draft', l: '草稿' }, { v: 'upcoming', l: '待开营' }, { v: 'active', l: '进行中' }, { v: 'ended', l: '已结营' }], path: 'versionall.camps.' + UI.ix(V().camps, c) + '.status' }) +
+            UI.fNum({ label: '学员容量', value: c.capacity, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.capacity' }) +
             '</div><div class="formsec"><h4>履约信息</h4>' +
-            UI.fInput({ label: '主办医院', value: c.host, path: 'versionall.camps.' + V().camps.indexOf(c) + '.host' }) +
-            UI.fInput({ label: '地点', value: c.location, path: 'versionall.camps.' + V().camps.indexOf(c) + '.location' }) +
+            UI.fInput({ label: '主办医院', value: c.host, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.host' }) +
+            UI.fInput({ label: '地点', value: c.location, path: 'versionall.camps.' + UI.ix(V().camps, c) + '.location' }) +
             '</div><div class="note">修改营期日期会同步影响打卡日历与结营报告的天数口径，保存后需重新发布。</div>',
           okText: '保存', extra: '<button class="btn danger" data-del="' + c.id + '">' + I('trash', 15) + '删除</button>',
           mount(n) {
@@ -234,7 +234,7 @@
       },
       editAcc(d) {
         const a = V().accounts.find((x) => x.id === d.id);
-        const i = V().accounts.indexOf(a);
+        const i = UI.ix(V().accounts, a);
         UI.drawer({
           title: a.name, sub: a.phone + ' · ' + ROLE[a.role], icon: 'user',
           body: '<div class="formsec"><h4>身份</h4>' +
@@ -253,7 +253,7 @@
       },
       toggleAcc(d) {
         const a = V().accounts.find((x) => x.id === d.id);
-        Store.set('versionall.accounts.' + V().accounts.indexOf(a) + '.active', !a.active, '账户启停');
+        Store.set('versionall.accounts.' + UI.ix(V().accounts, a) + '.active', !a.active, '账户启停');
         UI.toast(a.active ? '已停用 ' + a.name : '已启用 ' + a.name);
         App.refresh();
       },
@@ -585,14 +585,29 @@
           { label: '参考区间', render: (r) => E(r.normalRange || '—') },
           { label: '分类', render: (r) => UI.pill(r.category, 'grey') },
           { label: '改善方向', render: (r) => UI.pill(r.direction === 'down' ? '下降为佳' : '上升为佳', r.direction === 'down' ? 'blue' : 'green') },
-          { label: '启用', render: (r, i) => '<button class="switch ' + (r.active ? 'on' : '') + '" data-toggle="versionall.metrics.' + m.indexOf(r) + '.active"></button>' },
+          { label: '启用', render: (r, i) => '<button class="switch ' + (r.active ? 'on' : '') + '" data-toggle="versionall.metrics.' + UI.ix(m, r) + '.active"></button>' },
           { label: '', align: 'right', render: (r) => '<div class="rowact"><button data-act="editMetric" data-id="' + r.id + '">' + I('edit', 14) + '</button></div>' }
         ], m.map((x) => Object.assign({ _id: x.id }, x))) });
     },
     actions: {
-      newMetric() { UI.toast('新增指标表单已打开'); },
+      newMetric() {
+        UI.formDrawer({
+          title: '新增健康指标', sub: '会在结营报告中参与前后对比', icon: 'activity', section: '指标定义',
+          fields: [
+            { key: 'name', label: '指标名称', ph: '如 腰臀比' },
+            { key: 'unit', label: '单位', ph: '如 %' },
+            { key: 'normalRange', label: '参考区间', ph: '如 男<0.9 女<0.85' },
+            { key: 'category', label: '分类', type: 'select', options: ['身体测量', '五高指标', '血脂', '代谢'] },
+            { key: 'direction', label: '改善方向', type: 'select', options: [{ v: 'down', l: '下降为佳' }, { v: 'up', l: '上升为佳' }] }
+          ],
+          onSave(v) {
+            Store.pushItem('versionall.metrics', { id: 'm' + Date.now(), name: v.name || '新指标', unit: v.unit, normalRange: v.normalRange, category: v.category, direction: v.direction, active: true }, '新增指标');
+            UI.toast('指标已创建'); App.refresh();
+          }
+        });
+      },
       editMetric(d) {
-        const r = V().metrics.find((x) => x.id === d.id), i = V().metrics.indexOf(r);
+        const r = V().metrics.find((x) => x.id === d.id), i = UI.ix(V().metrics, r);
         UI.drawer({ title: '编辑指标', sub: r.name, icon: 'activity',
           body: '<div class="formsec"><h4>定义</h4>' +
             UI.fInput({ label: '指标名称', value: r.name, path: 'versionall.metrics.' + i + '.name' }) +
@@ -643,7 +658,7 @@
       return K.head('连续打卡奖励', '共 ' + list.length + ' 档 · 学员达到天数即可解锁领取',
         K.btn('新增档位', 'newTier', { icon: 'plus', cls: 'primary' })) +
         '<div class="grid g-4">' + list.map((t) => {
-          const i = V().tiers.indexOf(t);
+          const i = UI.ix(V().tiers, t);
           return '<div class="panel" style="padding:16px">' +
             '<div class="row"><div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(150deg,#eaf2ff,#dbe9fb);display:grid;place-items:center;font-size:10px;color:#0b63e5;text-align:center">' + E(t.image) + '</div>' +
             '<div class="right"><button class="switch ' + (t.active ? 'on' : '') + '" data-toggle="versionall.tiers.' + i + '.active"></button></div></div>' +
@@ -672,7 +687,7 @@
           onOk() { UI.toast('档位已创建，待发布'); App.refresh(); } });
       },
       editTier(d) {
-        const t = V().tiers.find((x) => x.id === d.id), i = V().tiers.indexOf(t);
+        const t = V().tiers.find((x) => x.id === d.id), i = UI.ix(V().tiers, t);
         UI.drawer({ title: '编辑奖励', sub: t.name, icon: 'gift',
           body: '<div class="formsec"><h4>档位设置</h4>' +
             UI.fInput({ label: '奖励名称', value: t.name, path: 'versionall.tiers.' + i + '.name' }) +
@@ -711,9 +726,25 @@
         ], list.map((x) => Object.assign({ _id: x.id }, x))) });
     },
     actions: {
-      newProduct() { UI.toast('新增商品表单已打开'); },
+      newProduct() {
+        UI.formDrawer({
+          title: '新增积分商品', sub: '上架后学员可在积分商城兑换', icon: 'package', section: '商品信息',
+          fields: [
+            { key: 'name', label: '商品名称', ph: '如 运动水杯 600ml' },
+            { key: 'desc', label: '描述', type: 'area', rows: 2 },
+            { key: 'points', label: '所需积分', type: 'num', value: 100 },
+            { key: 'stock', label: '库存', type: 'num', value: 20 },
+            { key: 'max', label: '每人限兑（0=不限）', type: 'num', value: 1 },
+            { key: 'active', label: '立即上架', type: 'bool', value: true }
+          ],
+          onSave(v) {
+            Store.pushItem('versionall.products', { id: 'p' + Date.now(), campId: 'camp1', name: v.name || '新商品', points: v.points, stock: v.stock, max: v.max, active: v.active, delivery: ['shipped'], sort: 0, image: '礼品', desc: v.desc }, '新增商品');
+            UI.toast('商品已创建'); App.refresh();
+          }
+        });
+      },
       editProduct(d) {
-        const p = V().products.find((x) => x.id === d.id), i = V().products.indexOf(p);
+        const p = V().products.find((x) => x.id === d.id), i = UI.ix(V().products, p);
         UI.drawer({ title: '编辑商品', sub: p.name, icon: 'package',
           body: '<div class="formsec"><h4>商品信息</h4>' +
             UI.fInput({ label: '名称', value: p.name, path: 'versionall.products.' + i + '.name' }) +
@@ -743,7 +774,7 @@
           const items = list.filter((b) => b.cat === g[0]);
           return '<div style="margin-bottom:20px"><div class="row" style="margin-bottom:10px"><h3 style="font-size:13px;font-weight:600">' + g[1] + '</h3><span class="small mut">' + items.length + ' 枚</span></div>' +
             '<div class="grid g-4">' + items.map((b) => {
-              const i = list.indexOf(b);
+              const i = UI.ix(list, b);
               return '<div class="panel" style="padding:14px;' + (b.on ? '' : 'opacity:.6') + '">' +
                 '<div class="row"><div style="font-size:20px">' + b.icon + '</div><button class="switch right ' + (b.on ? 'on' : '') + '" data-toggle="versionall.badges.' + i + '.on" style="transform:scale(.85)"></button></div>' +
                 '<div style="font-size:12.5px;font-weight:600;margin-top:8px">' + E(b.name) + '</div>' +
@@ -752,7 +783,22 @@
         }).join('');
     },
     actions: {
-      newBadge() { UI.toast('新增徽章表单已打开'); }
+      newBadge() {
+        UI.formDrawer({
+          title: '新增徽章', sub: '条件达成后自动发放', icon: 'medal', section: '徽章定义',
+          fields: [
+            { key: 'name', label: '徽章名称', ph: '如 减重 8% 里程碑' },
+            { key: 'cat', label: '分类', type: 'select', options: [{ v: 'milestone', l: '里程碑' }, { v: 'achievement', l: '成就' }, { v: 'activity', l: '活动' }] },
+            { key: 'cond', label: '达成条件', type: 'select', options: [{ v: 'weight_loss_percent', l: '体重下降 %' }, { v: 'streak_days', l: '连续全项打卡 天' }, { v: 'checkin_days', l: '有打卡 天' }, { v: 'all_items', l: '全项完成 天' }] },
+            { key: 'threshold', label: '阈值', type: 'num', value: 3 },
+            { key: 'icon', label: '图标（emoji）', value: '🏅' }
+          ],
+          onSave(v) {
+            Store.pushItem('versionall.badges', { id: 'b' + Date.now(), campId: 'camp1', name: v.name || '新徽章', cat: v.cat, cond: v.cond, threshold: v.threshold, icon: v.icon || '🏅', on: true, cadence: 'day' }, '新增徽章');
+            UI.toast('徽章已创建'); App.refresh();
+          }
+        });
+      }
     }
   };
 
@@ -799,12 +845,22 @@
           okText: '确认发货', extra: '<button class="btn" data-print>打印面单</button>',
           mount(n) { n.querySelector('[data-print]').addEventListener('click', () => UI.toast('面单已发送至打印机')); },
           onOk() {
-            const i = V().claims.indexOf(c);
+            const i = UI.ix(V().claims, c);
             Store.saveItem('versionall.claims', { id: c.id, status: 'shipped', tracking: 'SF' + Date.now().toString().slice(-10), shipDate: '2026-11-06 10:00' }, 'id', '领奖发货');
             UI.toast('已发货'); App.refresh();
           } });
       },
-      batchShip() { UI.toast('已选 0 单，请先勾选订单'); }
+      batchShip() {
+        const pend = V().claims.filter((c) => c.status === 'pending');
+        if (!pend.length) { UI.toast('没有待发货订单'); return; }
+        UI.confirm({ title: '批量发货 ' + pend.length + ' 单？', desc: '将按各单收货地址生成物流单号，发货后不可再改地址。', okText: '确认发货' })
+          .then((ok) => {
+            if (!ok) return;
+            pend.forEach((c) => { c.status = 'shipped'; c.tracking = 'SF' + (Date.now() + Math.floor(Math.random() * 999)).toString().slice(-10); });
+            Store.mark('versionall.claims', '批量发货');
+            Store.persist(); UI.toast('已发货 ' + pend.length + ' 单'); App.refresh();
+          });
+      }
     }
   };
 
@@ -839,9 +895,9 @@
             '<div class="note" style="margin-top:14px">已发货订单不可取消；未发货订单取消后积分原路退回。</div>',
           footer: e.status === 'pending' ? undefined : false,
           extra: e.status === 'pending' ? '<button class="btn danger" data-cancel>取消并退积分</button>' : '',
-          mount(n) { const b = n.querySelector('[data-cancel]'); if (b) b.addEventListener('click', () => { const i = V().exchanges.indexOf(e); Store.saveItem('versionall.exchanges', { id: e.id, status: 'cancelled' }, 'id', '取消兑换'); UI.closeOverlay(); UI.toast('已取消，积分已退回'); App.refresh(); }); },
+          mount(n) { const b = n.querySelector('[data-cancel]'); if (b) b.addEventListener('click', () => { const i = UI.ix(V().exchanges, e); Store.saveItem('versionall.exchanges', { id: e.id, status: 'cancelled' }, 'id', '取消兑换'); UI.closeOverlay(); UI.toast('已取消，积分已退回'); App.refresh(); }); },
           onOk() {
-            const i = V().exchanges.indexOf(e);
+            const i = UI.ix(V().exchanges, e);
             Store.saveItem('versionall.exchanges', { id: e.id, status: 'fulfilled', tracking: 'JD' + Date.now().toString().slice(-10) }, 'id', '兑换发货');
             UI.toast('已发货'); App.refresh();
           }, okText: e.status === 'pending' ? '确认发货' : '关闭'
@@ -892,7 +948,7 @@
       return K.head('活动与课程内容', '共 ' + list.length + ' 条 · 已发布 ' + list.filter((c) => c.status === 'published').length,
         K.btn('发布内容', 'newContent', { icon: 'plus', cls: 'primary' })) +
         '<div class="grid g-3">' + list.map((c) => {
-          const i = list.indexOf(c);
+          const i = UI.ix(list, c);
           return '<div class="panel" style="padding:0;overflow:hidden">' +
             '<div style="height:96px;background:linear-gradient(135deg,#0d2a4d,#123f6f);position:relative;display:grid;place-items:center;color:rgba(255,255,255,.6)">' + I(c.video ? 'video' : 'image', 24) +
             '<div style="position:absolute;top:10px;right:10px">' + UI.statusPill(c.status) + '</div></div>' +
@@ -915,7 +971,18 @@
             '<button class="btn" style="width:100%;height:56px;border-style:dashed">' + I('upload', 16) + '上传视频 / 图片</button></div>',
           onOk() { UI.toast('内容已发布'); } });
       },
-      editContent() { UI.toast('内容编辑器已打开'); },
+      editContent(d) {
+        const c = V().coachActivities.find((x) => x.id === d.id);
+        UI.drawer({
+          title: '编辑内容', sub: c.title, icon: 'video',
+          body: '<div class="formsec"><h4>内容</h4>' +
+            UI.fInput({ label: '标题', value: c.title, path: 'versionall.coachActivities.' + V().coachActivities.indexOf(c) + '.title' }) +
+            UI.fArea({ label: '说明', value: c.desc, rows: 3, path: 'versionall.coachActivities.' + V().coachActivities.indexOf(c) + '.desc' }) +
+            UI.fInput({ label: '教练', value: c.coach, path: 'versionall.coachActivities.' + V().coachActivities.indexOf(c) + '.coach' }) +
+            '</div>' + UI.impact(['学员端 · 教练带练']),
+          onOk() { UI.toast('内容已保存'); App.refresh(); }
+        });
+      },
       toggleContent(d) {
         const c = V().coachActivities.find((x) => x.id === d.id);
         Store.set('versionall.coachActivities.' + V().coachActivities.indexOf(c) + '.status', c.status === 'published' ? 'draft' : 'published', '内容上下架');
@@ -943,7 +1010,22 @@
         ], list.map((m) => Object.assign({ _id: m.id }, m))) });
     },
     actions: {
-      newMsg() { UI.toast('公告编辑器已打开'); },
+      newMsg() {
+        UI.formDrawer({
+          title: '新建公告', sub: '发布后进入学员端消息中心', icon: 'bell', section: '内容',
+          fields: [
+            { key: 'title', label: '标题', ph: '如 第 4 周体测安排' },
+            { key: 'body', label: '正文', type: 'area', rows: 4 },
+            { key: 'type', label: '类型', type: 'select', options: ['公告', '提醒'] },
+            { key: 'target', label: '推送对象', type: 'select', options: [{ v: 'all', l: '全营学员' }, { v: 'inactive3', l: '3 天未打卡学员' }] },
+            { key: 'send', label: '立即发送', type: 'bool', value: false }
+          ],
+          onSave(v) {
+            Store.pushItem('versionall.messages', { id: 'msg' + Date.now(), campId: 'camp1', type: v.type, title: v.title || '未命名公告', body: v.body, target: v.target, sentAt: v.send ? '2026-11-06 10:00' : '', readRate: 0, status: v.send ? 'sent' : 'draft' }, '新建公告');
+            UI.toast(v.send ? '公告已发送' : '已保存为草稿'); App.refresh();
+          }
+        });
+      },
       editMsg(d) {
         const m = V().messages.find((x) => x.id === d.id);
         UI.drawer({ title: '编辑公告', sub: m.title, icon: 'message',
@@ -1027,9 +1109,26 @@
             '<div style="margin-top:12px"><button class="btn" data-act="addMsg">' + I('plus', 14) + '撰写寄语</button></div></div>' });
     },
     actions: {
-      previewReport() { UI.toast('学员报告预览已打开'); },
+      previewReport() {
+        UI.modal({
+          title: '结营报告预览', desc: '林悦 · 第 7 期 · 2026-11-05',
+          body: '<div style="padding:4px 0 10px"><div style="font-size:15px;font-weight:600">28 天，你减掉了 3.6 kg</div>' +
+            '<div class="small mut" style="margin-top:4px">体脂率 31.4% → 28.2%，血压与血糖均回到正常区间。</div>' +
+            '<div class="hairline"></div><dl class="kv"><dt>打卡完成率</dt><dd>75%（21 / 28 天）</dd><dt>最长连续</dt><dd>14 天</dd>' +
+            '<dt>运动总时长</dt><dd>1,240 分钟</dd><dt>获得徽章</dt><dd>🏆 连续 7 天 · 🔥 燃脂勇士</dd></dl></div>',
+          okText: '知道了', cancelText: false
+        });
+      },
       genAll() { UI.toast('已为 48 名学员生成报告'); },
-      addMsg() { UI.toast('寄语编辑器已打开'); }
+      addMsg() {
+        UI.drawer({
+          title: '撰写结营寄语', sub: '提交后逐条展示，不覆盖他人', icon: 'edit',
+          body: '<div class="formsec"><h4>内容</h4>' + UI.fArea({ label: '寄语', value: '', rows: 5, ph: '写给学员的一段话，建议 60–120 字' }) +
+            UI.fSelect({ label: '署名', value: '王雪 · 营养师', options: ['王雪 · 营养师', '张楠 · 营养师', '陈放 · 教练'] }) + '</div>' +
+            UI.impact(['学员端 · 结营报告']),
+          onOk() { UI.toast('寄语已提交'); }
+        });
+      }
     }
   };
 
@@ -1084,7 +1183,8 @@
     app: 'versionall', title: '入营问卷', sub: '学员首次登录必填；答案同步到健康档案',
     preview: 'student-checkin',
     render() {
-      const q = (V().questionnaire = V().questionnaire || Q_DEFAULT);
+      const q = (V().questionnaire = V().questionnaire || {});
+      if (!q.questions || !q.questions.length) { q.questions = Q_DEFAULT.questions; q.intro = q.intro || Q_DEFAULT.intro; }
       return K.head('入营问卷', q.questions.length + ' 道题 · 必填 ' + q.questions.filter((x) => x.required).length + ' 道',
         K.btn('预览问卷', 'previewQ', { icon: 'eye', cls: 'ghost' }) + K.btn('新增题目', 'newQ', { icon: 'plus', cls: 'primary' })) +
         K.kpis([
@@ -1112,9 +1212,26 @@
     },
     actions: {
       previewQ() { App.openPreview(); },
-      newQ() { UI.toast('新增题目'); },
+      newQ() {
+        UI.formDrawer({
+          title: '新增问卷题目', sub: '学员首次登录时展示', icon: 'file', section: '题目',
+          fields: [
+            { key: 'text', label: '题干', type: 'area', rows: 2 },
+            { key: 'type', label: '题型', type: 'select', options: [{ v: 'single', l: '单选' }, { v: 'multi', l: '多选' }, { v: 'text', l: '填空' }] },
+            { key: 'options', label: '选项（用 / 分隔）', ph: '选项 A / 选项 B' },
+            { key: 'required', label: '必填', type: 'bool', value: true }
+          ],
+          onSave(v) {
+            const q = V().questionnaire || (V().questionnaire = { intro: '', questions: [] });
+            q.questions.push({ id: 'q' + Date.now(), text: v.text || '新题目', type: v.type, options: v.options ? v.options.split('/').map((x) => x.trim()).filter(Boolean) : [], required: v.required, on: true });
+            Store.mark('versionall.questionnaire.questions', '新增题目');
+            UI.toast('题目已添加'); App.refresh();
+          }
+        });
+      },
       editQ(d) {
-        const q = (V().questionnaire = V().questionnaire || Q_DEFAULT);
+        const q = (V().questionnaire = V().questionnaire || {});
+      if (!q.questions || !q.questions.length) { q.questions = Q_DEFAULT.questions; q.intro = q.intro || Q_DEFAULT.intro; }
         const i = q.questions.findIndex((x) => x.id === d.id);
         UI.drawer({ title: '编辑题目', sub: q.questions[i].type, icon: 'file',
           body: '<div class="formsec"><h4>题目</h4>' +
