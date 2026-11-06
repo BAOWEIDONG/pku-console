@@ -319,16 +319,15 @@
             UI.fArea({ label: '页面描述', value: s.seoDesc, rows: 3, path: 'brand.site.seoDesc' }) +
             UI.fInput({ label: '分享标题', value: s.shareTitle, path: 'brand.site.shareTitle' }) +
             '</div>' }) +
-          K.panel({ title: '品牌色', body: '<div class="chips">' +
-            ['#0b63e5', '#08356f', '#0aa39a', '#2c6e9b', '#c8871a'].map((c) => '<button class="chip ' + (s.theme === c ? 'on' : '') + '" data-act="setTheme" data-id="' + c + '"><i style="width:12px;height:12px;border-radius:3px;background:' + c + ';display:inline-block"></i>' + c + '</button>').join('') +
-            '</div><div class="note" style="margin-top:12px">品牌色会影响按钮、链接与强调色，不会改变配色体系。</div>' }) +
+          K.panel({ title: '品牌色', body: '<div class="small mut" style="line-height:1.8">品牌色已上收到「全局 · 主题与入口」，三端共用一处设定，避免各端漂移。</div>' +
+            '<div style="margin-top:12px"><button class="btn" data-act="goTheme">' + I('sliders', 15) + '前往主题与入口</button></div>' }) +
           K.panel({ title: '页脚', body: '<div class="stack" style="gap:14px">' +
             UI.fInput({ label: '版权信息', value: s.footer, path: 'brand.site.footer' }) + '</div>' })
         + '</div>';
     },
     actions: {
       saveSite() { UI.toast('站点设置已保存'); },
-      setTheme(d) { Store.set('brand.site.theme', d.id, '品牌色'); UI.toast('品牌色已切换'); App.refresh(); }
+      goTheme() { App.go('g-theme'); }
     }
   };
 

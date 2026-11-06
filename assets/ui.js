@@ -294,8 +294,15 @@
     t.remove();
   }
 
+  /** 影响面提示：这次改动会落到哪些前端页面 */
+  function impact(list, label) {
+    if (!list || !list.length) return '';
+    return '<div class="impact"><span class="impact-k">' + esc(label || '影响前端') + '</span>' +
+      list.map((x) => '<span class="impact-i">' + esc(x) + '</span>').join('') + '</div>';
+  }
+
   window.UI = {
-    icon, esc, drawer, modal, confirm, toast, closeOverlay,
+    icon, esc, drawer, modal, confirm, toast, closeOverlay, impact,
     fInput, fArea, fSelect, fNum, fSwitch, fRange,
     table, lineChart, donut, sparkbars, avatar, pill, statusPill, copy
   };

@@ -546,3 +546,28 @@ table.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size
 /* focus visibility */
 :focus-visible { outline: 2px solid #7cb6ff; outline-offset: 2px; border-radius: 6px; }
 button:focus:not(:focus-visible) { outline: none; }
+
+/* impact chips */
+.impact { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 9px 11px; border-radius: 10px; background: #f4f8fe; border: 1px dashed #cfdff5; }
+.impact-k { font-size: 10.5px; color: var(--brand); font-weight: 500; margin-right: 2px; }
+.impact-i { font-size: 10.5px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+.cross { display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border-radius: 5px; background: rgba(11, 99, 229, .07); color: #0a56c8; font-size: 10px; }
+.readonly-bar { display: flex; align-items: center; gap: 8px; padding: 9px 14px; margin-bottom: 16px; border-radius: 10px; background: var(--amber-wash); border: 1px solid #f2dfba; color: #8a5a0c; font-size: 12px; }
+.role-menu { position: fixed; z-index: 75; width: 268px; background: #fff; border-radius: 14px; box-shadow: var(--shadow-pop); border: 1px solid var(--line); padding: 8px; }
+.role-menu .rm-h { padding: 8px 10px 6px; font-size: 10.5px; color: var(--ink-3); }
+.role-menu button { display: flex; gap: 9px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 9px; font-size: 12.5px; align-items: center; }
+.role-menu button:hover { background: #f5f9ff; }
+.role-menu button.on { background: var(--brand-wash); }
+.role-menu .rm-d { font-size: 10.5px; color: var(--ink-3); }
+.pv-live { position: relative; width: 100%; height: 100%; background: #fff; display: grid; place-items: center; }
+.pv-live iframe { border: 0; width: 390px; height: 844px; transform-origin: top left; display: block; }
+.pv-fallback { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: #f7fafd; font-size: 10px; color: #7d8a9e; line-height: 1.7; }
+.live-hint { display: flex; align-items: center; gap: 6px; padding: 6px 16px 0; font-size: 10.5px; color: var(--ink-3); }
+.live-hint i { width: 6px; height: 6px; border-radius: 50%; background: #0aa39a; }
+
+/* rail footer overflow */
+.rail-foot { align-items: center; }
+.rail-foot .who { min-width: 0; flex: 1; overflow: hidden; }
+.rail-foot .who b, .rail-foot .who span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rail-foot .ic { flex: none; }
+.navitem .count { flex: none; }

@@ -368,16 +368,14 @@
             UI.fInput({ label: '客服电话', value: s.servicePhone, path: 'employee.site.servicePhone' }) +
             UI.fInput({ label: '搜索框占位', value: s.searchPlaceholder, path: 'employee.site.searchPlaceholder' }) +
             '</div>' }) +
-          K.panel({ title: '主题', body: '<div class="chips">' +
-            [['warm', '暖橙（默认）', 'linear-gradient(135deg,#f5520a,#b93a05)'], ['blue', '北医蓝', 'linear-gradient(135deg,#0b63e5,#08356f)']].map((t) =>
-              '<button class="chip ' + (s.theme === t[0] ? 'on' : '') + '" data-act="setTheme" data-id="' + t[0] + '"><i style="width:14px;height:14px;border-radius:4px;background:' + t[2] + ';display:inline-block"></i>' + t[1] + '</button>').join('') +
-            '</div><div class="note" style="margin-top:12px">职工健康端沿用暖橙，与品牌站蓝区分场景。</div>' +
+          K.panel({ title: '主题', body: '<div class="small mut" style="line-height:1.8">职工端默认使用暖橙，可由「全局 · 主题与入口」统一切换为品牌蓝。</div>' +
+            '<div style="margin-top:12px"><button class="btn" data-act="goTheme">' + I('sliders', 15) + '前往主题与入口</button></div>' +
             '<div class="hairline"></div><div class="row"><span class="small mut">上次发布</span><b class="right small tnum">' + Store.db.meta.publishedAt + '</b></div>' }) +
         '</div>';
     },
     actions: {
       saveSite() { UI.toast('站点设置已保存'); },
-      setTheme(d) { Store.set('employee.site.theme', d.id, '主题'); UI.toast('主题已切换'); App.refresh(); }
+      goTheme() { App.go('g-theme'); }
     }
   };
 

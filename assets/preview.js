@@ -131,7 +131,7 @@
     let h = statusBar;
     h += '<div class="pv-hero" style="background:linear-gradient(165deg,#0d2a4d,#071a30);border-radius:0 0 24px 24px;padding-bottom:26px">' +
       '<div style="font-size:8px;letter-spacing:.18em;opacity:.55">PKU HEALTHCARE</div>' +
-      '<div class="ht" style="margin-top:6px">' + E(b.home.heroTitle) + '</div>' +
+      '<div class="ht" style="margin-top:6px">' + E((db.shared && db.shared.brand.slogan) || b.home.heroTitle) + '</div>' +
       '<div class="hs">' + E(b.home.heroSub) + '</div></div>';
     h += '<div class="pv-sec" style="margin-top:-14px"><div class="pv-card" style="padding:10px">' +
       '<div class="pv-kpi">' + b.home.stats.map((s) => '<div><b>' + s.value + '</b><span>' + E(s.label) + '</span></div>').join('') + '</div></div></div>';

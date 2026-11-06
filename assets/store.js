@@ -153,6 +153,35 @@
       return { version: db.meta.version, health: db.employee };
     },
 
+    /* ---------------- 角色与权限 ---------------- */
+    get roleId() { return (db.rbac && db.rbac.current) || 'super'; },
+    get role() {
+      const r = (db.rbac.roles || []).find((x) => x.id === this.roleId);
+      return r || (db.rbac.roles || [])[0] || { id: 'super', name: '超级管理员', perms: 'ALL' };
+    },
+    setRole(id) {
+      const r = db.rbac.roles.find((x) => x.id === id);
+      if (!r) return;
+      db.rbac.current = id;
+      this.persist();
+      this.emit();
+    },
+    /** level: 1 查看 / 2 编辑 / 3 发布 */
+    can(group, level) {
+      const need = level == null ? 1 : level;
+      const p = this.role.perms;
+      if (p === 'ALL') return true;
+      if (!group) return true;
+      const v = p[group] || 0;
+      return v >= need;
+    },
+    get canPublish() { return this.can('publish', 3); },
+    groupsForRole() {
+      const p = this.role.perms;
+      if (p === 'ALL') return null;
+      return p;
+    },
+
     get dirtyByApp() {
       const m = {};
       dirty.forEach((d) => { m[d.app] = (m[d.app] || 0) + 1; });
