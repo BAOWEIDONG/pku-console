@@ -571,3 +571,15 @@ button:focus:not(:focus-visible) { outline: none; }
 .rail-foot .who b, .rail-foot .who span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rail-foot .ic { flex: none; }
 .navitem .count { flex: none; }
+
+/* v3.1 app switcher + collapsible groups */
+.appswitch { display: grid; gap: 2px; }
+.appswitch button { padding: 7px 9px; font-size: 12.2px; }
+.appswitch .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.appswitch button.on { font-weight: 500; }
+.navgrp-h { width: 100%; text-align: left; cursor: pointer; border-radius: 6px; }
+.navgrp-h:hover { color: #9fb6d2; }
+.navgrp-h::after { display: none; }
+.navgrp.collapsed .navitem { display: none; }
+.rail-foot { width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid rgba(255,255,255,.07); border-radius: 0; }
+.rail-foot:hover { background: rgba(255,255,255,.04); }

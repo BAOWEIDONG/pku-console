@@ -36,23 +36,44 @@
     all: { name: '跨端', dot: '#0b63e5' }
   };
 
-  /* ---------------------------------------------------------- 融合导航 */
-  function buildNav() {
-    const navs = [];
-    navs.push({ group: '', items: [{ id: 'workbench', label: '工作台', icon: 'grid' }] });
-    (window.SHARED_NAV || []).forEach((g) => navs.push(g));
-    const push = (prefix, arr) => arr.forEach((g) => navs.push({ group: prefix + (g.group ? ' · ' + g.group : ''), items: g.items }));
-    push('减重营', window.NAV.versionall || []);
-    push('品牌站', window.NAV.pku || []);
-    push('职工健康', window.NAV.employee || []);
-    navs.push({ group: '平台', items: [
+  /* ---------------------------------------------------------- 应用导航 */
+  const APP_DEFS = [
+    { id: 'shared', label: '统一配置', dot: '#0b63e5', home: 'g-brand', desc: '跨端共用' },
+    { id: 'versionall', label: '减重营', dot: '#3f8cff', home: 'v-dashboard' },
+    { id: 'pku', label: '品牌站', dot: '#0aa39a', home: 'b-dashboard' },
+    { id: 'employee', label: '职工健康', dot: '#c8871a', home: 'e-dashboard' },
+    { id: 'system', label: '平台', dot: '#94a7c0', home: 'workbench' }
+  ];
+  // 已经上收到「统一配置」的页面，不再在各应用菜单里重复出现
+  const DEDUP = ['v-accounts', 'b-hospitals', 'b-site', 'e-site'];
+
+  function filterNav(arr) {
+    return arr.map((g) => ({ group: g.group, items: g.items.filter((it) => DEDUP.indexOf(it.id) < 0) }))
+      .filter((g) => g.items.length);
+  }
+
+  const APP_NAV = {
+    shared: window.SHARED_NAV || [],
+    versionall: filterNav(window.NAV.versionall || []),
+    pku: filterNav(window.NAV.pku || []),
+    employee: filterNav(window.NAV.employee || []),
+    system: [{ group: '', items: [
+      { id: 'workbench', label: '工作台', icon: 'grid' },
       { id: 's-publish', label: '发布中心', icon: 'send' },
       { id: 's-logs', label: '操作日志', icon: 'clock' },
       { id: 's-settings', label: '系统设置', icon: 'settings' }
-    ] });
-    return navs;
+    ] }]
+  };
+
+  function appOf(route) {
+    if (route === 'workbench' || route.indexOf('s-') === 0) return 'system';
+    const g = groupOf(route);
+    if (g.indexOf('shared.') === 0 || g === 'accounts' || g === 'roles') return 'shared';
+    if (route.indexOf('v-') === 0) return 'versionall';
+    if (route.indexOf('b-') === 0) return 'pku';
+    if (route.indexOf('e-') === 0) return 'employee';
+    return state.app;
   }
-  const NAV_ALL = buildNav();
 
   const ROUTE_META = (route) => PAGES[route] || {};
   function visible(route) {
@@ -66,7 +87,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {},
+    route: 'workbench', ctx: {}, app: 'system', collapsed: {},
     previewOpen: true, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
@@ -77,18 +98,21 @@
   /* ---------------------------------------------------------- rail */
   function railHTML() {
     const role = Store.role;
+    const nav = APP_NAV[state.app] || [];
     return '<div class="rail-inner">' +
       '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
       '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
-      '<div style="margin:0 14px 10px;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07)">' +
-        '<div style="font-size:10px;color:#6f88a8;letter-spacing:.04em">当前角色</div>' +
-        '<button data-act="roleMenu" style="display:flex;align-items:center;gap:7px;width:100%;margin-top:3px;color:#e8f1fd;font-size:12.5px">' +
-        '<i style="width:6px;height:6px;border-radius:50%;background:' + dot(role.color) + '"></i>' + E(role.name) +
-        '<span style="margin-left:auto;color:#7f97b9">' + I('down', 13) + '</span></button></div>' +
-      '<nav class="nav">' + NAV_ALL.map((g) => {
+      '<div class="appswitch">' + APP_DEFS.map((a) =>
+        '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '">' +
+        '<i class="dot" style="background:' + a.dot + '"></i><span>' + a.label + '</span></button>').join('') + '</div>' +
+      '<nav class="nav">' + nav.map((g) => {
         const items = g.items.filter((it) => visible(it.id));
         if (!items.length) return '';
-        return '<div class="navgrp">' + (g.group ? '<div class="navgrp-h">' + E(g.group) + '</div>' : '') +
+        const key = g.group || '_top';
+        const cl = state.collapsed[key];
+        return '<div class="navgrp ' + (cl ? 'collapsed' : '') + '">' +
+          (g.group ? '<button class="navgrp-h" data-collapse="' + key + '">' + E(g.group) +
+            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:auto;opacity:.55;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
           items.map((it) => {
             const cnt = navCount(it.id);
             const lvl = Store.can(groupOf(it.id), 2);
@@ -98,8 +122,9 @@
               (lvl ? '' : '<span class="count" style="background:transparent;color:#5f7797;font-size:9px">只读</span>') + '</button>';
           }).join('') + '</div>';
       }).join('') + '</nav>' +
-      '<div class="rail-foot"><div class="ava">' + E(role.name.slice(0, 1)) + '</div><div class="who"><b>' + E(Store.role.name) + '</b><span>' + E(Store.role.desc) + '</span></div>' +
-      '<button class="ic" data-act="s-settings" title="设置">' + I('settings', 16) + '</button></div></div>';
+      '<button class="rail-foot" data-act="roleMenu">' +
+      '<div class="ava">' + E(role.name.slice(0, 1)) + '</div><div class="who"><b>' + E(role.name) + '</b><span>' + E(role.desc) + '</span></div>' +
+      '<span class="ic">' + I('refresh', 14) + '</span></button></div>';
   }
   function dot(c) { return c === 'green' ? '#0aa39a' : c === 'violet' ? '#8b7cf6' : c === 'amber' ? '#c8871a' : c === 'grey' ? '#94a7c0' : '#3f8cff'; }
   function navCount(route) {
@@ -204,6 +229,7 @@
       state.history.push({ route: state.route, ctx: state.ctx });
       if (state.history.length > 30) state.history.shift();
       state.route = route;
+      state.app = appOf(route);
       state.ctx = ctx || {};
       const page = currentPage();
       const app = page.app && page.app !== 'all' ? page.app : state.previewApp;
@@ -344,6 +370,19 @@
   const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|impact|search|filter|tab|seg|pickRole|previewRole)/;
 
   document.addEventListener('click', (e) => {
+    const sw = e.target.closest('[data-app]');
+    if (sw) {
+      const def = APP_DEFS.find((a) => a.id === sw.dataset.app);
+      if (def) App.go(def.home);
+      return;
+    }
+    const col = e.target.closest('[data-collapse]');
+    if (col) {
+      const k = col.dataset.collapse;
+      if (state.collapsed[k]) delete state.collapsed[k]; else state.collapsed[k] = true;
+      render(true);
+      return;
+    }
     const nav = e.target.closest('[data-nav]');
     if (nav) { App.go(nav.dataset.nav); return; }
     const tg = e.target.closest('[data-toggle]');
@@ -423,7 +462,7 @@
     if (!h) return;
     const [route, qs] = h.split('?');
     if (PAGES[route]) {
-      state.route = route; state.ctx = {};
+      state.route = route; state.app = appOf(route); state.ctx = {};
       (qs || '').split('&').filter(Boolean).forEach((kv) => {
         const [k, v] = kv.split('=');
         state.ctx[decodeURIComponent(k)] = decodeURIComponent(v || '');

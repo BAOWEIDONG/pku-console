@@ -497,7 +497,7 @@
 
   window.SEED = {
     meta: {
-      version: '3.0.0',
+      version: '3.1.0',
       env: '生产环境',
       publishedAt: '2026-11-05 18:22',
       apps: [
