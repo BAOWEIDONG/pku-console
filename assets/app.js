@@ -54,8 +54,8 @@
     ],
     customer: [
       { group: '', items: [{ id: 'trd-orders', label: '订单中心', icon: 'file' }] },
-      { group: '履约', items: [{ id: 'v-fulfill', label: '履约工作台', icon: 'truck' }, { id: 'v-claims', label: '领奖订单', icon: 'gift' }, { id: 'v-exchanges', label: '积分兑换', icon: 'package' }] },
-      { group: '结算', items: [{ id: 'trd-settle', label: '结算与对账', icon: 'chart' }] },
+      { group: '履约', items: [{ id: 'v-fulfill', label: '履约工作台', icon: 'truck' }, { id: 'trd-sla', label: '超时与升级', icon: 'clock' }, { id: 'trd-slots', label: '时段与占号', icon: 'calendar' }, { id: 'v-claims', label: '领奖订单', icon: 'gift' }, { id: 'v-exchanges', label: '积分兑换', icon: 'package' }] },
+      { group: '结算', items: [{ id: 'trd-settle', label: '结算与对账', icon: 'chart' }, { id: 'trd-diff', label: '结算差异', icon: 'x' }] },
       { group: '客户', items: [{ id: 'g-accounts', label: '客户账号', icon: 'users' }, { id: 'e-orgs', label: '企业客户与权益', icon: 'building' }] }
     ],
     content: [
