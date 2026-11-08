@@ -271,7 +271,7 @@
         '<div class="grid g-2-1">' +
           K.panel({ title: '价格总表', sub: '标准版口径', flush: true, body: UI.table([
             { label: '服务', render: (s) => '<div><div class="strong">' + E(s.name) + '</div><div class="small muted">' + E(s.cat) + '</div></div>' },
-            { label: '成本', align: 'right', render: (s) => '<span class="tnum muted">' + money(s.pricing[0].cost) + '</span>' },
+            { label: '成本', align: 'right', render: (s) => '<span class="tnum muted">' + (window.Engine ? Engine.mask('cost', money(s.pricing[0].cost)) : money(s.pricing[0].cost)) + '</span>' },
             { label: '结算价', align: 'right', render: (s) => '<span class="tnum">' + money(s.pricing[0].settle) + '</span>' },
             { label: '挂牌价', align: 'right', render: (s) => '<b class="tnum">' + money(s.pricing[0].list) + '</b>' },
             { label: '协议价', align: 'right', render: (s) => '<span class="tnum">' + money(s.pricing[0].contract) + '</span>' },
