@@ -36,44 +36,48 @@
     all: { name: '跨端', dot: '#0b63e5' }
   };
 
-  /* ---------------------------------------------------------- 应用导航 */
-  const APP_DEFS = [
-    { id: 'shared', label: '统一配置', dot: '#0b63e5', home: 'g-brand', desc: '跨端共用' },
-    { id: 'versionall', label: '减重营', dot: '#3f8cff', home: 'v-dashboard' },
-    { id: 'pku', label: '品牌站', dot: '#0aa39a', home: 'b-dashboard' },
-    { id: 'employee', label: '职工健康', dot: '#c8871a', home: 'e-dashboard' },
-    { id: 'system', label: '平台', dot: '#94a7c0', home: 'workbench' }
+  /* ---------------------------------------------------------- 业务工作台 */
+  const WORKBENCHES = [
+    { id: 'service', label: '服务与商品', dot: '#0b63e5', home: 'svc-catalog' },
+    { id: 'customer', label: '客户与交易', dot: '#0aa39a', home: 'trd-orders' },
+    { id: 'content', label: '内容与渠道', dot: '#6b5ce0', home: 'chn-channels' },
+    { id: 'program', label: '项目运营', dot: '#3f8cff', home: 'v-dashboard' },
+    { id: 'platform', label: '平台', dot: '#94a7c0', home: 'workbench' }
   ];
-  // 已经上收到「统一配置」的页面，不再在各应用菜单里重复出现
-  const DEDUP = ['v-accounts', 'b-hospitals', 'b-site', 'e-site'];
 
-  function filterNav(arr) {
-    return arr.map((g) => ({ group: g.group, items: g.items.filter((it) => DEDUP.indexOf(it.id) < 0) }))
-      .filter((g) => g.items.length);
-  }
-
-  const APP_NAV = {
-    shared: window.SHARED_NAV || [],
-    versionall: filterNav(window.NAV.versionall || []),
-    pku: filterNav(window.NAV.pku || []),
-    employee: filterNav(window.NAV.employee || []),
-    system: [{ group: '', items: [
-      { id: 'workbench', label: '工作台', icon: 'grid' },
-      { id: 's-publish', label: '发布中心', icon: 'send' },
-      { id: 's-logs', label: '操作日志', icon: 'clock' },
-      { id: 's-settings', label: '系统设置', icon: 'settings' }
-    ] }]
+  const NAV_OF = {
+    service: [
+      { group: '', items: [{ id: 'svc-catalog', label: '服务商品', icon: 'package' }] },
+      { group: '定价', items: [{ id: 'svc-pricing', label: '价格与政策', icon: 'target' }, { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }] },
+      { group: '履约基础', items: [{ id: 'g-orgs', label: '服务机构', icon: 'hospital' }, { id: 'e-booking', label: '预约设置', icon: 'calendar' }, { id: 'e-dashboard', label: '服务概览', icon: 'grid' }] }
+    ],
+    customer: [
+      { group: '', items: [{ id: 'trd-orders', label: '订单中心', icon: 'file' }] },
+      { group: '履约', items: [{ id: 'v-fulfill', label: '履约工作台', icon: 'truck' }, { id: 'v-claims', label: '领奖订单', icon: 'gift' }, { id: 'v-exchanges', label: '积分兑换', icon: 'package' }] },
+      { group: '结算', items: [{ id: 'trd-settle', label: '结算与对账', icon: 'chart' }] },
+      { group: '客户', items: [{ id: 'g-accounts', label: '客户账号', icon: 'users' }, { id: 'e-orgs', label: '企业客户与权益', icon: 'building' }] }
+    ],
+    content: [
+      { group: '渠道', items: [{ id: 'chn-channels', label: '渠道与触点', icon: 'layers' }] },
+      { group: '内容', items: [{ id: 'g-content', label: '内容中心', icon: 'image' }, { id: 'e-content', label: '职工端内容', icon: 'video' }, { id: 'e-qa', label: '深度问答', icon: 'message' }] },
+      { group: '品牌站页面', items: [{ id: 'b-home', label: '首页内容', icon: 'layout' }, { id: 'b-about', label: '品牌页', icon: 'file' }, { id: 'b-departments', label: '学科与科室', icon: 'layers' }, { id: 'b-team', label: '师资团队', icon: 'stethoscope' }, { id: 'b-camp', label: '健康营展示页', icon: 'spark' }] },
+      { group: '职工端页面', items: [{ id: 'e-modules', label: '模块与分类', icon: 'grid' }] },
+      { group: '全局', items: [{ id: 'g-brand', label: '品牌与主体', icon: 'spark' }, { id: 'g-theme', label: '主题与入口', icon: 'sliders' }] }
+    ],
+    program: [
+      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-config', label: '五好配置', icon: 'sliders' }] },
+      { group: '减重营 · 营期', items: [{ id: 'v-dashboard', label: '运营概览', icon: 'grid' }, { id: 'v-camps', label: '营期管理', icon: 'calendar' }, { id: 'v-students', label: '学员管理', icon: 'users' }, { id: 'v-records', label: '打卡记录', icon: 'check' }, { id: 'v-annotations', label: '批注工作台', icon: 'message' }, { id: 'v-attendance', label: '出勤看板', icon: 'layout' }, { id: 'v-content', label: '活动与课程', icon: 'video' }, { id: 'v-messages', label: '消息与公告', icon: 'bell' }] },
+      { group: '减重营 · 规则', items: [{ id: 'v-rules', label: '打卡规则', icon: 'sliders' }, { id: 'v-points-rules', label: '积分规则', icon: 'target' }, { id: 'v-metrics', label: '健康指标库', icon: 'activity' }, { id: 'v-questionnaire', label: '入营问卷', icon: 'file' }, { id: 'v-activities', label: '活动与入口', icon: 'spark' }, { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' }, { id: 'v-products', label: '积分商城', icon: 'package' }, { id: 'v-badges', label: '徽章体系', icon: 'medal' }, { id: 'v-ranking', label: '排行榜', icon: 'star' }] },
+      { group: '减重营 · 报告', items: [{ id: 'v-stats', label: '营期统计', icon: 'chart' }, { id: 'v-report', label: '结营报告', icon: 'file' }, { id: 'v-enterprise', label: '企业健康报告', icon: 'building' }, { id: 'v-supervisor', label: '督导总览', icon: 'eye' }] }
+    ],
+    platform: [
+      { group: '', items: [{ id: 'workbench', label: '工作台', icon: 'grid' }, { id: 's-publish', label: '发布中心', icon: 'send' }, { id: 's-logs', label: '操作日志', icon: 'clock' }, { id: 'g-roles', label: '角色与权限', icon: 'lock' }, { id: 's-settings', label: '系统设置', icon: 'settings' }] }
+    ]
   };
 
-  function appOf(route) {
-    if (route === 'workbench' || route.indexOf('s-') === 0) return 'system';
-    const g = groupOf(route);
-    if (g.indexOf('shared.') === 0 || g === 'accounts' || g === 'roles') return 'shared';
-    if (route.indexOf('v-') === 0) return 'versionall';
-    if (route.indexOf('b-') === 0) return 'pku';
-    if (route.indexOf('e-') === 0) return 'employee';
-    return state.app;
-  }
+  const ROUTE_WB = {};
+  Object.keys(NAV_OF).forEach((wb) => NAV_OF[wb].forEach((g) => g.items.forEach((it) => { ROUTE_WB[it.id] = wb; })));
+  const wbOf = (route) => ROUTE_WB[route] || 'service';
 
   const ROUTE_META = (route) => PAGES[route] || {};
   function visible(route) {
@@ -87,7 +91,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {}, app: 'system', collapsed: {},
+    route: 'workbench', ctx: {}, app: 'platform', collapsed: {},
     previewOpen: true, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
@@ -98,11 +102,11 @@
   /* ---------------------------------------------------------- rail */
   function railHTML() {
     const role = Store.role;
-    const nav = APP_NAV[state.app] || [];
+    const nav = NAV_OF[state.app] || NAV_OF.platform;
     return '<div class="rail-inner">' +
       '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
       '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
-      '<div class="appswitch">' + APP_DEFS.map((a) =>
+      '<div class="appswitch">' + WORKBENCHES.map((a) =>
         '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '">' +
         '<i class="dot" style="background:' + a.dot + '"></i><span>' + a.label + '</span></button>').join('') + '</div>' +
       '<nav class="nav">' + nav.map((g) => {
@@ -138,9 +142,10 @@
   /* ---------------------------------------------------------- topbar */
   function topbarHTML() {
     const page = currentPage();
+    const wb = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[4];
     const app = APPS[page.app || 'all'];
     const dirty = Store.dirtyCount;
-    return '<div class="crumb"><span style="display:inline-flex;align-items:center;gap:6px"><i style="width:6px;height:6px;border-radius:50%;background:' + app.dot + '"></i>' + E(app.name) + '</span>' +
+    return '<div class="crumb"><span style="display:inline-flex;align-items:center;gap:6px"><i style="width:6px;height:6px;border-radius:50%;background:' + wb.dot + '"></i>' + E(wb.label) + '</span>' +
       '<span class="sep">/</span><b>' + E(page.title || '') + '</b>' +
       (Store.role.perms === 'ALL' ? '' : '<span class="pill grey" style="margin-left:6px;height:18px">' + E(Store.role.name) + '</span>') + '</div>' +
       '<div class="top-actions">' +
@@ -237,7 +242,7 @@
       state.history.push({ route: state.route, ctx: state.ctx });
       if (state.history.length > 30) state.history.shift();
       state.route = route;
-      state.app = appOf(route);
+      state.app = wbOf(route);
       state.ctx = ctx || {};
       const page = currentPage();
       const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
@@ -351,7 +356,7 @@
         filtered = items.filter((i) => !q || (i.title + i.sub + i.route).toLowerCase().indexOf(q) >= 0);
         listEl.innerHTML = filtered.length ? filtered.map((i, k) =>
           '<button class="cmdk-i ' + (k === sel ? 'sel' : '') + '" data-r="' + i.route + '">' + I('chevron', 14) +
-          '<span>' + E(i.title) + '</span><span class="k">' + E(APPS[i.app].name) + '</span></button>').join('')
+          '<span>' + E(i.title) + '</span><span class="k">' + E((WORKBENCHES.find((w) => w.id === wbOf(i.route)) || {}).label || '') + '</span></button>').join('')
           : '<div class="empty">没有匹配的页面</div>';
       }
       paint();
@@ -380,7 +385,7 @@
   document.addEventListener('click', (e) => {
     const sw = e.target.closest('[data-app]');
     if (sw) {
-      const def = APP_DEFS.find((a) => a.id === sw.dataset.app);
+      const def = WORKBENCHES.find((a) => a.id === sw.dataset.app);
       if (def) App.go(def.home);
       return;
     }
@@ -471,7 +476,7 @@
     if (!h) return;
     const [route, qs] = h.split('?');
     if (PAGES[route]) {
-      state.route = route; state.app = appOf(route); state.ctx = {};
+      state.route = route; state.app = wbOf(route); state.ctx = {};
       (qs || '').split('&').filter(Boolean).forEach((kv) => {
         const [k, v] = kv.split('=');
         state.ctx[decodeURIComponent(k)] = decodeURIComponent(v || '');
