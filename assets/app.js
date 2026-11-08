@@ -28,7 +28,7 @@
     's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops',
     'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
     'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
-    'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'svc-360': 'e.services'
+    'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services'
   };
   const groupOf = (route) => G[route] || (PAGES[route] && PAGES[route].grp) || 'v.ops';
 
@@ -207,6 +207,7 @@
     insight: [
       { group: '经营', items: [
         { id: 'g-insights', label: '经营洞察', icon: 'chart' },
+        { id: 'g-depth', label: '模块复盘', icon: 'target' },
         { id: 'g-coverage', label: '前端覆盖矩阵', icon: 'target' },
         { id: 'rpt-report', label: '报表与口径', icon: 'file' }
       ] },

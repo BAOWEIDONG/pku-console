@@ -1224,6 +1224,58 @@
     });
   }
 
+  /* ============================================================== MODULE REVIEW */
+  const MODULES = [
+    { id: 'command', name: '指挥', route: 'workbench', icon: 'grid', score: 92, own: ['跨端漏斗', '作战队列', '风险雷达', '发布列车'], shared: ['变更影响', '发布中心', '渠道图谱'], next: '补企业 / 营期分组指挥视图，让区域负责人只看自己盘子' },
+    { id: 'growth', name: '增长', route: 'chn-map', icon: 'spark', score: 88, own: ['渠道图谱', '品牌站 8 页', '职工端 6 页', '内容中心'], shared: ['共享资产', '消息模板', '触达旅程'], next: '补内容 A/B 与 SEO / 分享卡，把“投放”升级为“实验”' },
+    { id: 'catalog', name: '商品', route: 'svc-catalog', icon: 'package', score: 94, own: ['SPU / SKU / 价格', '服务包', '服务 360', '机构与时段'], shared: ['规则模板', '共享资产', '权益引擎'], next: '补合同价审批流与按企业差异定价，避免协议价手工维护' },
+    { id: 'trade', name: '交易', route: 'trd-orders', icon: 'file', score: 86, own: ['订单中心', '预约履约', '结算对账', '客户 360'], shared: ['权益核销', '客户触达', '服务 360'], next: '补退款自动冲销与结算争议工单，减少跨系统对账' },
+    { id: 'program', name: '项目', route: 'fg-overview', icon: 'layers', score: 90, own: ['五好生活', '28 天减重营', '打卡与激励', '结营报告'], shared: ['项目模板', '规则模板', '消息旅程'], next: '补营期 cohort 对比与自动复盘，模板复制后能一键生成下一期' },
+    { id: 'shared', name: '共享', route: 'lib-assets', icon: 'link', score: 96, own: ['资产库', '消息模板', '旅程', '权益 / 规则 / 模板'], shared: ['关系图谱', '关联缺口'], next: '补共享对象的引用锁与批量替换，避免删除时误伤业务' },
+    { id: 'insight', name: '洞察', route: 'g-insights', icon: 'chart', score: 80, own: ['经营洞察', '覆盖矩阵', '渠道数据', '健康结果'], shared: ['关系图谱', '指标口径'], next: '补渠道归因与 LTV / CAC 联动，让“看到”能直接生成动作' },
+    { id: 'platform', name: '平台', route: 's-publish', icon: 'settings', score: 84, own: ['发布中心', '影响分析', 'RBAC', '操作日志'], shared: ['变更队列', '快照回滚'], next: '补按企业 / 人群灰度发布与发布审批流，降低全量风险' }
+  ];
+
+  P['g-depth'] = {
+    app: 'all', title: '模块复盘', sub: '八个工作区的深度、复用与下一步',
+    grp: 'shared.content', papp: 'employee', preview: 'emp-home',
+    render() {
+      ensure();
+      const avg = Math.round(MODULES.reduce((n, m) => n + m.score, 0) / MODULES.length);
+      return K.head('模块复盘', '不是“页面够不够”，而是每个模块是否形成了可复用、可关联、可闭环的能力',
+        '<button class="btn" data-act="depthExport">' + I('download', 15) + '导出复盘报告</button>' +
+        '<button class="btn primary" data-act="go" data-id="g-gaps">' + I('target', 15) + '查看关联缺口</button>', 'INSIGHT / MODULE REVIEW') +
+        '<div class="vsummary">' +
+          '<div class="vsum-card"><span>工作区</span><b>8</b><em>103 个后台页面</em></div>' +
+          '<div class="vsum-card ok"><span>平均深度</span><b>' + avg + '</b><em>满分 100</em></div>' +
+          '<div class="vsum-card"><span>共享能力</span><b>6</b><em>资产 / 消息 / 权益 / 规则 / 模板 / 图谱</em></div>' +
+          '<div class="vsum-card warn"><span>下一步</span><b>8</b><em>每域 1 个高价值动作</em></div>' +
+        '</div>' +
+        '<div class="depth-grid">' + MODULES.map((m) =>
+          '<section class="depth-card"><header><span class="depth-ic">' + I(m.icon, 17) + '</span>' +
+            '<div><b>' + E(m.name) + '工作区</b><span>' + m.score + ' / 100 · 深度评分</span></div>' +
+            '<button class="vmini" data-act="go" data-id="' + m.route + '">' + I('chevron', 12) + '进入</button></header>' +
+            '<div class="depth-bar"><i style="width:' + m.score + '%"></i></div>' +
+            '<div class="depth-cols"><div><em>已有能力</em>' + m.own.map((x) => '<span>' + E(x) + '</span>').join('') + '</div>' +
+              '<div><em>已接共享</em>' + m.shared.map((x) => '<span class="shared">' + E(x) + '</span>').join('') + '</div></div>' +
+            '<div class="depth-next">' + I('up', 12) + '<div><b>下一步</b><span>' + E(m.next) + '</span></div></div>' +
+          '</section>').join('') + '</div>' +
+        '<div class="depth-priority"><header><div><h3>下一阶段优先级</h3><p>按业务价值 / 实现成本排序</p></div></header>' +
+          [['P0', '权益与结算打通', '券核销进入结算口径，避免权益成本悬空', 'lib-benefits'], ['P0', '灰度发布', '按企业与人群灰度，降低全量配置风险', 's-publish'], ['P1', '渠道归因', '从曝光到预约归因，指导预算分配', 'g-insights'], ['P1', '营期自动复盘', '结营后自动生成对比与下一期建议', 'v-stats']].map((x) =>
+            '<button data-act="go" data-id="' + x[3] + '"><span class="pill ' + (x[0] === 'P0' ? 'red' : 'amber') + '">' + x[0] + '</span><div><b>' + E(x[1]) + '</b><span>' + E(x[2]) + '</span></div>' + I('chevron', 12) + '</button>').join('') +
+        '</div>';
+    },
+    actions: {
+      depthExport() {
+        const csv = ['工作区,深度评分,已有能力,共享能力,下一步'].concat(MODULES.map((m) => [m.name, m.score, m.own.join(' / '), m.shared.join(' / '), m.next].join(','))).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
+        a.download = 'pku-console-module-review.csv'; a.click();
+        UI.toast('模块复盘已导出');
+      }
+    }
+  };
+
   /* live filter for searchable lists */
   document.addEventListener('input', (e) => {
     const input = e.target.closest('[data-live-filter]');
