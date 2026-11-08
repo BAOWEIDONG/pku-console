@@ -146,8 +146,8 @@
       if (b) { b.status = to === 'completed' ? 'completed' : to === 'settled' ? 'completed' : to; }
     }
     if (o.kind === '商品') {
-      if (to === 'paid' && window.Engine.stockMove) Engine.stockMove(o.sku, -1, '订单 ' + o.id + ' 支付');
-      if (to === 'cancelled' && window.Engine.stockMove) Engine.stockMove(o.sku, 1, '订单 ' + o.id + ' 取消回补');
+      if (to === 'paid') { if (Engine.consumeReserve) Engine.consumeReserve(o.id); if (window.Engine.stockMove) Engine.stockMove(o.sku, -1, '订单 ' + o.id + ' 支付'); }
+      if (to === 'cancelled') { if (Engine.releaseReserve) Engine.releaseReserve(o.id); if (window.Engine.stockMove) Engine.stockMove(o.sku, 1, '订单 ' + o.id + ' 取消回补'); }
     }
     if (o.kind === '服务预约') {
       if (to === 'confirmed' && Engine.holdSlot) {
