@@ -11,7 +11,6 @@
   /* ------------------------------------------------------- 工作台 */
   P['workbench'] = {
     app: 'all', title: '工作台', sub: '三端待办与发布状态一览',
-    preview: 'pku-home',
     render() {
       const db = Store.db, d = new Date();
       const hour = d.getHours();
