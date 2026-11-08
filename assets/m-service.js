@@ -73,7 +73,7 @@
       const s = list.find((x) => x.id === (ctx && ctx.id)) || list[0];
       const i = list.indexOf(s);
       const st = P['svc-detail'].state;
-      const tabs = [{ id: 'basic', label: '基本信息' }, { id: 'price', label: '价格与 SKU' }, { id: 'rules', label: '履约规则' }, { id: 'assets', label: '素材与长图' }, { id: 'channels', label: '投放渠道' }];
+      const tabs = [{ id: 'basic', label: '基本信息' }, { id: 'price', label: '价格与 SKU' }, { id: 'booking', label: '预约配置' }, { id: 'rules', label: '履约规则' }, { id: 'assets', label: '素材与长图' }, { id: 'channels', label: '投放渠道' }];
       const val = window.Engine ? Engine.validateService(s) : [];
       const errs = val.filter((x) => x[0] === 'error');
       return (errs.length ? '<div class="readonly-bar">' + I('x', 14) + '<b>发布校验未通过</b>：' + errs.map((x) => E(x[1])).join('；') + '</div>' : '') +
@@ -142,6 +142,27 @@
           { label: '税点', w: '70px', render: (p) => '<input class="input tnum" style="height:30px" value="' + p.tax + '" data-set="employee.services.' + i + '.pricing.' + UI.ix(s.pricing, p) + '.tax" data-kind="num">' }
         ], s.pricing.map((p) => Object.assign({ _id: p.id + 'e' }, p))) +
         '<div class="note" style="margin-top:12px">改价会进入待发布队列。已成交订单按快照结算，不受影响。</div>';
+    }
+    if (tab === 'booking') {
+      const b = s.booking || {};
+      return '<div class="small mut" style="margin-bottom:12px">号源按资源配置：医师、床位、设备、咨询师，容量不同，规则也不同。</div>' +
+        '<div class="formsec"><h4>可预约人群</h4><div class="grid g-3" style="gap:12px">' +
+        UI.fNum({ label: '最小年龄', value: b.ageMin, path: 'employee.services.' + i + '.booking.ageMin' }) +
+        UI.fNum({ label: '最大年龄', value: b.ageMax, path: 'employee.services.' + i + '.booking.ageMax' }) +
+        UI.fSelect({ label: '性别限制', value: b.gender, options: [{ v: 'any', l: '不限' }, { v: 'male', l: '仅男性' }, { v: 'female', l: '仅女性' }], path: 'employee.services.' + i + '.booking.gender' }) + '</div>' +
+        '<div class="field"><label>适用人群</label><div class="chips">' + (b.audience || []).map((a) => '<span class="chip on">' + E(a) + '</span>').join('') + '<span class="chip" style="border-style:dashed">+ 增加人群</span></div>' +
+        '<div class="hint">不满足人群条件的员工在客户端看不到该服务。</div></div></div>' +
+        '<div class="formsec"><h4>号源</h4>' +
+        UI.fSelect({ label: '资源类型', value: b.resource, options: ['医师', '医师 + 设备', '内镜设备 + 麻醉', '床位', '睡眠监测床位', '营养师', '心理咨询师', '健康管理师', '培训师 + 场地', '专属管家', '通用'], path: 'employee.services.' + i + '.booking.resource' }) +
+        UI.fNum({ label: '每日号源', value: b.slotsPerDay, path: 'employee.services.' + i + '.booking.slotsPerDay' }) +
+        '</div>' +
+        '<div class="formsec"><h4>前置条件</h4>' +
+        UI.fSwitch({ label: '需填写问卷', value: b.preSurvey, path: 'employee.services.' + i + '.booking.preSurvey' }) +
+        UI.fSwitch({ label: '需空腹提醒', value: b.needFast, path: 'employee.services.' + i + '.booking.needFast' }) +
+        UI.fSwitch({ label: '需出报告', value: b.needReport, path: 'employee.services.' + i + '.booking.needReport' }) +
+        UI.fInput({ label: '须知', value: b.note, path: 'employee.services.' + i + '.booking.note' }) +
+        '</div>' + UI.impact(['职工端 · 预约表单与可见性', '号源与排班']) +
+        '<div class="note" style="margin-top:12px">当前规则：' + b.ageMin + '–' + b.ageMax + ' 岁 · ' + (b.gender === 'any' ? '不限性别' : b.gender === 'female' ? '仅女性' : '仅男性') + ' · 每日 ' + b.slotsPerDay + ' 个号源</div>';
     }
     if (tab === 'rules') {
       const r = s.rules;
@@ -223,6 +244,7 @@
           { label: '商品', w: '250px', render: (g) => '<div class="cellflex"><img src="' + (window.IMG || {})['g' + ((String(g.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 10 + 1)] + '" style="width:44px;height:32px;border-radius:8px;object-fit:cover;flex:none" alt=""><div style="min-width:0"><div class="strong clip">' + E(g.name) + '</div><div class="small muted">' + E(g.cat) + '</div></div></div>' },
           { label: '售价 / 结算', align: 'right', render: (g) => '<b class="tnum">¥' + g.price + '</b><div class="small muted tnum">结算 ¥' + g.settle + '</div>' },
           { label: '毛利', align: 'right', render: (g) => '<span class="pill ' + ((g.settle - g.cost) / g.settle < 0.3 ? 'amber' : 'green') + '">' + Math.round((g.settle - g.cost) / g.settle * 100) + '%</span>' },
+          { label: '规格 / 效期', render: (g) => '<div class="small">' + E((g.specs || []).map((x) => x.name).join(' / ') || g.spec || '—') + '</div><div class="small muted">' + E(g.shelfLife || '—') + ' · ' + E(g.storage || '') + '</div>' } +
           { label: '库存', align: 'right', render: (g) => '<span class="tnum" style="color:' + (g.stock === 0 ? '#b83c2c' : 'inherit') + '">' + g.stock + '</span>' },
           { label: '适用 / 禁忌', render: (g) => '<div class="small">' + E(g.fit) + '</div><div class="small" style="color:#b83c2c">' + E((g.avoid || []).join(' / ') || '') + '</div>' },
           { label: '挂载', render: (g) => '<span class="small muted">' + E((g.attach || ['meal']).map((x) => x === 'day' ? '食谱' : x === 'planner' ? '搭配器' : '餐次').join(' / ')) + '</span>' },
