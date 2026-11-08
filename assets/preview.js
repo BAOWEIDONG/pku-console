@@ -250,6 +250,7 @@
     h += '<div class="pv-sec" style="margin-top:-10px"><div class="pv-card">' +
       '<div style="font-size:9px;line-height:1.65;color:#45526a">' + E(s.intro) + '</div>' +
       '<div class="row" style="gap:6px;margin-top:8px">' + s.tags.map((t) => '<span class="pv-pill">' + E(t) + '</span>').join('') + '</div></div></div>';
+    if (s.introBlocks) h += '<div class="pv-sec"><h5>适合谁 · 包含什么 · 注意事项</h5><div class="pv-card">' + s.introBlocks.map((b) => '<div style="padding:6px 0"><div style="font-size:9px;font-weight:600">' + E(b.title) + '</div><div style="font-size:8.5px;color:#62708a;line-height:1.6;margin-top:2px">' + E(b.body) + '</div></div>').join('') + '</div></div>';
     h += '<div class="pv-sec"><h5>服务信息</h5><div class="pv-card">' +
       '<div class="pv-row"><div class="b">服务时长</div><div class="s" style="margin-left:auto">' + E(s.duration) + '</div></div>' +
       '<div class="pv-row"><div class="b">报告时效</div><div class="s" style="margin-left:auto">' + E(s.resp) + '</div></div>' +
