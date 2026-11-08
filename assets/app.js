@@ -716,6 +716,10 @@
       Store.set(path, !cur, '开关');
       tg.classList.toggle('on', !cur);
       App.onConfigChange();
+      if (window.V5) {
+        const imp = V5.impactOf([{ path: path }]);
+        if (imp.pages.length) UI.toast('已标记待发布 · 影响 ' + imp.pages.length + ' 个页面（' + imp.pages.slice(0, 2).join('、') + '）');
+      }
       App.refresh(true);
       return;
     }

@@ -57,6 +57,10 @@
         el.style.display = on ? '' : 'none';
         el.setAttribute('data-pku-hidden', on ? '0' : '1');
       });
+      document.querySelectorAll('.gitem[data-mod]').forEach(function (el) {
+        var on = !onMods || onMods.indexOf(el.getAttribute('data-mod')) >= 0;
+        el.style.display = on ? '' : 'none';
+      });
 
       var liveSvc = null;
       if (emp.services) liveSvc = emp.services.filter(function (s) { return s.status !== 'draft'; }).map(function (s) { return s.id; });

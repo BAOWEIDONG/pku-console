@@ -188,6 +188,18 @@
     const channels = {}; const pages = {}; const labels = []; const objects = {};
     const per = { pku: {}, employee: {}, versionall: {} };
     (paths || []).forEach((p) => {
+      const pp = p.path || p;
+      const cp = pp.match(/^channelPages\.(brand|employee|camp)\.([\w-]+)/);
+      if (cp) {
+        const ch = cp[1] === 'brand' ? 'pku' : cp[1] === 'employee' ? 'employee' : 'versionall';
+        const meta = (CH_PAGES[cp[1]] || []).find((x) => x.id === cp[2]);
+        channels[ch] = 1;
+        per[ch][meta ? meta.name : cp[2]] = 1;
+        pages[meta ? meta.name : cp[2]] = 1;
+        labels.push('渠道页面');
+        objects['渠道页面'] = (objects['渠道页面'] || 0) + 1;
+        return;
+      }
       const hit = PATH_IMPACT.find((m) => m.re.test(p.path || p));
       if (!hit) return;
       if (hit.ch === 'all') { channels.pku = 1; channels.employee = 1; channels.versionall = 1; }
