@@ -137,15 +137,17 @@
 
   function modal(opts) {
     const n = document.createElement('div');
-    n.className = 'modal';
+    n.className = 'modal' + (opts.wide ? ' modal-wide' : '');
     n.innerHTML =
       '<div class="modal-h"><h3>' + esc(opts.title) + '</h3>' + (opts.desc ? '<p>' + esc(opts.desc) + '</p>' : '') + '</div>' +
       '<div class="modal-b">' + (opts.body || '') + '</div>' +
-      '<div class="modal-f">' + (opts.cancelText === false ? '' : '<button class="btn" data-x>' + (opts.cancelText || '取消') + '</button>') +
-      '<button class="btn ' + (opts.danger ? 'danger' : 'primary') + '" data-ok>' + (opts.okText || '确定') + '</button></div>';
+      (opts.footer === false ? '' :
+        '<div class="modal-f">' + (opts.cancelText === false ? '' : '<button class="btn" data-x>' + (opts.cancelText || '取消') + '</button>') +
+        '<button class="btn ' + (opts.danger ? 'danger' : 'primary') + '" data-ok>' + (opts.okText || '确定') + '</button></div>');
     mountOverlay(n, opts.onClose);
     n.querySelectorAll('[data-x]').forEach((b) => b.addEventListener('click', () => { closeOverlay(); if (opts.onCancel) opts.onCancel(); }));
-    n.querySelector('[data-ok]').addEventListener('click', () => {
+    const okBtn = n.querySelector('[data-ok]');
+    if (okBtn) okBtn.addEventListener('click', () => {
       if (opts.onOk) opts.onOk(n);
       if (!opts.keepOpen) closeOverlay();
     });

@@ -28,10 +28,26 @@
   }
 
   function appOf(path) {
+    if (path.indexOf('channelPages.') === 0) {
+      if (/^channelPages\.brand/.test(path)) return 'pku';
+      if (/^channelPages\.employee/.test(path)) return 'employee';
+      if (/^channelPages\.camp/.test(path)) return 'versionall';
+    }
     if (path.indexOf('versionall') === 0) return 'versionall';
     if (path.indexOf('brand') === 0) return 'pku';
     if (path.indexOf('employee') === 0) return 'employee';
     return 'system';
+  }
+
+  /** 首次进入演示：留下 4 项未发布变更，便于体验影响分析与发布闸门 */
+  function demoDirty() {
+    const now = Date.now();
+    return [
+      { path: 'versionall.tiers.2.stock', label: '奖励库存 · 体脂秤', app: 'versionall', at: now - 1000 * 60 * 42 },
+      { path: 'employee.services.0.pricing.0.list', label: '职工年度体检 · 标准版挂牌价', app: 'employee', at: now - 1000 * 60 * 96 },
+      { path: 'brand.institutions.0.name', label: '机构名称 · 北大国际医院', app: 'pku', at: now - 1000 * 60 * 150 },
+      { path: 'channelPages.camp.report', label: '减重营 · 报告页上线', app: 'versionall', at: now - 1000 * 60 * 180 }
+    ];
   }
 
   const Store = {
@@ -49,7 +65,7 @@
         }
       } catch (e) { /* ignore broken cache */ }
       db = deep(window.SEED);
-      dirty = [];
+      dirty = demoDirty();
       this.persist();
     },
 
@@ -86,6 +102,23 @@
       fill(db, S, 'rbac');
       if (db.meta && S.meta.settings) fill(db.meta, S.meta, 'settings');
       fill(db, S, 'publishes');
+      if (!db.channelPages) {
+        db.channelPages = {
+          brand: { home: 1, hospitals: 1, departments: 1, team: 1, camp: 1, about: 1 },
+          employee: { home: 1, services: 1, booking: 1, mine: 1, qa: 1, articles: 1 },
+          camp: { dashboard: 1, checkin: 1, diet: 1, exercise: 1, mall: 1, reward: 1, ranking: 1, report: 1 }
+        };
+        changed = true;
+      }
+      if (!db.snapshots) { db.snapshots = []; changed = true; }
+      if (db.snapshots && !db.snapshots.length && db.publishes && db.publishes.length) {
+        db.publishes.slice(0, 3).forEach((p) => {
+          const s = deep(db);
+          s.snapshots = [];
+          db.snapshots.push({ id: p.id, at: p.at, db: s });
+        });
+        changed = true;
+      }
       if (db.versionall) {
         if (db.versionall.rankingOn == null) { db.versionall.rankingOn = true; changed = true; }
         if (!db.versionall.questionnaire) { db.versionall.questionnaire = deep(S.versionall.questionnaire); changed = true; }
@@ -182,10 +215,16 @@
       const groups = {};
       dirty.forEach((d) => { groups[d.app] = groups[d.app] || []; groups[d.app].push(d); });
       Object.keys(groups).forEach((app) => {
+        const pid = 'pv' + Date.now() + app;
         db.publishes.unshift({
-          id: 'pv' + Date.now() + app, app: app, title: note || '日常配置更新',
+          id: pid, app: app, title: note || '日常配置更新',
           by: '孙敏', at: at, items: groups[app].length, status: 'online'
         });
+        db.snapshots = db.snapshots || [];
+        const snap = deep(db);
+        snap.snapshots = [];
+        db.snapshots.unshift({ id: pid, at: at, db: snap });
+        if (db.snapshots.length > 6) db.snapshots.pop();
       });
       db.meta.publishedAt = at;
       db.meta.version = (parseFloat(db.meta.version) + 0.01).toFixed(2);
@@ -195,12 +234,27 @@
       return { count: n, at: at };
     },
 
+    rollback(publishId) {
+      const s = (db.snapshots || []).find((x) => x.id === publishId);
+      if (!s) return false;
+      this.snapshot();
+      db = deep(s.db);
+      dirty = [];
+      db.meta.publishedAt = s.at;
+      db.publishes.unshift({
+        id: 'rb' + Date.now(), app: 'system', title: '回滚至 ' + s.at + ' 的版本',
+        by: this.role.name, at: s.at, items: 0, status: 'rolled'
+      });
+      this.persist(); this.emit();
+      return true;
+    },
+
     discard() { dirty = []; this.persist(); this.emit(); },
 
     reset() {
       this.snapshot();
       db = deep(window.SEED);
-      dirty = [];
+      dirty = demoDirty();
       this.persist(); this.emit();
     },
 

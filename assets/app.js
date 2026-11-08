@@ -7,9 +7,16 @@
 
   /* ---------------------------------------------------------- 路由 → 权限模块 */
   const G = {
+    workbench: 'v.ops',
+    'g-coverage': 'v.report',
+    'g-insights': 'v.report',
+    'g-impact': 'logs',
+    'chn-map': 'shared.content',
+    'crm-360': 'v.ops',
     'v-dashboard': 'v.ops', 'v-camps': 'v.ops', 'v-students': 'v.ops', 'v-student-detail': 'v.ops',
     'v-records': 'v.ops', 'v-annotations': 'v.ops', 'v-attendance': 'v.ops', 'v-content': 'v.ops', 'v-messages': 'v.ops',
     'v-rules': 'v.rules', 'v-points-rules': 'v.rules', 'v-metrics': 'v.rules', 'v-questionnaire': 'v.rules', 'v-activities': 'v.rules',
+    'v-accounts': 'v.ops', 'fg-meal': 'v.rules',
     'v-tiers': 'v.incentive', 'v-products': 'v.incentive', 'v-badges': 'v.incentive',
     'v-claims': 'v.fulfill', 'v-exchanges': 'v.fulfill', 'v-fulfill': 'v.fulfill',
     'v-stats': 'v.report', 'v-ranking': 'v.report', 'v-report': 'v.report', 'v-enterprise': 'v.report', 'v-supervisor': 'v.report',
@@ -20,7 +27,7 @@
     'e-content': 'e.content', 'e-qa': 'e.content', 'e-site': 'shared.theme',
     's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops'
   };
-  const groupOf = (route) => (PAGES[route] && PAGES[route].grp) || G[route] || 'v.ops';
+  const groupOf = (route) => G[route] || (PAGES[route] && PAGES[route].grp) || 'v.ops';
 
   const LIVE = {
     versionall: 'https://baoweidong.github.io/versionall/',
@@ -38,48 +45,184 @@
 
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
-    { id: 'service', label: '服务与商品', dot: '#0b63e5', home: 'svc-catalog' },
-    { id: 'customer', label: '客户与交易', dot: '#0aa39a', home: 'trd-orders' },
-    { id: 'content', label: '内容与渠道', dot: '#6b5ce0', home: 'chn-channels' },
-    { id: 'program', label: '项目运营', dot: '#3f8cff', home: 'v-dashboard' },
-    { id: 'platform', label: '平台', dot: '#94a7c0', home: 'workbench' }
+    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '实时经营 · 待办 · 发布状态' },
+    { id: 'growth', label: '增长', en: 'GROWTH', icon: 'spark', dot: '#48D3C7', home: 'chn-map', desc: '渠道 · 内容 · 触点编排' },
+    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
+    { id: 'customer', label: '交易', en: 'TRADE', icon: 'file', dot: '#F0B45E', home: 'trd-orders', desc: '订单 · 预约 · 结算 · 客户' },
+    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
+    { id: 'insight', label: '洞察', en: 'INSIGHT', icon: 'chart', dot: '#6FE3A8', home: 'g-insights', desc: '经营 · 覆盖 · 健康结果' },
+    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 's-publish', desc: '发布 · 影响 · 权限 · 审计' }
   ];
 
   const NAV_OF = {
-    service: [
-      { group: '', items: [{ id: 'svc-catalog', label: '服务商品', icon: 'package' }, { id: 'svc-goods', label: '实物商品', icon: 'gift' }, { id: 'trd-stock', label: '库存与预留', icon: 'package' }] },
-      { group: '定价', items: [{ id: 'svc-pricing', label: '价格与政策', icon: 'target' }, { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }] },
-
-      { group: '履约基础', items: [{ id: 'g-orgs', label: '服务机构', icon: 'hospital' }, { id: 'e-booking', label: '预约设置', icon: 'calendar' }, { id: 'e-dashboard', label: '服务概览', icon: 'grid' }] }
+    command: [
+      { group: '今天', items: [
+        { id: 'workbench', label: '指挥中心', icon: 'grid' },
+        { id: 'g-impact', label: '变更影响', icon: 'activity' },
+        { id: 's-publish', label: '发布中心', icon: 'send' }
+      ] },
+      { group: '快速进入', items: [
+        { id: 'chn-map', label: '渠道图谱', icon: 'layers' },
+        { id: 'g-coverage', label: '覆盖矩阵', icon: 'target' },
+        { id: 'crm-360', label: '客户 360', icon: 'user' },
+        { id: 'v-dashboard', label: '减重营概览', icon: 'activity' }
+      ] }
+    ],
+    growth: [
+      { group: '触点', items: [
+        { id: 'chn-map', label: '渠道图谱', icon: 'layers' },
+        { id: 'chn-channels', label: '渠道与触点', icon: 'link' }
+      ] },
+      { group: '品牌站', items: [
+        { id: 'b-home', label: '首页内容', icon: 'layout' },
+        { id: 'b-hospitals', label: '分院网络', icon: 'hospital' },
+        { id: 'b-departments', label: '学科与科室', icon: 'layers' },
+        { id: 'b-team', label: '师资团队', icon: 'stethoscope' },
+        { id: 'b-camp', label: '健康营展示页', icon: 'spark' },
+        { id: 'b-about', label: '品牌页', icon: 'file' }
+      ] },
+      { group: '职工端', items: [
+        { id: 'e-site', label: '站点与轮播', icon: 'sliders' },
+        { id: 'e-modules', label: '模块与分类', icon: 'grid' },
+        { id: 'e-content', label: '内容与科普', icon: 'video' },
+        { id: 'e-qa', label: '深度问答', icon: 'message' },
+        { id: 'b-site', label: '站点设置', icon: 'settings' }
+      ] },
+      { group: '内容资产', items: [
+        { id: 'g-content', label: '内容中心', icon: 'image' },
+        { id: 'msg-center', label: '触达中心', icon: 'send' },
+        { id: 'g-brand', label: '品牌与主体', icon: 'spark' },
+        { id: 'g-theme', label: '主题与入口', icon: 'sliders' }
+      ] }
+    ],
+    catalog: [
+      { group: '服务商品', items: [
+        { id: 'svc-catalog', label: '服务目录', icon: 'package' },
+        { id: 'svc-goods', label: '实物商品', icon: 'gift' },
+        { id: 'trd-stock', label: '库存与预留', icon: 'layers' }
+      ] },
+      { group: '价格与组合', items: [
+        { id: 'svc-pricing', label: '价格与政策', icon: 'target' },
+        { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }
+      ] },
+      { group: '履约能力', items: [
+        { id: 'e-services', label: '职工端服务', icon: 'stethoscope' },
+        { id: 'g-orgs', label: '服务机构', icon: 'hospital' },
+        { id: 'e-booking', label: '预约设置', icon: 'calendar' }
+      ] }
     ],
     customer: [
-      { group: '', items: [{ id: 'trd-orders', label: '订单中心', icon: 'file' }] },
-      { group: '履约', items: [{ id: 'v-fulfill', label: '履约工作台', icon: 'truck' }, { id: 'trd-sla', label: '超时与升级', icon: 'clock' }, { id: 'trd-slots', label: '时段与占号', icon: 'calendar' }, { id: 'trd-capacity', label: '排班与产能', icon: 'users' }, { id: 'v-claims', label: '领奖订单', icon: 'gift' }, { id: 'v-exchanges', label: '积分兑换', icon: 'package' }] },
-      { group: '结算', items: [{ id: 'trd-settle', label: '结算与对账', icon: 'chart' }, { id: 'trd-diff', label: '结算差异', icon: 'x' }, { id: 'trd-refund', label: '退款与冲销', icon: 'undo' }, { id: 'trd-invoice', label: '开票与回款', icon: 'file' }] },
-      { group: '客户', items: [{ id: 'g-accounts', label: '客户账号', icon: 'users' }, { id: 'crm-customer', label: '客户 360', icon: 'user' }, { id: 'e-orgs', label: '企业客户与权益', icon: 'building' }] }
-    ],
-    content: [
-      { group: '渠道', items: [{ id: 'chn-channels', label: '渠道与触点', icon: 'layers' }] },
-      { group: '内容', items: [{ id: 'g-content', label: '内容中心', icon: 'image' }, { id: 'e-content', label: '职工端内容', icon: 'video' }, { id: 'e-qa', label: '深度问答', icon: 'message' }] },
-      { group: '品牌站页面', items: [{ id: 'b-home', label: '首页内容', icon: 'layout' }, { id: 'b-about', label: '品牌页', icon: 'file' }, { id: 'b-departments', label: '学科与科室', icon: 'layers' }, { id: 'b-team', label: '师资团队', icon: 'stethoscope' }, { id: 'b-camp', label: '健康营展示页', icon: 'spark' }] },
-      { group: '职工端页面', items: [{ id: 'e-modules', label: '模块与分类', icon: 'grid' }] },
-      { group: '全局', items: [{ id: 'g-brand', label: '品牌与主体', icon: 'spark' }, { id: 'g-theme', label: '主题与入口', icon: 'sliders' }] }
+      { group: '交易', items: [
+        { id: 'trd-orders', label: '订单中心', icon: 'file' },
+        { id: 'v-claims', label: '领奖订单', icon: 'gift' },
+        { id: 'v-exchanges', label: '积分兑换', icon: 'package' }
+      ] },
+      { group: '履约', items: [
+        { id: 'v-fulfill', label: '履约工作台', icon: 'truck' },
+        { id: 'e-bookings', label: '预约订单', icon: 'calendar' },
+        { id: 'trd-sla', label: '超时与升级', icon: 'clock' },
+        { id: 'trd-slots', label: '时段与占号', icon: 'calendar' },
+        { id: 'trd-capacity', label: '排班与产能', icon: 'users' }
+      ] },
+      { group: '结算', items: [
+        { id: 'trd-settle', label: '结算与对账', icon: 'chart' },
+        { id: 'trd-diff', label: '结算差异', icon: 'x' },
+        { id: 'trd-refund', label: '退款与冲销', icon: 'undo' },
+        { id: 'trd-invoice', label: '开票与回款', icon: 'file' }
+      ] },
+      { group: '客户', items: [
+        { id: 'crm-360', label: '客户 360', icon: 'user' },
+        { id: 'crm-customer', label: '客户台账', icon: 'users' },
+        { id: 'e-orgs', label: '企业客户与权益', icon: 'building' },
+        { id: 'g-accounts', label: '客户账号', icon: 'lock' }
+      ] }
     ],
     program: [
-      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-eat', label: '吃好 · 食谱', icon: 'package' }, { id: 'fg-sleep', label: '睡好 · 睡眠', icon: 'moon' }, { id: 'fg-move', label: '动好 · 运动', icon: 'run' }, { id: 'fg-mind', label: '心好 · 心理', icon: 'heart' }, { id: 'fg-check', label: '查好 · 体检', icon: 'stethoscope' }, { id: 'fg-reco', label: '推荐规则', icon: 'target' }, { id: 'fg-convert', label: '食谱转化', icon: 'chart' }, { id: 'fg-version', label: '食谱版本', icon: 'layers' }, { id: 'fg-ab', label: 'A/B 实验', icon: 'chart' }, { id: 'msg-center', label: '触达中心', icon: 'send' }, { id: 'rpt-report', label: '报表与口径', icon: 'file' }, { id: 'fg-survey', label: '评估问卷', icon: 'file' }, { id: 'fg-report', label: '月度报告', icon: 'send' }, { id: 'fg-config', label: '评分与权重', icon: 'sliders' }] },
-      { group: '减重营 · 营期', items: [{ id: 'v-dashboard', label: '运营概览', icon: 'grid' }, { id: 'v-camps', label: '营期管理', icon: 'calendar' }, { id: 'v-students', label: '学员管理', icon: 'users' }, { id: 'v-records', label: '打卡记录', icon: 'check' }, { id: 'v-annotations', label: '批注工作台', icon: 'message' }, { id: 'v-attendance', label: '出勤看板', icon: 'layout' }, { id: 'v-content', label: '活动与课程', icon: 'video' }, { id: 'v-messages', label: '消息与公告', icon: 'bell' }] },
-      { group: '减重营 · 规则', items: [{ id: 'v-rules', label: '打卡规则', icon: 'sliders' }, { id: 'v-points-rules', label: '积分规则', icon: 'target' }, { id: 'v-metrics', label: '健康指标库', icon: 'activity' }, { id: 'v-questionnaire', label: '入营问卷', icon: 'file' }, { id: 'v-activities', label: '活动与入口', icon: 'spark' }, { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' }, { id: 'v-products', label: '积分商城', icon: 'package' }, { id: 'v-badges', label: '徽章体系', icon: 'medal' }, { id: 'v-ranking', label: '排行榜', icon: 'star' }] },
-      { group: '减重营 · 报告', items: [{ id: 'v-stats', label: '营期统计', icon: 'chart' }, { id: 'v-report', label: '结营报告', icon: 'file' }, { id: 'v-enterprise', label: '企业健康报告', icon: 'building' }, { id: 'v-supervisor', label: '督导总览', icon: 'eye' }] }
+      { group: '五好生活', items: [
+        { id: 'fg-overview', label: '五好总览', icon: 'spark' },
+        { id: 'fg-eat', label: '吃好 · 食谱', icon: 'package' },
+        { id: 'fg-sleep', label: '睡好 · 睡眠', icon: 'moon' },
+        { id: 'fg-move', label: '动好 · 运动', icon: 'run' },
+        { id: 'fg-mind', label: '心好 · 心理', icon: 'heart' },
+        { id: 'fg-check', label: '查好 · 体检', icon: 'stethoscope' },
+        { id: 'fg-config', label: '评分与权重', icon: 'sliders' },
+        { id: 'fg-reco', label: '推荐规则', icon: 'target' },
+        { id: 'fg-meal', label: '餐次配置', icon: 'clock' }
+      ] },
+      { group: '五好 · 内容', items: [
+        { id: 'fg-version', label: '食谱版本', icon: 'layers' },
+        { id: 'fg-convert', label: '食谱转化', icon: 'chart' },
+        { id: 'fg-ab', label: 'A/B 实验', icon: 'activity' },
+        { id: 'fg-survey', label: '评估问卷', icon: 'file' },
+        { id: 'fg-report', label: '月度报告', icon: 'send' }
+      ] },
+      { group: '减重营 · 营期', items: [
+        { id: 'v-dashboard', label: '运营概览', icon: 'grid' },
+        { id: 'v-camps', label: '营期管理', icon: 'calendar' },
+        { id: 'v-students', label: '学员管理', icon: 'users' },
+        { id: 'v-records', label: '打卡记录', icon: 'check' },
+        { id: 'v-annotations', label: '批注工作台', icon: 'message' },
+        { id: 'v-attendance', label: '出勤看板', icon: 'layout' },
+        { id: 'v-content', label: '活动与课程', icon: 'video' },
+        { id: 'v-messages', label: '消息与公告', icon: 'bell' }
+      ] },
+      { group: '减重营 · 规则', items: [
+        { id: 'v-rules', label: '打卡规则', icon: 'sliders' },
+        { id: 'v-points-rules', label: '积分规则', icon: 'target' },
+        { id: 'v-metrics', label: '健康指标库', icon: 'activity' },
+        { id: 'v-questionnaire', label: '入营问卷', icon: 'file' },
+        { id: 'v-accounts', label: '账号管理', icon: 'users' },
+        { id: 'v-activities', label: '活动与入口', icon: 'spark' },
+        { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' },
+        { id: 'v-products', label: '积分商城', icon: 'package' },
+        { id: 'v-badges', label: '徽章体系', icon: 'medal' },
+        { id: 'v-ranking', label: '排行榜', icon: 'star' }
+      ] },
+      { group: '减重营 · 报告', items: [
+        { id: 'v-stats', label: '营期统计', icon: 'chart' },
+        { id: 'v-report', label: '结营报告', icon: 'file' },
+        { id: 'v-enterprise', label: '企业健康报告', icon: 'building' },
+        { id: 'v-supervisor', label: '督导总览', icon: 'eye' }
+      ] }
+    ],
+    insight: [
+      { group: '经营', items: [
+        { id: 'g-insights', label: '经营洞察', icon: 'chart' },
+        { id: 'g-coverage', label: '前端覆盖矩阵', icon: 'target' },
+        { id: 'rpt-report', label: '报表与口径', icon: 'file' }
+      ] },
+      { group: '渠道分析', items: [
+        { id: 'b-dashboard', label: '品牌站数据', icon: 'activity' },
+        { id: 'e-dashboard', label: '职工健康数据', icon: 'activity' },
+        { id: 'v-stats', label: '营期统计', icon: 'chart' }
+      ] },
+      { group: '结果报告', items: [
+        { id: 'v-report', label: '结营报告', icon: 'file' },
+        { id: 'v-enterprise', label: '企业健康报告', icon: 'building' },
+        { id: 'v-supervisor', label: '督导总览', icon: 'eye' }
+      ] }
     ],
     platform: [
-      { group: '', items: [{ id: 's-publish', label: '发布中心', icon: 'send' }, { id: 's-logs', label: '操作日志', icon: 'clock' }, { id: 'g-roles', label: '角色与权限', icon: 'lock' }, { id: 'g-fields', label: '字段级权限', icon: 'eye' }, { id: 's-settings', label: '系统设置', icon: 'settings' }] }
+      { group: '交付', items: [
+        { id: 's-publish', label: '发布中心', icon: 'send' },
+        { id: 'g-impact', label: '变更影响', icon: 'activity' },
+        { id: 's-logs', label: '操作日志', icon: 'clock' }
+      ] },
+      { group: '治理', items: [
+        { id: 'g-roles', label: '角色与权限', icon: 'lock' },
+        { id: 'g-fields', label: '字段级权限', icon: 'eye' },
+        { id: 's-settings', label: '系统设置', icon: 'settings' }
+      ] }
     ]
   };
 
   const ROUTE_WB = {};
   Object.keys(NAV_OF).forEach((wb) => NAV_OF[wb].forEach((g) => g.items.forEach((it) => { ROUTE_WB[it.id] = wb; })));
-  ROUTE_WB.workbench = 'platform';
-  const wbOf = (route) => ROUTE_WB[route] || 'service';
+  ROUTE_WB.workbench = 'command';
+  ROUTE_WB['g-impact'] = 'platform';
+  ROUTE_WB['g-coverage'] = 'insight';
+  ROUTE_WB['g-insights'] = 'insight';
+  const wbOf = (route) => ROUTE_WB[route] || 'command';
 
   const ROUTE_META = (route) => PAGES[route] || {};
   function visible(route) {
@@ -93,7 +236,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {}, app: 'platform', openGroups: {},
+    route: 'workbench', ctx: {}, app: 'command', openGroups: {},
     previewOpen: false, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
@@ -101,19 +244,31 @@
 
   function currentPage() { return PAGES[state.route] || PAGES.workbench; }
 
-  /* ---------------------------------------------------------- rail */
-  function railHTML() {
+  /* ---------------------------------------------------------- rail + contextual nav */
+  function railDockHTML() {
     const role = Store.role;
+    return '<div class="dock-brand" title="北大医疗 · 超级运营中台">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>' +
+      '</div>' +
+      '<nav class="dock-nav">' + WORKBENCHES.map((a) =>
+        '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '" aria-label="' + a.label + '">' +
+          I(a.icon, 20) + '<span class="dock-tip">' + a.label + '</span><i class="dock-dot" style="background:' + a.dot + '"></i>' +
+        '</button>').join('') + '</nav>' +
+      '<div class="dock-bottom">' +
+        '<button data-act="cmd" title="搜索">' + I('search', 19) + '<span class="dock-tip">搜索 ⌘K</span></button>' +
+        '<button data-act="notify" title="通知" class="has-dot">' + I('bell', 19) + '</button>' +
+        '<button data-act="roleMenu" class="dock-user" title="' + E(role.name) + '">' + E(role.name.slice(0, 1)) + '</button>' +
+      '</div>';
+  }
+
+  function subnavHTML() {
+    const space = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
     const nav = NAV_OF[state.app] || NAV_OF.platform;
-    const navOpen = state.openGroups[state.app] ||
-      [((nav.find((g) => g.items.some((it) => it.id === state.route)) || nav[0] || {}).group || '_top')];
-    return '<div class="rail-inner">' +
-      '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
-      '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
-      '<button class="homebtn ' + (state.route === 'workbench' ? 'on' : '') + '" data-nav="workbench">' + I('grid', 15) + '<span>主页</span><span style="margin-left:auto;font-size:10px;opacity:.45">工作台</span></button>' +
-      '<div class="appswitch">' + WORKBENCHES.map((a) =>
-        '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '">' +
-        '<i class="dot" style="background:' + a.dot + '"></i><span>' + a.label + '</span></button>').join('') + '</div>' +
+    const navOpen = state.openGroups[state.app] || nav.map((g) => g.group || '_top');
+    return '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + '</div>' +
+        '<h2>' + E(space.label) + '<span>' + E(space.desc) + '</span></h2>' +
+        '<button class="subnav-new" data-act="quickNew">' + I('plus', 14) + '新建</button></div>' +
+      '<div class="subnav-search" data-act="cmd">' + I('search', 14) + '<span>搜索 ' + E(space.label) + ' 内页面</span><kbd>⌘K</kbd></div>' +
       '<nav class="nav">' + nav.map((g) => {
         const items = g.items.filter((it) => visible(it.id));
         if (!items.length) return '';
@@ -121,20 +276,22 @@
         const cl = g.group ? navOpen.indexOf(key) < 0 : false;
         return '<div class="navgrp ' + (cl ? 'collapsed' : '') + '">' +
           (g.group ? '<button class="navgrp-h" data-collapse="' + key + '">' + E(g.group) +
-            '<span style="margin-left:auto;font-size:10px;opacity:.5">' + items.length + '</span>' +
-            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:6px;opacity:.55;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
+            '<span class="navgrp-n">' + items.length + '</span>' +
+            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:auto;opacity:.45;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
           items.map((it) => {
             const cnt = navCount(it.id);
             const lvl = Store.can(groupOf(it.id), 2);
             return '<button class="navitem ' + (it.id === state.route ? 'on' : '') + '" data-nav="' + it.id + '" title="' + E(it.label) + '">' +
               I(it.icon, 16) + '<span>' + E(it.label) + '</span>' +
               (cnt ? '<span class="count ' + (it.hot ? 'hot' : '') + '">' + cnt + '</span>' : '') +
-              (lvl ? '' : '<span class="count" style="background:transparent;color:#5f7797;font-size:9px">只读</span>') + '</button>';
+              (lvl ? '' : '<span class="nav-ro">只读</span>') + '</button>';
           }).join('') + '</div>';
       }).join('') + '</nav>' +
-      '<button class="rail-foot" data-act="roleMenu">' +
-      '<div class="ava">' + E(role.name.slice(0, 1)) + '</div><div class="who"><b>' + E(role.name) + '</b><span>' + E(role.desc) + '</span></div>' +
-      '<span class="ic">' + I('refresh', 14) + '</span></button></div>';
+      '<div class="subnav-foot">' +
+        '<div class="subnav-sync"><span class="' + (Store.dirtyCount ? 'warn' : 'ok') + '"></span>' +
+          '<div><b>' + (Store.dirtyCount ? Store.dirtyCount + ' 项待发布' : '全部已同步') + '</b><em>v' + Store.db.meta.version + ' · ' + Store.db.meta.publishedAt.slice(5) + '</em></div>' +
+          '<button data-act="goPublish" title="发布中心">' + I('chevron', 13) + '</button></div>' +
+      '</div>';
   }
   function dot(c) { return c === 'green' ? '#0aa39a' : c === 'violet' ? '#8b7cf6' : c === 'amber' ? '#c8871a' : c === 'grey' ? '#94a7c0' : '#3f8cff'; }
   function navCount(route) {
@@ -148,27 +305,25 @@
   /* ---------------------------------------------------------- topbar */
   function topbarHTML() {
     const page = currentPage();
-    const wb = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[4];
-    const app = APPS[page.app || 'all'];
+    const wb = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
     const dirty = Store.dirtyCount;
-    return '<div class="crumb"><span style="display:inline-flex;align-items:center;gap:6px"><i style="width:6px;height:6px;border-radius:50%;background:' + wb.dot + '"></i>' + E(wb.label) + '</span>' +
+    return '<div class="tb-left"><button class="tb-back" data-act="back" title="返回">' + I('chevron', 15) + '</button>' +
+      '<div class="crumb"><span class="crumb-space"><i style="background:' + wb.dot + '"></i>' + E(wb.label) + '</span>' +
       '<span class="sep">/</span><b>' + E(page.title || '') + '</b>' +
-      (Store.role.perms === 'ALL' ? '' : '<span class="pill grey" style="margin-left:6px;height:18px">' + E(Store.role.name) + '</span>') + '</div>' +
+      (Store.role.perms === 'ALL' ? '' : '<span class="pill grey">' + E(Store.role.name) + '</span>') + '</div></div>' +
       '<div class="top-actions">' +
-      '<button class="searchbtn" data-act="cmdk">' + I('search', 15) + '<span>搜索页面、功能、配置</span><kbd>⌘K</kbd></button>' +
-      (dirty ? '<button class="btn" data-act="goPublish" style="color:#b83c2c;border-color:#f3d3ce">' + I('send', 14) + dirty + ' 项待发布</button>' : '') +
+      '<button class="searchbtn" data-act="cmd"><span class="sb-ic">' + I('search', 15) + '</span><span>搜索页面、客户、服务、订单</span><kbd>⌘K</kbd></button>' +
+      '<span class="tb-live"><i></i>3 端在线</span>' +
+      (dirty ? '<button class="tb-dirty" data-act="goPublish"><i></i>' + dirty + ' 项待发布</button>' : '') +
       (page.preview ? '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' : '') +
-      '<button class="btn primary" data-act="publish"' + (Store.canPublish ? '' : ' disabled title="当前角色无发布权限"') + '>' + I('send', 15) + '发布</button>' +
-      '<div style="width:1px;height:20px;background:var(--line);margin:0 3px"></div>' +
-      '<button class="iconbtn" data-act="notify" style="position:relative">' + I('bell', 17) + '<span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#d9503f;border:1.5px solid #fff"></span></button>' +
-      '<button data-act="roleMenu" style="display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;border-radius:20px;border:1px solid var(--line);background:#fff">' +
-      '<span class="ava" style="width:26px;height:26px;font-size:11px">' + E(Store.role.name.slice(0, 1)) + '</span>' +
-      '<span style="font-size:11.5px;color:var(--ink-2)">' + E(Store.role.name) + '</span>' + I('down', 12) + '</button>' +
+      '<button class="tb-publish" data-act="publish"' + (Store.canPublish ? '' : ' disabled title="当前角色无发布权限"') + '>' + I('send', 14) + '发布</button>' +
+      '<button class="tb-user" data-act="roleMenu"><span class="ava">' + E(Store.role.name.slice(0, 1)) + '</span>' +
+      '<span class="tb-user-t">' + E(Store.role.name) + '</span>' + I('down', 11) + '</button>' +
       '</div>';
   }
 
   /* ---------------------------------------------------------- dock */
-  function dockHTML() {
+  function previewDockHTML() {
     if (!state.previewOpen) return '';
     const meta = ROUTE_META(state.route);
     if (!meta.preview) return '';
@@ -207,14 +362,15 @@
     const top = keepScroll && sc0 ? sc0.scrollTop : 0;
     const readonly = !canEdit(state.route);
     document.getElementById('app').innerHTML =
-      '<div class="shell"><aside class="rail">' + railHTML() + '</aside><div class="main">' +
+      '<div class="shell"><aside class="bdock" aria-label="工作区">' + railDockHTML() + '</aside>' +
+      '<aside class="subnav" aria-label="模块导航">' + subnavHTML() + '</aside><div class="main">' +
       '<header class="topbar">' + topbarHTML() + '</header>' +
       '<div class="canvas ' + (state.previewOpen ? 'has-dock' : '') + '">' +
       '<div class="scrollarea scroll"><div class="page ' + (readonly ? 'readonly' : '') + '">' +
       (readonly ? '<div class="readonly-bar">' + I('lock', 14) + '<b>' + E(Store.role.name) + '</b> 对该模块仅有查看权限，编辑与发布已关闭' +
         '<button class="btn sm" data-act="switchSuper" style="margin-left:auto">切换为超级管理员</button></div>' : '') +
       safeRender(page, state.ctx) + '</div></div>' +
-      dockHTML() + '</div></div></div>';
+      previewDockHTML() + '</div></div></div>';
     const sc = document.querySelector('.scrollarea');
     if (sc) sc.scrollTop = top;
     wireLive();
@@ -337,25 +493,65 @@
       if (!dirty.length) { UI.toast('没有待发布的变更'); return; }
       const groups = {};
       dirty.forEach((d) => { (groups[d.app] = groups[d.app] || []).push(d); });
+      const imp = window.V5 ? V5.impactOf(dirty) : { channels: [], pages: [] };
+      const gates = window.V5 ? V5.gatesFor(dirty) : [];
+      const bad = gates.filter((g) => !g.ok);
       const list = Object.keys(groups).map((app) =>
         '<div style="margin-bottom:12px"><div class="row" style="gap:7px;margin-bottom:6px">' +
         '<span class="pill ' + (app === 'versionall' ? 'blue' : app === 'pku' ? 'green' : app === 'employee' ? 'amber' : 'grey') + '">' +
         (APPS[app] ? APPS[app].name : '跨端') + '</span><span class="small mut">' + groups[app].length + ' 项</span></div>' +
-        '<div class="diff">' + groups[app].slice(0, 8).map((d) => '<div><span class="add">+</span> ' + E(d.label) + ' <span class="mut">' + E(d.path) + '</span></div>').join('') +
+        '<div class="diff">' + groups[app].slice(0, 6).map((d) => '<div><span class="add">+</span> ' + E(d.label) + ' <span class="mut">' + E(d.path) + '</span></div>').join('') +
         (groups[app].length > 8 ? '<div class="mut">… 另有 ' + (groups[app].length - 8) + ' 项</div>' : '') + '</div></div>').join('');
       UI.modal({
-        title: '发布变更', desc: '将 ' + dirty.length + ' 项配置写入线上，发布后 1 分钟内生效',
-        body: '<div class="stack" style="gap:14px">' + UI.fInput({ label: '发布说明', value: note || '', ph: '如 第 7 期奖励档位调整' }) + list +
-          UI.impact(['品牌站（PKU-introduce）', '职工健康（pku-employee-health）', '减重营（versionall）']) +
-          '<div class="note warn">发布前请确认：奖励与商品的库存、上下架状态是否与线下一致。</div></div>',
-        okText: '确认发布',
+        wide: true,
+        title: bad.length ? '发布前需修复 ' + bad.length + ' 项' : '发布 ' + dirty.length + ' 项变更',
+        desc: bad.length ? '阻断项未通过，发布按钮已锁定' : '影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面 · 发布后 1 分钟内生效',
+        body: '<div class="stack" style="gap:14px">' +
+          UI.fInput({ label: '发布说明', value: note || '', ph: '如 第 7 期奖励档位调整' }) +
+          '<div class="pub-impact"><div class="pub-impact-h">' + I('activity', 14) + '影响面</div>' +
+            '<div class="pub-chips">' + (imp.channels.length ? imp.channels.map((c) => '<span class="pill ' + (c === 'pku' ? 'green' : c === 'employee' ? 'amber' : 'blue') + '">' + (APPS[c] ? APPS[c].name : c) + '</span>').join('') : '<span class="small mut">跨端配置</span>') +
+            imp.pages.map((p) => '<span class="pub-chip">' + E(p) + '</span>').join('') + '</div></div>' +
+          list +
+          '<div class="pub-gates">' + gates.map((g) => '<div class="' + (g.ok ? 'ok' : 'bad') + '">' + I(g.ok ? 'check' : 'x', 13) + '<span>' + E(g.k) + '</span><em>' + E(g.d) + '</em></div>').join('') + '</div>' +
+          '<div class="note warn">发布后三个 H5 会在 1 分钟内拉取新的渠道配置；已产生的订单与领取记录不受影响。</div></div>',
+        okText: bad.length ? '请先修复阻断项' : '确认发布',
         onOk(n) {
+          if (bad.length) { UI.toast('存在阻断项，无法发布', 'warn'); return false; }
           const v = (n.querySelector('.input') || {}).value || note || '日常配置更新';
           const r = Store.publish(v);
           UI.toast('已发布 ' + r.count + ' 项变更');
+          const token = localStorage.getItem('pku-gh-token');
+          if (token) {
+            UI.toast('正在把配置推送到三端…');
+            App.pushConfig(token)
+              .then(() => UI.toast('配置已推送，三个 H5 将在 1 分钟内生效'))
+              .catch((e) => UI.toast('本地已发布，推送失败：' + e.message, 'warn'));
+          }
           setTimeout(() => App.refresh(true), 60);
         }
       });
+    },
+
+    quickNew() {
+      const acts = [
+        { t: '新增服务', d: 'SPU + 价格 + 渠道 + 素材', go: 'svc-catalog', ic: 'package' },
+        { t: '新建营期', d: '排期、容量、责任营养师', go: 'v-camps', ic: 'calendar' },
+        { t: '新增内容', d: '品牌站 / 职工端 / 减重营', go: 'g-content', ic: 'image' },
+        { t: '新建企业权益', d: '企业、人数、权益包', go: 'e-orgs', ic: 'building' },
+        { t: '新建触达', d: '短信 / 企微 / 站内信', go: 'msg-center', ic: 'send' },
+        { t: '新增奖励', d: '连续打卡 / 积分 / 徽章', go: 'v-tiers', ic: 'gift' }
+      ];
+      UI.modal({
+        title: '新建', desc: '选择一个业务对象开始',
+        body: '<div class="quicknew">' + acts.map((a) =>
+          '<button data-qn="' + a.go + '"><span>' + I(a.ic, 17) + '</span><div><b>' + a.t + '</b><em>' + a.d + '</em></div>' + I('chevron', 13) + '</button>').join('') + '</div>',
+        footer: false
+      });
+      setTimeout(() => {
+        document.querySelectorAll('[data-qn]').forEach((b) => b.addEventListener('click', () => {
+          UI.closeOverlay(); App.go(b.dataset.qn);
+        }));
+      }, 30);
     },
 
     cmdOpen() {
@@ -363,19 +559,26 @@
       Object.keys(PAGES).forEach((r) => {
         const p = PAGES[r];
         if (p.hideNav || !visible(r)) return;
-        items.push({ route: r, title: p.title, app: p.app || 'all', sub: p.sub || '' });
+        items.push({ route: r, title: p.title, app: p.app || 'all', sub: p.sub || '', kind: '页面' });
       });
+      const db = Store.db;
+      (db.employee.services || []).slice(0, 40).forEach((s) => items.push({ route: 'e-services', title: s.name, sub: '服务 · ' + s.cat + ' · ' + s.status, kind: '服务' }));
+      (db.versionall.students || []).forEach((s) => items.push({ route: 'v-students', title: s.name, sub: '学员 · ' + (s.status === 'active' ? '在营' : s.status), kind: '学员' }));
+      (db.employee.bookings || []).slice(0, 20).forEach((b) => items.push({ route: 'e-bookings', title: b.service + ' · ' + b.person, sub: '预约 · ' + b.date + ' · ' + b.status, kind: '预约' }));
+      (db.versionall.camps || []).forEach((c) => items.push({ route: 'v-camps', title: c.name, sub: '营期 · ' + c.status, kind: '营期' }));
+      items.push({ route: 'workbench', title: '发布所有待发布变更', sub: '操作', kind: '操作' });
       let sel = 0, filtered = items;
       const n = document.createElement('div');
       n.className = 'cmdk';
-      n.innerHTML = '<div class="cmdk-in">' + I('search', 17) + '<input placeholder="输入页面名称或功能关键词…" autofocus><kbd>ESC</kbd></div><div class="cmdk-list"></div>';
+      n.innerHTML = '<div class="cmdk-in">' + I('search', 17) + '<input placeholder="搜索页面、服务、学员、预约或操作…" autofocus><kbd>ESC</kbd></div>' +
+        '<div class="cmdk-tip"><span>↑↓ 选择</span><span>↵ 打开</span><span>⌘K 随时唤起</span></div><div class="cmdk-list"></div>';
       const listEl = n.querySelector('.cmdk-list'), input = n.querySelector('input');
       function paint() {
         const q = input.value.trim().toLowerCase();
-        filtered = items.filter((i) => !q || (i.title + i.sub + i.route).toLowerCase().indexOf(q) >= 0);
+        filtered = items.filter((i) => !q || (i.title + i.sub + i.route + i.kind).toLowerCase().indexOf(q) >= 0).slice(0, 40);
         listEl.innerHTML = filtered.length ? filtered.map((i, k) =>
           '<button class="cmdk-i ' + (k === sel ? 'sel' : '') + '" data-r="' + i.route + '">' + I('chevron', 14) +
-          '<span>' + E(i.title) + '</span><span class="k">' + E((WORKBENCHES.find((w) => w.id === wbOf(i.route)) || {}).label || '') + '</span></button>').join('')
+          '<span class="cmdk-kind">' + E(i.kind) + '</span><span>' + E(i.title) + '</span><span class="k">' + E(i.sub || '') + '</span></button>').join('')
           : '<div class="empty">没有匹配的页面</div>';
       }
       paint();
@@ -406,6 +609,12 @@
       brand: db.shared.brand,
       contact: db.shared.contact,
       theme: db.shared.theme,
+      channelPages: db.channelPages,
+      brandSite: {
+        home: db.brand.home,
+        institutions: (db.brand.institutions || []).map((i) => ({ id: i.id, name: i.name, city: i.city, address: i.address, phone: i.phone, on: i.on })),
+        doctors: (db.brand.doctors || []).map((d) => ({ id: d.id, name: d.name, title: d.title, dept: d.dept, on: d.on }))
+      },
       employee: {
         site: db.employee.site,
         modules: db.employee.modules.filter((m) => m.on).map((m) => ({ id: m.id, name: m.name, stab: m.stab })),
@@ -449,7 +658,7 @@
   App.configDialog = function () {
     const saved = localStorage.getItem('pku-gh-token') || '';
     UI.modal({
-      title: '发布配置文件', desc: '三端 H5 在启动时读取同一份 config.json',
+      title: '连接 GitHub 并推送配置', desc: '三端 H5 启动时会读取同一份 config.json，令牌只保存在本机',
       body: '<div class="stack" style="gap:12px">' +
         '<div class="small mut" style="line-height:1.8">① 生成 config.json（品牌 / 服务 / 价格 / 渠道 / 五好）<br>② 推送到 pku-console 仓库根目录<br>③ H5 启动时同域读取，覆盖默认值</div>' +
         UI.fInput({ label: 'GitHub Token', value: saved, ph: 'ghp_… 仅存本地', hint: '需要该仓库 contents 写权限' }) +
@@ -465,7 +674,6 @@
         localStorage.setItem('pku-gh-token', token);
         UI.toast('正在推送…');
         App.pushConfig(token).then(() => {
-          Store.publish('发布配置文件');
           UI.toast('配置已推送到线上，H5 下次打开即生效');
           App.refresh(true);
         }).catch((e) => UI.toast('推送失败：' + e.message, 'warn'));
@@ -519,6 +727,9 @@
     if (name === 'previewMode') { state.previewMode = act.dataset.id; state.autoMocked = false; render(true); return; }
     if (name === 'previewScreen') { state.previewScreen = act.dataset.id; render(true); return; }
     if (name === 'cmdk') { App.cmdOpen(); return; }
+    if (name === 'cmd') { App.cmdOpen(); return; }
+    if (name === 'back') { App.back(); return; }
+    if (name === 'quickNew') { App.quickNew(); return; }
     if (name === 'roleMenu') { App.roleMenu(act); return; }
     if (name === 'switchSuper') { Store.setRole('super'); UI.toast('已切换为超级管理员'); App.refresh(); return; }
     if (name === 'publish') { App.openPublish(''); return; }
@@ -603,6 +814,11 @@
   render();
   window.addEventListener('hashchange', () => {
     const h = location.hash.replace(/^#\/?/, '').split('?')[0];
-    if (h && PAGES[h] && h !== state.route) { state.route = h; render(); }
+    if (h && PAGES[h] && h !== state.route) {
+      state.route = h;
+      state.app = wbOf(h);
+      delete state.openGroups[state.app];
+      render();
+    }
   });
 })();
