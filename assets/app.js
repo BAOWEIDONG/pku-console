@@ -91,7 +91,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {}, app: 'platform', openGroup: {},
+    route: 'workbench', ctx: {}, app: 'platform', openGroups: {},
     previewOpen: true, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
@@ -103,7 +103,8 @@
   function railHTML() {
     const role = Store.role;
     const nav = NAV_OF[state.app] || NAV_OF.platform;
-    const navOpen = state.openGroup[state.app] || ((nav.find((g) => g.items.some((it) => it.id === state.route)) || nav[0] || {}).group || '_top');
+    const navOpen = state.openGroups[state.app] ||
+      [((nav.find((g) => g.items.some((it) => it.id === state.route)) || nav[0] || {}).group || '_top')];
     return '<div class="rail-inner">' +
       '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
       '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
@@ -114,7 +115,7 @@
         const items = g.items.filter((it) => visible(it.id));
         if (!items.length) return '';
         const key = g.group || '_top';
-        const cl = g.group ? key !== navOpen : false;
+        const cl = g.group ? navOpen.indexOf(key) < 0 : false;
         return '<div class="navgrp ' + (cl ? 'collapsed' : '') + '">' +
           (g.group ? '<button class="navgrp-h" data-collapse="' + key + '">' + E(g.group) +
             '<span style="margin-left:auto;font-size:10px;opacity:.5">' + items.length + '</span>' +
@@ -255,7 +256,7 @@
       if (state.history.length > 30) state.history.shift();
       state.route = route;
       state.app = wbOf(route);
-      delete state.openGroup[state.app];
+      delete state.openGroups[state.app];
       state.ctx = ctx || {};
       const page = currentPage();
       const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
@@ -482,7 +483,12 @@
     const col = e.target.closest('[data-collapse]');
     if (col) {
       const k = col.dataset.collapse;
-      state.openGroup[state.app] = (state.openGroup[state.app] === k) ? '' : k;
+      const cur = state.openGroups[state.app] ||
+        [((NAV_OF[state.app] || []).find((g) => g.items.some((it) => it.id === state.route)) || {}).group || '_top'];
+      const idx = cur.indexOf(k);
+      if (idx >= 0) cur.splice(idx, 1); else cur.push(k);
+      if (!cur.length) cur.push(k);
+      state.openGroups[state.app] = cur.slice();
       render(true);
       return;
     }
