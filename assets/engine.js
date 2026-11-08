@@ -101,6 +101,7 @@
               }).join('') + '</div>' +
               '<div class="note" style="margin-top:12px">当前状态：<b>' + (fsm.label[o.status] || o.status) + '</b>；可执行：' + (can.length ? can.map((s) => fsm.label[s]).join('、') : '无（终态）') + '</div>' }) +
             K.panel({ title: '订单快照', sub: '下单时的价格与规则，不随配置变更', body: dsHTML(o) }) +
+            (window.Engine.orderExtras ? Engine.orderExtras(o) : '') +
             K.panel({ title: '操作审计', sub: audits.length + ' 条', flush: true, body:
               audits.length ? UI.table([
                 { label: '时间', render: (a) => '<span class="small tnum muted">' + E(a.at) + '</span>' },
@@ -118,6 +119,7 @@
     },
     actions: {
       back() { App.go('trd-orders'); },
+      checkItem(d) { Engine.toggleCheck(state0.id, +d.id); App.refresh(); },
       adv(d) {
         const o = Engine.orderById(state0.id);
         const to = d.id;
@@ -144,9 +146,15 @@
       if (b) { b.status = to === 'completed' ? 'completed' : to === 'settled' ? 'completed' : to; }
     }
     if (o.kind === '商品') {
-      const g = db.supplements.find((x) => x.id === o.sku);
-      if (g && to === 'paid') { g.stock = Math.max(0, g.stock - 1); }
-      if (g && to === 'cancelled') { g.stock = g.stock + 1; }
+      if (to === 'paid' && window.Engine.stockMove) Engine.stockMove(o.sku, -1, '订单 ' + o.id + ' 支付');
+      if (to === 'cancelled' && window.Engine.stockMove) Engine.stockMove(o.sku, 1, '订单 ' + o.id + ' 取消回补');
+    }
+    if (o.kind === '服务预约') {
+      if (to === 'confirmed' && Engine.holdSlot) {
+        const r = Engine.holdSlot({ id: o.id, date: o.at.slice(0, 10), time: '08:30', serviceId: o.item, status: o.status });
+        if (!r.ok) { UI.toast(r.reason, 'warn'); return; }
+      }
+      if (to === 'cancelled' && Engine.releaseSlot) Engine.releaseSlot(o.id);
     }
     Engine.audit(o.id, '状态变更', o.status, to, reason);
     Store.mark('orders', '订单状态');
