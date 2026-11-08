@@ -49,6 +49,7 @@
     service: [
       { group: '', items: [{ id: 'svc-catalog', label: '服务商品', icon: 'package' }] },
       { group: '定价', items: [{ id: 'svc-pricing', label: '价格与政策', icon: 'target' }, { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }] },
+      { group: '商品', items: [{ id: 'svc-goods', label: '商品库（补剂/实物）', icon: 'gift' }] },
       { group: '履约基础', items: [{ id: 'g-orgs', label: '服务机构', icon: 'hospital' }, { id: 'e-booking', label: '预约设置', icon: 'calendar' }, { id: 'e-dashboard', label: '服务概览', icon: 'grid' }] }
     ],
     customer: [
@@ -71,12 +72,13 @@
       { group: '减重营 · 报告', items: [{ id: 'v-stats', label: '营期统计', icon: 'chart' }, { id: 'v-report', label: '结营报告', icon: 'file' }, { id: 'v-enterprise', label: '企业健康报告', icon: 'building' }, { id: 'v-supervisor', label: '督导总览', icon: 'eye' }] }
     ],
     platform: [
-      { group: '', items: [{ id: 'workbench', label: '工作台', icon: 'grid' }, { id: 's-publish', label: '发布中心', icon: 'send' }, { id: 's-logs', label: '操作日志', icon: 'clock' }, { id: 'g-roles', label: '角色与权限', icon: 'lock' }, { id: 's-settings', label: '系统设置', icon: 'settings' }] }
+      { group: '', items: [{ id: 's-publish', label: '发布中心', icon: 'send' }, { id: 's-logs', label: '操作日志', icon: 'clock' }, { id: 'g-roles', label: '角色与权限', icon: 'lock' }, { id: 's-settings', label: '系统设置', icon: 'settings' }] }
     ]
   };
 
   const ROUTE_WB = {};
   Object.keys(NAV_OF).forEach((wb) => NAV_OF[wb].forEach((g) => g.items.forEach((it) => { ROUTE_WB[it.id] = wb; })));
+  ROUTE_WB.workbench = 'platform';
   const wbOf = (route) => ROUTE_WB[route] || 'service';
 
   const ROUTE_META = (route) => PAGES[route] || {};
@@ -92,7 +94,7 @@
 
   const state = {
     route: 'workbench', ctx: {}, app: 'platform', openGroups: {},
-    previewOpen: true, previewMode: 'live',
+    previewOpen: false, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
   };
@@ -108,6 +110,7 @@
     return '<div class="rail-inner">' +
       '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
       '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
+      '<button class="homebtn ' + (state.route === 'workbench' ? 'on' : '') + '" data-nav="workbench">' + I('grid', 15) + '<span>主页</span><span style="margin-left:auto;font-size:10px;opacity:.45">工作台</span></button>' +
       '<div class="appswitch">' + WORKBENCHES.map((a) =>
         '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '">' +
         '<i class="dot" style="background:' + a.dot + '"></i><span>' + a.label + '</span></button>').join('') + '</div>' +
@@ -154,7 +157,7 @@
       '<div class="top-actions">' +
       '<button class="searchbtn" data-act="cmdk">' + I('search', 15) + '<span>搜索页面、功能、配置</span><kbd>⌘K</kbd></button>' +
       (dirty ? '<button class="btn" data-act="goPublish" style="color:#b83c2c;border-color:#f3d3ce">' + I('send', 14) + dirty + ' 项待发布</button>' : '') +
-      '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' +
+      (page.preview ? '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' : '') +
       '<button class="btn primary" data-act="publish"' + (Store.canPublish ? '' : ' disabled title="当前角色无发布权限"') + '>' + I('send', 15) + '发布</button>' +
       '<div style="width:1px;height:20px;background:var(--line);margin:0 3px"></div>' +
       '<button class="iconbtn" data-act="notify" style="position:relative">' + I('bell', 17) + '<span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#d9503f;border:1.5px solid #fff"></span></button>' +
@@ -167,6 +170,8 @@
   /* ---------------------------------------------------------- dock */
   function dockHTML() {
     if (!state.previewOpen) return '';
+    const meta = ROUTE_META(state.route);
+    if (!meta.preview) return '';
     const scr = Preview.SCREENS[state.previewApp] || [];
     const live = state.previewMode === 'live';
     return '<aside class="dock"><div class="dock-h">' +
