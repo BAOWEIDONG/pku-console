@@ -150,6 +150,10 @@
       if (to === 'cancelled') { if (Engine.releaseReserve) Engine.releaseReserve(o.id); if (window.Engine.stockMove) Engine.stockMove(o.sku, 1, '订单 ' + o.id + ' 取消回补'); }
     }
     if (o.kind === '服务预约') {
+      if (to === 'confirmed' && Engine.canBook) {
+        const chk = Engine.canBook({ id: o.id, item: o.item, customer: o.customer });
+        if (!chk.ok) { UI.toast('准入校验未通过：' + chk.reasons.join('；'), 'warn'); return; }
+      }
       if (to === 'confirmed' && Engine.holdSlot) {
         const r = Engine.holdSlot({ id: o.id, date: o.at.slice(0, 10), time: '08:30', serviceId: o.item, status: o.status });
         if (!r.ok) { UI.toast(r.reason, 'warn'); return; }
