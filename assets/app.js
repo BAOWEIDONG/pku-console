@@ -947,6 +947,10 @@
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
   if (window.V8) V8.ensure();
+  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9) {
+    Store.db.meta.version = '9.0.0';
+    Store.persist();
+  }
   // 主题色注入
   try {
     const p = Store.db.shared.theme.primary;
