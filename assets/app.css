@@ -583,3 +583,8 @@ button:focus:not(:focus-visible) { outline: none; }
 .navgrp.collapsed .navitem { display: none; }
 .rail-foot { width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid rgba(255,255,255,.07); border-radius: 0; }
 .rail-foot:hover { background: rgba(255,255,255,.04); }
+
+.homebtn{display:flex;align-items:center;gap:9px;margin:0 14px 8px;padding:9px 10px;border-radius:10px;color:#cfe0f5;font-size:12.5px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+.homebtn:hover{background:rgba(255,255,255,.08)}
+.homebtn.on{background:linear-gradient(180deg,rgba(63,140,255,.28),rgba(63,140,255,.14));color:#fff;border-color:rgba(120,180,255,.3)}
+.homebtn svg{opacity:.8}
