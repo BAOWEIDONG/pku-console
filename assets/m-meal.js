@@ -7,6 +7,9 @@
   const E = UI.esc, I = UI.icon;
   const P = window.PAGES = window.PAGES || {};
   const M = () => Store.db;
+  const hsum = (id) => String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const imgOf = (id, kind) => (window.IMG || {})[(kind === 'food' ? 'f' : 'g') + (hsum(id) % (kind === 'food' ? 18 : 10) + 1)] || '';
+  const thumb = (id, kind, w, h) => '<img src="' + imgOf(id, kind) + '" style="width:' + w + 'px;height:' + h + 'px;border-radius:8px;object-fit:cover;flex:none" alt="">';
   const mealOf = (d) => M().dishes.find((x) => x.id === d) || {};
   const tplOf = (t) => M().mealTemplates.find((x) => x.id === t) || {};
 
@@ -80,8 +83,9 @@
   function bodyFor(tab) {
     const D = M();
     if (tab === 'day') {
-      return '<div class="grid g-2">' + D.dayPlans.map((p) => '<div class="panel" style="padding:16px">' +
-        '<div class="row"><div><div class="row" style="gap:8px"><b style="font-size:14px">' + E(p.name) + '</b>' + UI.pill(p.on ? '在售' : '草稿', p.on ? 'green' : 'amber') + '</div>' +
+      return '<div class="grid g-2">' + D.dayPlans.map((p) => '<div class="panel" style="padding:0;overflow:hidden">' +
+        '<div style="height:92px;overflow:hidden"><img src="' + imgOf(p.id, 'food') + '" style="width:100%;height:92px;object-fit:cover;display:block" alt=""></div>' +
+        '<div style="padding:14px 16px"><div class="row"><div><div class="row" style="gap:8px"><b style="font-size:14px">' + E(p.name) + '</b>' + UI.pill(p.on ? '在售' : '草稿', p.on ? 'green' : 'amber') + '</div>' +
         '<div class="small muted" style="margin-top:3px">' + E(p.audience) + ' · ' + p.kcal + ' kcal · 采纳 ' + p.used + ' 人</div></div>' +
         '<button class="iconbtn right" data-act="editDay" data-id="' + p.id + '">' + I('edit', 15) + '</button></div>' +
         '<div class="hairline"></div>' +
@@ -94,7 +98,7 @@
         }).join('') +
         '<div class="row" style="margin-top:10px"><span class="small mut">蛋白 ' + p.p + 'g · 碳水 ' + p.c + 'g · 脂肪 ' + p.f + 'g</span>' +
         '<div class="right row" style="gap:6px"><button class="btn sm" data-act="copyDay" data-id="' + p.id + '">复制</button>' +
-        '<button class="btn sm primary" data-act="editDay" data-id="' + p.id + '">搭配</button></div></div></div>').join('') + '</div>';
+        '<button class="btn sm primary" data-act="editDay" data-id="' + p.id + '">搭配</button></div></div></div></div>').join('') + '</div>';
     }
     if (tab === 'tpl') {
       return K.panel({ flush: true, body: UI.table([
@@ -109,7 +113,7 @@
     }
     if (tab === 'dish') {
       return K.panel({ flush: true, body: UI.table([
-        { label: '菜品', render: (d) => '<div><div class="strong">' + E(d.name) + '</div><div class="small muted">' + E(d.tags.join(' · ')) + (d.allerg.length ? ' · 过敏：' + E(d.allerg.join('/')) : '') + '</div></div>' },
+        { label: '菜品', w: '260px', render: (d) => '<div class="cellflex">' + thumb(d.id, 'food', 52, 36) + '<div style="min-width:0"><div class="strong clip">' + E(d.name) + '</div><div class="small muted clip">' + E(d.tags.join(' · ')) + (d.allerg.length ? ' · 过敏：' + E(d.allerg.join('/')) : '') + '</div></div></div>' },
         { label: '槽位', render: (d) => UI.pill(d.slot, 'grey') },
         { label: '适用餐次', render: (d) => '<span class="small">' + E(d.meal.join(' / ')) + '</span>' },
         { label: '食材', render: (d) => '<span class="small muted">' + E(d.ing.map((x) => (M().ingredients.find((i) => i.id === x[0]) || {}).name).join(' + ')) + '</span>' },
@@ -128,7 +132,7 @@
       ], M().ingredients.map((i) => Object.assign({ _id: i.id }, i))) });
     }
     return '<div class="note" style="margin-bottom:12px">商品（补剂/实物）的售价、库存与上下架统一在「服务与商品 · 商品库」维护，这里只配置推荐与挂载位置。<button class="btn sm" data-act="goGoods" style="margin-left:8px">⤷ 去商品库</button></div>' + K.panel({ flush: true, body: UI.table([
-      { label: '补剂', render: (s) => '<div><div class="strong">' + E(s.name) + '</div><div class="small muted">' + E(s.cat) + '</div></div>' },
+      { label: '补剂', w: '240px', render: (s) => '<div class="cellflex">' + thumb(s.id, 'goods', 44, 32) + '<div style="min-width:0"><div class="strong clip">' + E(s.name) + '</div><div class="small muted">' + E(s.cat) + '</div></div></div>' },
       { label: '适用', render: (s) => '<span class="small">' + E(s.fit) + '</span>' },
       { label: '禁忌', render: (s) => s.avoid.length ? '<span class="small" style="color:#b83c2c">' + E(s.avoid.join(' / ')) + '</span>' : '<span class="muted small">无</span>' },
       { label: '售价 / 结算', align: 'right', render: (s) => '<b class="tnum">¥' + s.price + '</b><div class="small muted tnum">结算 ¥' + s.settle + '</div>' },
@@ -186,7 +190,7 @@
             cands.map((d) => {
               const on = st.pick[st.slot].indexOf(d.id) >= 0;
               return '<div class="listrow" style="cursor:pointer" data-act="toggleDish" data-id="' + d.id + '">' +
-                '<div class="ava ' + (on ? '' : 'g') + '" style="width:26px;height:26px;font-size:11px">' + (on ? '✓' : '+') + '</div>' +
+                thumb(d.id, 'food', 40, 28) +
                 '<div class="meta"><b>' + E(d.name) + '</b><span>' + E(d.slot) + ' · ' + d.kcal + ' kcal · 蛋白 ' + d.p + 'g</span></div>' +
                 '<div class="right small mut">' + E(d.tags[0] || '') + '</div></div>';
             }).join('') + '</div>' }) +
