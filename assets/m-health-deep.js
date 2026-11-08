@@ -128,6 +128,25 @@
   };
   window.V7 = V7;
 
+  function healthChain() {
+    const steps = [
+      { n: '01', t: '服务详情', d: '主图、图文、流程、须知、适用禁忌', r: 'e-services' },
+      { n: '02', t: '模块与入口', d: '首页五宫格、分类、推荐位', r: 'e-modules' },
+      { n: '03', t: '预约与履约', d: '机构、时段、资格、现场签到', r: 'h-service-flow' },
+      { n: '04', t: '风险分层', d: '阈值规则、高风险名单、关怀缺口', r: 'h-risk' },
+      { n: '05', t: '管理计划', d: '模板、目标、里程碑、责任人', r: 'h-plans' },
+      { n: '06', t: '随访执行', d: '今日、逾期、下一次随访', r: 'h-followups' },
+      { n: '07', t: '结果评估', d: '前后指标、改善率、未达标原因', r: 'h-outcomes' },
+      { n: '08', t: '企业报告', d: '匿名聚合、部门对比、预算建议', r: 'h-enterprise' }
+    ];
+    return K.panel({ title: '健康服务配置链路', sub: '八个环节共享同一份服务与人群数据，改一处要顺着链路检查', cls: 'chain-panel',
+      actions: K.btn('看功能地图', 'goMap', { cls: 'ghost sm', icon: 'target' }),
+      body: '<div class="chain-grid">' + steps.map((x) =>
+        '<button class="chain-step" data-act="go" data-id="' + x.r + '"><span class="cs-n">' + x.n + '</span><div><b>' + x.t + '</b><span>' + x.d + '</span></div></button>').join('') +
+      '</div><div class="chain-foot"><span class="small mut">关键原则：服务详情中的「适用/禁忌」会进入预约资格校验；报告异常会进入风险与随访；随访结果会回到下一次计划调整。</span>' +
+        '<button class="btn sm" data-act="go" data-id="g-coverage">核对前端覆盖 ' + I('chevron', 11) + '</button></div>' });
+  }
+
   /* ============================================================ 健康总览 */
   P['h-overview'] = {
     app: 'employee', title: '健康管理总览', sub: '从一次服务到长期健康结果，管理动作必须闭环',
@@ -152,6 +171,7 @@
       ];
       return K.head('健康管理总览', '把「做过什么服务」变成「健康有没有变好」', 
         K.btn('导出季度报告', 'exportH', { icon: 'download' }) + ' ' + K.btn('进入随访台', 'goFollow', { icon: 'clock', cls: 'primary' }), 'HEALTH / OVERVIEW') +
+        healthChain() +
         '<div class="hn-hero"><div class="hn-hero-main"><div class="hn-eyebrow">HEALTH LOOP · 2026 Q4</div><h2>从服务履约到健康结果，一条链管理到底</h2><p>健康管理不是多做几个页面，而是每个异常都能找到责任人、每个计划都有随访、每次随访都有结果、每个结果都能回到下一次决策。</p>' +
           '<div class="hn-chain">' + ['服务', '履约', '异常', '分层', '计划', '随访', '结果'].map((x, i) => '<span class="' + (i < 5 ? 'on' : '') + '">' + x + '</span>' + (i < 6 ? '<i>→</i>' : '')).join('') + '</div></div>' +
           '<div class="hn-hero-score"><b>76</b><span>闭环完整度 / 100</span><em>已打通 5 / 7 个环节</em></div></div>' +
@@ -213,7 +233,9 @@
         else UI.toast('高风险人群均已进入管理');
       },
       quickFollow() { App.go('h-followups'); },
-      quickReport() { App.go('h-enterprise'); }
+      quickReport() { App.go('h-enterprise'); },
+      go(d) { App.go(d.id); },
+      goMap() { App.go('g-coverage'); }
     }
   };
 

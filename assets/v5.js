@@ -70,13 +70,13 @@
   /* ================================================================== data */
   const COVERAGE = [
     /* 品牌站 */
-    { ch: 'pku', page: '首页', feature: '主视觉 / 三张 Banner / 快捷入口', route: 'b-home', ctrl: '首页内容编排', status: 'full', note: '主视觉、轮播、入口文案与跳转均可配置' },
+    { ch: 'pku', page: '首页', feature: '主视觉 / 三张 Banner / 快捷入口', route: 'b-home', ctrl: '首页内容编排', status: 'full', note: '主视觉、入口文案与跳转可配；首屏轮播直达「轮播与开屏」上传图片' },
     { ch: 'pku', page: '首页', feature: '集团介绍与品牌主张', route: 'b-about', ctrl: '品牌页', status: 'full', note: '简介、数字、里程碑、图片' },
     { ch: 'pku', page: '分院网络', feature: '6 省 11 城机构卡片与筛选', route: 'b-hospitals', ctrl: '服务机构 / 分院网络', status: 'full', note: '机构、城市、等级、地址、电话、封面' },
     { ch: 'pku', page: '科室', feature: '学科与科室导航、科室详情', route: 'b-departments', ctrl: '学科与科室', status: 'full', note: '一级学科、科室、简介、专家关联' },
     { ch: 'pku', page: '师资团队', feature: '专家卡片、筛选、成员详情', route: 'b-team', ctrl: '师资团队', status: 'full', note: '头像、职称、擅长、简介、排序' },
     { ch: 'pku', page: '专家详情', feature: '出诊信息与预约入口', route: 'b-team', ctrl: '师资团队 · 出诊', status: 'partial', note: '专家资料可维护；独立出诊排班尚未建表' },
-    { ch: 'pku', page: '健康营', feature: '营期展示、课程与团队', route: 'b-camp', ctrl: '健康营展示页', status: 'full', note: '营期介绍、亮点、课程、团队、报名入口' },
+    { ch: 'pku', page: '健康营', feature: '营期展示、课程与团队', route: 'b-camp', ctrl: '健康营展示页', status: 'full', note: '营期介绍、主图、亮点、团队与报名入口' },
     { ch: 'pku', page: '全站', feature: '站点标题 / 分享卡 / SEO', route: 'b-site', ctrl: '站点设置', status: 'partial', note: '标题与描述可改；分享卡图与多语言未接入' },
     { ch: 'pku', page: '全站', feature: '联系热线 / 地址 / 投诉', route: 'g-brand', ctrl: '品牌与主体', status: 'full', note: '三端共用一套联系方式' },
     { ch: 'pku', page: '全站', feature: '在线咨询与预约 CTA', route: 'e-booking', ctrl: '预约设置', status: 'full', note: '点击后进入职工健康预约流程' },
@@ -87,13 +87,13 @@
     { ch: 'employee', page: '首页', feature: '品牌横幅轮播与自动播放', route: 'content-banners', ctrl: '轮播与开屏', status: 'full', note: '图片上传、文案、跳转、排序、投放时间、自动播放' },
     { ch: 'employee', page: '首页', feature: '五大服务模块（筛查/慢病/就医/特色/应急）', route: 'e-modules', ctrl: '模块与分类', status: 'full', note: '名称、副标题、图标色、显隐、排序' },
     { ch: 'employee', page: '服务', feature: '服务列表、分类、搜索、热门推荐', route: 'e-services', ctrl: '服务目录', status: 'full', note: '分类、标签、推荐位、上下架' },
-    { ch: 'employee', page: '服务详情', feature: '图文详情 / 服务须知 / 流程 / 机构', route: 'e-services', ctrl: '服务详情', status: 'partial', note: '文字介绍、流程与机构可改；服务主图与图文块尚待接入' },
+    { ch: 'employee', page: '服务详情', feature: '图文详情 / 服务须知 / 流程 / 机构', route: 'e-services', ctrl: '服务详情', status: 'full', note: '主图、图集、图文块、流程、须知、适用/禁忌、可约机构全部可配' },
     { ch: 'employee', page: '商品详情', feature: '商品主图 / 图集 / 图文详情 / SKU', route: 'svc-goods', ctrl: '实物商品', status: 'full', note: '主图与图集上传、图文块、规格 SKU、物流售后' },
     { ch: 'employee', page: '服务详情', feature: '价格、规格与权益抵扣', route: 'svc-pricing', ctrl: '价格与政策', status: 'full', note: '成本/结算/挂牌/协议价、税点、有效期' },
     { ch: 'employee', page: '预约', feature: '机构 / 日期 / 时段 / 表单字段', route: 'e-booking', ctrl: '预约设置', status: 'full', note: '可约机构、时段、字段必填与顺序' },
     { ch: 'employee', page: '预约', feature: '我的预约与取消', route: 'e-bookings', ctrl: '预约订单', status: 'full', note: '状态、改约、取消、履约记录' },
     { ch: 'employee', page: '权益', feature: '体检 / EAP / 门诊额度', route: 'e-orgs', ctrl: '企业客户与权益', status: 'partial', note: '企业额度可配；个人剩余额度视图待补' },
-    { ch: 'employee', page: '问答', feature: '健康问答与医生回复', route: 'e-qa', ctrl: '深度问答', status: 'full', note: '问题、回复、置顶、敏感词审核' },
+    { ch: 'employee', page: '问答', feature: '健康问答与医生回复', route: 'e-qa', ctrl: '深度问答', status: 'full', note: '图文回复、分类、置顶、审核、敏感词、未命中问题池与关联服务' },
     { ch: 'employee', page: '科普', feature: '文章、视频、专题', route: 'e-content', ctrl: '职工端内容', status: 'full', note: '封面、正文、分类、推荐、上下架' },
     { ch: 'employee', page: '企业专区', feature: '行业方案与企业权益包', route: 'e-orgs', ctrl: '企业客户与权益', status: 'full', note: '企业、行业、人数、权益、合同期' },
     { ch: 'employee', page: '我的', feature: '个人健康档案与报告', route: 'crm-360', ctrl: '客户 360', status: 'partial', note: '后台可看完整档案；端上档案页未拆分为独立配置' },
@@ -282,9 +282,11 @@
         '<p>三端在线 · 今日 48 名学员在营 · ' + s.bookings + ' 笔职工预约 · ' + (s.dirty ? '<b>' + s.dirty + ' 项变更等待发布</b>' : '全部配置已同步') + '</p>' +
         '<div class="vhero-quick">' +
           '<button data-act="go" data-id="svc-catalog">' + I('plus', 12) + '新建服务</button>' +
-          '<button data-act="go" data-id="g-content">' + I('image', 12) + '编排内容</button>' +
+          '<button data-act="go" data-id="content-banners">' + I('image', 12) + '配置轮播</button>' +
+          '<button data-act="go" data-id="svc-goods">' + I('gift', 12) + '商品图文</button>' +
+          '<button data-act="go" data-id="e-services">' + I('stethoscope', 12) + '服务详情</button>' +
           '<button data-act="go" data-id="msg-center">' + I('send', 12) + '发起触达</button>' +
-          '<button data-act="go" data-id="g-coverage">' + I('target', 12) + '查看覆盖</button>' +
+          '<button data-act="go" data-id="g-impact">' + I('activity', 12) + '变更影响</button>' +
         '</div>' +
       '</div>' +
       '<div class="vhero-focus">' +
@@ -446,6 +448,37 @@
     '</section>';
   }
 
+  function homeSetup() {
+    const db = Store.db;
+    const eb = (db.brand && db.brand.banners) || [];
+    const em = (db.employee && db.employee.banners) || [];
+    const vb = (db.versionall && db.versionall.banners) || [];
+    const goods = (db.supplements || []).length;
+    const services = ((db.employee && db.employee.services) || []).length;
+    const qa = ((db.employee && db.employee.qa) || []).length;
+    const profiles = ((db.health && db.health.profiles) || []).length;
+    const members = ((db.fivegood && db.fivegood.members) || []).length;
+    const cards = [
+      { t: '轮播与开屏', d: '三个 H5 的首屏图片、文案、跳转、投放时间', n: (eb.length + em.length + vb.length) + ' 张已配置', r: 'content-banners', ic: 'image' },
+      { t: '职工端服务详情', d: '主图、图集、图文介绍、流程、须知与适用人群', n: services + ' 项服务', r: 'e-services', ic: 'stethoscope' },
+      { t: '实物商品', d: '主图、图集、图文详情、SKU、库存与售后', n: goods + ' 个商品', r: 'svc-goods', ic: 'gift' },
+      { t: '健康科普内容', d: '封面、作者、图文正文、分类与上下线', n: ((db.employee && db.employee.articles) || []).length + ' 篇文章', r: 'e-content', ic: 'video' },
+      { t: '深度问答知识库', d: '标准回复、图文补充、置顶、审核与未命中问题', n: qa + ' 条问答', r: 'e-qa', ic: 'message' },
+      { t: '健康管理闭环', d: '风险分层、管理计划、随访、结果与企业报告', n: profiles + ' 份档案', r: 'h-overview', ic: 'shield' },
+      { t: '五好生活运营', d: '五维内容、任务、打卡审核、信号升级与月度报告', n: members + ' 名会员', r: 'fg-overview', ic: 'spark' },
+      { t: '前端功能地图', d: '逐个 H5 功能看后台入口、覆盖状态与还缺什么', n: COVERAGE.length + ' 个功能点', r: 'g-coverage', ic: 'target' }
+    ];
+    return '<section class="vcard vsetup">' +
+      '<div class="vcard-h"><div><h3>内容与服务配置入口</h3><p>用户在前端看到的图片、介绍、流程和问答，都在这里改</p></div>' +
+        '<button class="vlink" data-act="go" data-id="g-coverage">看完整功能地图 ' + I('chevron', 13) + '</button></div>' +
+      '<div class="setup-grid">' + cards.map((c) =>
+        '<button class="setup-card" data-act="go" data-id="' + c.r + '">' +
+          '<span class="sc-h"><span class="sc-ic">' + I(c.ic, 15) + '</span><b>' + E(c.t) + '</b></span>' +
+          '<span>' + E(c.d) + '</span>' +
+          '<span class="sc-foot"><span class="sc-count">' + E(c.n) + '</span><span class="sc-arrow">去配置 ' + I('chevron', 10) + '</span></span>' +
+        '</button>').join('') + '</div></section>';
+  }
+
   function homeInsights() {
     const items = [
       { t: '周三 20:00 是打卡低谷', d: '近 4 周同期完成率下降 12%，建议把提醒提前到 18:30。', tag: '项目运营', go: 'v-records' },
@@ -468,6 +501,7 @@
     render() {
       ensure();
       return '<div class="vhome">' + homeHero() + homeKpis() +
+        '<div style="height:14px"></div>' + homeSetup() + '<div style="height:14px"></div>' +
         '<div class="vbento">' +
           '<div class="b8">' + homeChannels() + '</div>' +
           '<div class="b4">' + homeTasks() + '</div>' +
@@ -479,6 +513,8 @@
         '</div></div>';
     },
     actions: {
+      go(d) { App.go(d.id); },
+      impact() { App.go('g-impact'); },
       previewAll() { App.openPreview(); },
       publish() { App.openPublish(''); }
     }
@@ -585,14 +621,14 @@
   /* ============================================================ IMPACT */
   P['g-impact'] = {
     app: 'all', title: '变更影响', sub: '一次改动会影响哪些端、哪些页',
-    grp: 'platform',
+    grp: 'command',
     render() {
       const dirty = Store.dirty;
       const imp = impactOf(dirty);
       const gates = gatesFor(dirty);
       const risk = gates.filter((g) => !g.ok).length;
-      return K.head('变更影响分析', '在发布前看清影响面：渠道、页面、数据对象与校验闸门',
-        '<button class="btn" data-act="go" data-id="s-publish">' + I('send', 15) + '去发布</button>', 'PLATFORM / IMPACT') +
+      return K.head('变更影响', '在发布前看清影响面：渠道、页面、数据对象与校验闸门；从任何工作区点进来都会保留返回路径',
+        '<button class="btn" data-act="go" data-id="s-publish">' + I('send', 15) + '去发布</button>', 'GLOBAL / IMPACT') +
         '<div class="vsummary">' +
           '<div class="vsum-card"><span>未发布变更</span><b>' + dirty.length + '</b><em>本地工作区</em></div>' +
           '<div class="vsum-card"><span>影响渠道</span><b>' + imp.channels.length + '</b><em>共 3 个上线渠道</em></div>' +

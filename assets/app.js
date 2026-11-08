@@ -274,10 +274,17 @@
   const ROUTE_WB = {};
   Object.keys(NAV_OF).forEach((wb) => NAV_OF[wb].forEach((g) => g.items.forEach((it) => { ROUTE_WB[it.id] = wb; })));
   ROUTE_WB.workbench = 'command';
-  ROUTE_WB['g-impact'] = 'platform';
+  ROUTE_WB['g-impact'] = 'command';
+  ROUTE_WB['s-publish'] = 'command';
+  ROUTE_WB['s-logs'] = 'command';
   ROUTE_WB['g-coverage'] = 'insight';
   ROUTE_WB['g-insights'] = 'insight';
   const wbOf = (route) => ROUTE_WB[route] || 'command';
+  /* 这些是跨工作区的公共页：从哪儿点进来，就留在哪儿，不强行切换侧栏 */
+  const GLOBAL_ROUTES = {
+    'g-impact': 1, 'g-coverage': 1, 'g-insights': 1,
+    's-publish': 1, 's-logs': 1, 'media-lib': 1, 'feature-map': 1
+  };
 
   const ROUTE_META = (route) => PAGES[route] || {};
   function visible(route) {
@@ -299,28 +306,16 @@
 
   function currentPage() { return PAGES[state.route] || PAGES.workbench; }
 
-  /* ---------------------------------------------------------- rail + contextual nav */
-  function railDockHTML() {
-    const role = Store.role;
-    return '<div class="dock-brand" title="北大医疗 · 超级运营中台">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>' +
-      '</div>' +
-      '<nav class="dock-nav">' + WORKBENCHES.map((a) =>
-        '<button data-app="' + a.id + '" class="' + (a.id === state.app ? 'on' : '') + '" title="' + a.label + '" aria-label="' + a.label + '">' +
-          I(a.icon, 20) + '<span class="dock-tip">' + a.label + '</span><i class="dock-dot" style="background:' + a.dot + '"></i>' +
-        '</button>').join('') + '</nav>' +
-      '<div class="dock-bottom">' +
-        '<button data-act="cmd" title="搜索">' + I('search', 19) + '<span class="dock-tip">搜索 ⌘K</span></button>' +
-        '<button data-act="notify" title="通知" class="has-dot">' + I('bell', 19) + '</button>' +
-        '<button data-act="roleMenu" class="dock-user" title="' + E(role.name) + '">' + E(role.name.slice(0, 1)) + '</button>' +
-      '</div>';
-  }
-
   function subnavHTML() {
     const space = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
     const nav = NAV_OF[state.app] || NAV_OF.platform;
     const navOpen = state.openGroups[state.app] || nav.map((g) => g.group || '_top');
-    return '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + ' · 工作区</div>' +
+    return '<div class="side-brand">' +
+        '<span class="side-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>' +
+        '<span class="side-name"><b>北大医疗</b><em>超级运营中台</em></span>' +
+        '<button class="side-all" data-act="spaceMenu" title="查看全部 9 个工作区">' + I('grid', 13) + '全部</button>' +
+      '</div>' +
+      '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + ' · 当前工作区</div>' +
         '<button class="space-switch" data-act="spaceMenu" title="切换工作区">' +
           '<span class="sp-dot" style="background:' + space.dot + '"></span>' +
           '<b>' + E(space.label) + '</b>' + I('down', 13) + '</button>' +
@@ -346,6 +341,11 @@
           }).join('') + '</div>';
       }).join('') + '</nav>' +
       '<div class="subnav-foot">' +
+        '<div class="side-global">' +
+          '<button data-nav="g-impact" title="查看未发布改动会影响哪些页面">' + I('activity', 12) + '变更影响</button>' +
+          '<button data-nav="s-publish" title="统一发布到三个 H5">' + I('send', 12) + '发布</button>' +
+          '<button data-nav="g-coverage" title="逐项查看前端功能对应的后台入口">' + I('target', 12) + '功能地图</button>' +
+        '</div>' +
         '<div class="subnav-sync"><span class="' + (Store.dirtyCount ? 'warn' : 'ok') + '"></span>' +
           '<div><b>' + (Store.dirtyCount ? Store.dirtyCount + ' 项待发布' : '全部已同步') + '</b><em>v' + Store.db.meta.version + ' · ' + Store.db.meta.publishedAt.slice(5) + '</em></div>' +
           '<button data-act="goPublish" title="发布中心">' + I('chevron', 13) + '</button></div>' +
@@ -459,8 +459,7 @@
     const readonly = !canEdit(state.route);
     document.getElementById('app').innerHTML =
       '<div class="nav-scrim" data-act="toggleNav"></div>' +
-      '<div class="shell"><aside class="bdock" aria-label="工作区">' + railDockHTML() + '</aside>' +
-      '<aside class="subnav" aria-label="模块导航">' + subnavHTML() + '</aside><div class="main">' +
+      '<div class="shell"><aside class="subnav" aria-label="主导航">' + subnavHTML() + '</aside><div class="main">' +
       '<header class="topbar">' + topbarHTML() + '</header>' +
       '<div class="canvas ' + (state.previewOpen ? 'has-dock' : '') + '">' +
       '<div class="scrollarea scroll"><div class="page ' + (readonly ? 'readonly' : '') + '">' +
@@ -516,12 +515,16 @@
       if (state.history.length > 30) state.history.shift();
       if (route === 'workbench') { state.app = 'command'; state.origin = null; }
       const targetApp = wbOf(route);
+      const isGlobal = !!GLOBAL_ROUTES[route];
       const inNav = route === 'workbench' ||
         (NAV_OF[state.app] || []).some((g) => g.items.some((it) => it.id === route));
-      if (targetApp !== state.app && !inNav && !opts.keepApp) {
+      if (!isGlobal && targetApp !== state.app && !inNav && !opts.keepApp) {
         state.origin = { route: from.route, app: from.app, label: (PAGES[from.route] || {}).title || '上一页' };
         state.app = targetApp;
-      } else if (targetApp === state.app) {
+      } else if (route !== 'workbench' && from.route !== route &&
+        (isGlobal || from.route === 'workbench' || targetApp !== state.app)) {
+        state.origin = { route: from.route, app: from.app, label: (PAGES[from.route] || {}).title || '上一页' };
+      } else if (!isGlobal && targetApp === state.app) {
         state.origin = null;
       }
       state.route = route;
@@ -850,6 +853,8 @@
     if (name === 'cmd') { App.cmdOpen(); return; }
     if (name === 'back') { App.back(); return; }
     if (name === 'home') { App.go('workbench', null, { keepApp: true }); return; }
+    if (name === 'go' && act.dataset.id) { App.go(act.dataset.id); return; }
+    if (name === 'impact') { App.go('g-impact'); return; }
     if (name === 'toggleNav') {
       state.navOpen = !state.navOpen;
       document.body.classList.toggle('nav-open', state.navOpen);

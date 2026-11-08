@@ -32,6 +32,25 @@
     return h + '</svg>';
   }
 
+  function fgChain() {
+    const steps = [
+      { n: '01', t: '产品与档位', d: '五维权重、三档权益、价格与周期', r: 'fg-config' },
+      { n: '02', t: '评估基线', d: '问卷题目、维度权重、高风险触发', r: 'fg-survey' },
+      { n: '03', t: '五维内容', d: '吃、睡、动、心、查的方案与食谱', r: 'fg-eat' },
+      { n: '04', t: '任务发布', d: '每周动作、积分、人群与截止时间', r: 'fg-tasks' },
+      { n: '05', t: '打卡审核', d: '饮食/运动/睡眠凭证、通过或驳回', r: 'fg-coach' },
+      { n: '06', t: '信号升级', d: '低活跃、异常指标、心理信号转关怀', r: 'fg-escalation' },
+      { n: '07', t: '隐私授权', d: '采集范围、可见角色、是否进企业报告', r: 'fg-privacy' },
+      { n: '08', t: '报告与续费', d: '月度指数、年度报告、续费意向', r: 'fg-report' }
+    ];
+    return K.panel({ title: '五好生活运营链路', sub: '从会员入组到年度续费，每一步都要有配置、有责任人、有数据回流', cls: 'chain-panel',
+      actions: K.btn('看运营闭环', 'goLoop', { cls: 'ghost sm', icon: 'refresh' }),
+      body: '<div class="chain-grid">' + steps.map((x) =>
+        '<button class="chain-step" data-act="go" data-id="' + x.r + '"><span class="cs-n">' + x.n + '</span><div><b>' + x.t + '</b><span>' + x.d + '</span></div></button>').join('') +
+      '</div><div class="chain-foot"><span class="small mut">关键原则：任务必须挂在五维之一；打卡审核通过才计分；异常信号先进关怀、严重时才升级健康计划；心理数据默认不进企业报告。</span>' +
+        '<button class="btn sm" data-act="go" data-id="fg-loop">查看转化漏斗 ' + I('chevron', 11) + '</button></div>' });
+  }
+
   P['fg-overview'] = {
     app: 'all', grp: 'e.content', papp: 'employee', title: '五好生活', sub: '年度会员制产品 · 五维打分 · 月度可感知',
     preview: 'emp-home',
@@ -43,6 +62,7 @@
       const dimAvg = fg.dims.map((d) => ({ ...d, avg: Math.round(ms.reduce((a, b) => a + b.dims[d.key], 0) / ms.length) }));
       return K.head('五好生活', fg.program.slogan + ' · ' + (fg.program.status === 'beta' ? '内测中' : '已上线'),
         K.btn('会员运营', 'goMembers', { icon: 'users' }) + K.btn('打卡审核', 'goCoach', { icon: 'check' }) + K.btn('配置五好', 'goConfig', { icon: 'sliders', cls: 'primary' })) +
+        fgChain() +
         K.kpis([
           { k: '在册会员', v: 186, unit: '人', d: '进阶版 116 · 尊享 23', icon: 'users' },
           { k: '平均五好指数', v: avg, unit: '', d: '达标线 ' + fg.scoreRule.pass, tone: avg >= fg.scoreRule.pass ? 'up' : 'down', icon: 'target' },
@@ -81,7 +101,9 @@
       preview() { App.setPreview('emp-home'); },
       goConfig() { App.go('fg-config'); },
       goMembers() { App.go('fg-members'); },
-      goCoach() { App.go('fg-coach'); }
+      goCoach() { App.go('fg-coach'); },
+      goLoop() { App.go('fg-loop'); },
+      go(d) { App.go(d.id); }
     }
   };
 

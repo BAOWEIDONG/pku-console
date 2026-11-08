@@ -8,16 +8,41 @@
   const APP_NAME = { versionall: '减重营', pku: '品牌站', employee: '职工健康', system: '系统' };
   const APP_CLS = { versionall: 'blue', pku: 'green', employee: 'amber', system: 'grey' };
 
+  function homeSetup() {
+    const db = Store.db;
+    const eb = (db.brand && db.brand.banners) || [];
+    const em = (db.employee && db.employee.banners) || [];
+    const vb = (db.versionall && db.versionall.banners) || [];
+    const cards = [
+      { t: '轮播与开屏', d: '三个 H5 的首屏图片、文案、跳转、投放时间', n: (eb.length + em.length + vb.length) + ' 张已配置', r: 'content-banners', ic: 'image' },
+      { t: '职工端服务详情', d: '主图、图集、图文介绍、流程、须知与适用人群', n: ((db.employee && db.employee.services) || []).length + ' 项服务', r: 'e-services', ic: 'stethoscope' },
+      { t: '实物商品', d: '主图、图集、图文详情、SKU、库存与售后', n: (db.supplements || []).length + ' 个商品', r: 'svc-goods', ic: 'gift' },
+      { t: '健康科普内容', d: '封面、作者、图文正文、分类与上下线', n: ((db.employee && db.employee.articles) || []).length + ' 篇文章', r: 'e-content', ic: 'video' },
+      { t: '深度问答知识库', d: '标准回复、图文补充、置顶、审核与未命中问题', n: ((db.employee && db.employee.qa) || []).length + ' 条问答', r: 'e-qa', ic: 'message' },
+      { t: '健康管理闭环', d: '风险分层、管理计划、随访、结果与企业报告', n: ((db.health && db.health.profiles) || []).length + ' 份档案', r: 'h-overview', ic: 'shield' },
+      { t: '五好生活运营', d: '五维内容、任务、打卡审核、信号升级与月度报告', n: ((db.fivegood && db.fivegood.members) || []).length + ' 名会员', r: 'fg-overview', ic: 'spark' },
+      { t: '前端功能地图', d: '逐个 H5 功能看后台入口、覆盖状态与还缺什么', n: '逐项核对', r: 'g-coverage', ic: 'target' }
+    ];
+    return K.panel({ title: '内容与服务配置入口', sub: '用户在前端看到的图片、介绍、流程和问答，都在这里改', flush: false,
+      body: '<div class="setup-grid">' + cards.map((c) =>
+        '<button class="setup-card" data-act="go" data-id="' + c.r + '">' +
+          '<span class="sc-h"><span class="sc-ic">' + I(c.ic, 15) + '</span><b>' + E(c.t) + '</b></span>' +
+          '<span>' + E(c.d) + '</span>' +
+          '<span class="sc-foot"><span class="sc-count">' + E(c.n) + '</span><span class="sc-arrow">去配置 ' + I('chevron', 10) + '</span></span>' +
+        '</button>').join('') + '</div>' });
+  }
+
   /* ------------------------------------------------------- 工作台 */
   P['workbench'] = {
-    app: 'all', title: '工作台', sub: '三端待办与发布状态一览',
+    app: 'all', title: '指挥中心', sub: '三端经营、待办、配置入口与发布状态',
     render() {
       const db = Store.db, d = new Date();
       const hour = d.getHours();
       const greet = hour < 6 ? '凌晨好' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
       const dirty = Store.dirtyCount;
-      return K.head(greet + '，孙敏', '今天是 11 月 6 日 · 本周还有 2 项运营动作待完成',
+      return K.head(greet + '，孙敏', '今天先处理待办，再进入内容与服务配置；所有改动发布后才会影响前端',
         K.btn('一键预览', 'previewAll', { icon: 'eye', cls: 'ghost' }) +
+        K.btn('变更影响', 'impact', { icon: 'activity', cls: 'ghost' }) +
         '<button class="btn primary" data-act="publish"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>发布变更' + (dirty ? ' <b style="margin-left:4px;background:rgba(255,255,255,.25);padding:0 5px;border-radius:5px">' + dirty + '</b>' : '') + '</button>') +
         '<div class="grid g-3" style="margin-bottom:20px">' +
           [['versionall', '减重营', '第 7 期 · 第 18 天', '在营 48 人 · 今日打卡 78%', '#3f8cff', 'v-dashboard'],
@@ -33,6 +58,8 @@
               '<span class="btn sm ghost" style="pointer-events:none">' + I('eye', 13) + '预览</span></div>' +
             '</div>').join('') +
         '</div>' +
+        homeSetup() +
+        '<div style="height:16px"></div>' +
         '<div class="grid g-2-1">' +
           K.panel({ title: '今日待办', sub: '按业务影响排序', flush: true,
             body: '<div style="padding:4px 18px 12px">' +
@@ -61,6 +88,7 @@
     },
     actions: {
       go(d) { App.go(d.id); },
+      impact() { App.go('g-impact'); },
       previewAll() { App.openPreview(); },
       publish() { App.openPublish('本次发布'); }
     }

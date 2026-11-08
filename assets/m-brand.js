@@ -60,11 +60,22 @@
     app: 'pku', title: '首页内容', sub: '首屏、服务入口、数字与精选专家',
     preview: 'pku-home',
     render() {
+      Media.ensure();
       const h = B().home;
+      const banners = (B().banners || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
       return K.head('首页内容', '首屏文案与入口顺序会直接影响移动端首屏信息密度',
         K.btn('保存并发布', 'publishHome', { icon: 'send', cls: 'primary' })) +
         '<div class="grid g-2-1">' +
           '<div class="stack">' +
+            K.panel({ title: '首屏轮播', sub: banners.length + ' 张 · 图片、标题、跳转与投放时间', flush: true,
+              actions: K.btn('管理轮播', 'goBanners', { icon: 'image', cls: 'sm' }),
+              body: '<div style="padding:8px 18px 12px">' + banners.map((b) =>
+                '<div class="listrow"><div style="width:82px;height:46px;border-radius:8px;overflow:hidden;background:#eef3f9;flex:none">' +
+                '<img src="' + E(b.image || '') + '" style="width:100%;height:100%;object-fit:cover" alt=""></div>' +
+                '<div class="meta"><b>' + E(b.title) + '</b><span>' + E(b.sub) + ' · ' + E(b.link || '不跳转') + '</span></div>' +
+                '<div class="right row" style="gap:7px"><span class="pill ' + (b.on === false ? 'grey' : 'green') + '">' + (b.on === false ? '未上线' : '投放中') + '</span>' +
+                '<button class="switch ' + (b.on === false ? '' : 'on') + '" data-toggle="brand.banners.' + UI.ix(B().banners, B().banners.find((x) => x.id === b.id)) + '.on"></button></div></div>').join('') +
+                '</div>' }) +
             K.panel({ title: '首屏', sub: 'Hero', body: '<div class="stack" style="gap:14px">' +
               UI.fInput({ label: '主标题', value: h.heroTitle, path: 'brand.home.heroTitle', hint: '建议 8–12 字，超出行末自动换行' }) +
               UI.fInput({ label: '副标题', value: h.heroSub, path: 'brand.home.heroSub' }) + '</div>' }) +
@@ -91,6 +102,7 @@
     },
     actions: {
       publishHome() { App.openPublish('首页内容更新'); },
+      goBanners() { Media.ensure(); App.go('content-banners'); },
       moveEntry(d) {
         const list = B().home.entries, i = list.findIndex((x) => x.id === d.id);
         if (i <= 0) return;
@@ -311,10 +323,17 @@
     app: 'pku', title: '健康营展示页', sub: '品牌站上的项目页，与减重营的运营数据同源',
     preview: 'pku-camp',
     render() {
+      Media.ensure();
       const c = B().camp;
+      if (!c.cover) c.cover = (window.IMG || {}).f5;
       return K.head('健康营展示页', c.edition + ' · ' + c.status + ' · 第 ' + c.day + '/' + c.totalDays + ' 天',
         K.btn('同步运营数据', 'sync', { icon: 'refresh' }) + K.btn('发布', 'publishCamp', { icon: 'send', cls: 'primary' })) +
         '<div class="grid g-2-1"><div class="stack">' +
+          K.panel({ title: '项目主图', sub: '展示在健康营页面顶部与分享卡片', body:
+            '<div style="height:190px;border-radius:13px;overflow:hidden;background:#eef5ff;position:relative">' +
+            (c.cover ? '<img src="' + E(c.cover) + '"style="width:100%;height:100%;object-fit:cover" alt="">' : '') +
+            '<button class="btn sm" data-act="campCover" style="position:absolute;right:10px;bottom:10px">' + I('upload', 12) + '更换主图</button></div>' +
+            '<div class="note" style="margin-top:9px">建议使用营期现场、团队或训练场景横图；与「轮播与开屏」共用素材库。</div>' }) +
           K.panel({ title: '营期信息', body: '<div class="stack" style="gap:14px">' +
             UI.fInput({ label: '项目名称', value: c.name, path: 'brand.camp.name' }) +
             '<div class="frow">' + UI.fInput({ label: '期数', value: c.edition, path: 'brand.camp.edition' }) +
@@ -341,6 +360,7 @@
     },
     actions: {
       sync() { UI.toast('已从减重营同步营期进度'); },
+      campCover() { Media.pick((url) => { Store.set('brand.camp.cover', url, '健康营主图'); App.refresh(); }, { title: '选择健康营主图', tag: '内容' }); },
       publishCamp() { App.openPublish('健康营展示页更新'); },
       addRoster() { UI.toast('添加成员'); }
     }
