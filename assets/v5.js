@@ -180,6 +180,10 @@
     { re: /^versionall\.messages/, ch: 'versionall', pages: ['消息'], label: '消息' },
     { re: /^versionall\.activity/, ch: 'versionall', pages: ['活动中心', '打卡'], label: '活动' },
     { re: /^fivegood|^recipes|^dishes|^mealTemplates|^dayPlans/, ch: 'versionall', pages: ['饮食', '食谱'], label: '食谱' },
+    { re: /^shared\.assets/, ch: 'all', pages: ['服务详情', '内容位', '权益说明'], label: '共享资产' },
+    { re: /^shared\.msgTemplates|^shared\.journeys|^shared\.touches/, ch: 'all', pages: ['消息中心', '我的消息'], label: '触达' },
+    { re: /^shared\.benefits|^shared\.grants|^shared\.redemptions/, ch: 'employee', pages: ['我的权益', '服务详情'], label: '权益' },
+    { re: /^shared\.rules/, ch: 'all', pages: ['预约表单', '营期打卡', '五好评分'], label: '规则' },
     { re: /^shared\.brand|^shared\.contact|^shared\.theme/, ch: 'all', pages: ['三端全站'], label: '品牌与主题' },
     { re: /^channels|^channelPages/, ch: 'all', pages: ['渠道触点'], label: '渠道' }
   ];

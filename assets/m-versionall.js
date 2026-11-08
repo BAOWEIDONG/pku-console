@@ -105,6 +105,7 @@
     render() {
       const v = V();
       return K.head('营期管理', '营期之间的学员、奖励、商品、记录完全隔离；复制营期会带上规则但不带学员数据',
+        '<button class="btn" data-act="go" data-id="lib-templates">' + I('copy', 15) + '从模板新建</button>' +
         K.btn('新建营期', 'newCamp', { icon: 'plus', cls: 'primary' })) +
         K.kpis([
           { k: '营期总数', v: v.camps.length, unit: '个', d: '进行中 1 · 待开营 1' },

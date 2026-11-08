@@ -25,7 +25,10 @@
     'e-services': 'e.services', 'e-modules': 'e.services', 'e-orgs': 'e.services', 'e-dashboard': 'e.services',
     'e-booking': 'e.booking', 'e-bookings': 'e.booking',
     'e-content': 'e.content', 'e-qa': 'e.content', 'e-site': 'shared.theme',
-    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops'
+    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops',
+    'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
+    'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
+    'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'svc-360': 'e.services'
   };
   const groupOf = (route) => G[route] || (PAGES[route] && PAGES[route].grp) || 'v.ops';
 
@@ -50,6 +53,7 @@
     { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
     { id: 'customer', label: '交易', en: 'TRADE', icon: 'file', dot: '#F0B45E', home: 'trd-orders', desc: '订单 · 预约 · 结算 · 客户' },
     { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
+    { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 触达 · 权益 · 规则' },
     { id: 'insight', label: '洞察', en: 'INSIGHT', icon: 'chart', dot: '#6FE3A8', home: 'g-insights', desc: '经营 · 覆盖 · 健康结果' },
     { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 's-publish', desc: '发布 · 影响 · 权限 · 审计' }
   ];
@@ -98,6 +102,7 @@
     catalog: [
       { group: '服务商品', items: [
         { id: 'svc-catalog', label: '服务目录', icon: 'package' },
+        { id: 'svc-360', label: '服务 360', icon: 'stethoscope' },
         { id: 'svc-goods', label: '实物商品', icon: 'gift' },
         { id: 'trd-stock', label: '库存与预留', icon: 'layers' }
       ] },
@@ -183,6 +188,20 @@
         { id: 'v-report', label: '结营报告', icon: 'file' },
         { id: 'v-enterprise', label: '企业健康报告', icon: 'building' },
         { id: 'v-supervisor', label: '督导总览', icon: 'eye' }
+      ] }
+    ],
+    shared: [
+      { group: '共享资产', items: [
+        { id: 'lib-assets', label: '资产库', icon: 'image' },
+        { id: 'lib-messages', label: '消息模板', icon: 'message' },
+        { id: 'lib-journeys', label: '触达旅程', icon: 'send' },
+        { id: 'lib-benefits', label: '权益与券', icon: 'gift' },
+        { id: 'lib-rules', label: '规则模板', icon: 'sliders' },
+        { id: 'lib-templates', label: '项目模板', icon: 'copy' }
+      ] },
+      { group: '关系治理', items: [
+        { id: 'g-graph', label: '关系图谱', icon: 'layers' },
+        { id: 'g-gaps', label: '关联缺口', icon: 'target' }
       ] }
     ],
     insight: [
@@ -299,6 +318,7 @@
     if (route === 'v-claims') return Store.db.versionall.claims.filter((c) => c.status === 'pending').length;
     if (route === 'e-bookings') return Store.db.employee.bookings.filter((b) => b.status === 'pending').length;
     if (route === 's-publish') return Store.dirtyCount || null;
+    if (route === 'g-gaps' && window.V6) return V6.scanGaps().length || null;
     return null;
   }
 
@@ -539,7 +559,10 @@
         { t: '新增内容', d: '品牌站 / 职工端 / 减重营', go: 'g-content', ic: 'image' },
         { t: '新建企业权益', d: '企业、人数、权益包', go: 'e-orgs', ic: 'building' },
         { t: '新建触达', d: '短信 / 企微 / 站内信', go: 'msg-center', ic: 'send' },
-        { t: '新增奖励', d: '连续打卡 / 积分 / 徽章', go: 'v-tiers', ic: 'gift' }
+        { t: '新增奖励', d: '连续打卡 / 积分 / 徽章', go: 'v-tiers', ic: 'gift' },
+        { t: '上传共享资产', d: '图片 / 视频 / FAQ / 话术', go: 'lib-assets', ic: 'image' },
+        { t: '发放权益', d: '体检 / EAP / 门诊 / 商城券', go: 'lib-benefits', ic: 'gift' },
+        { t: '从模板建项目', d: '营期 / 五好 / 体检季', go: 'lib-templates', ic: 'copy' }
       ];
       UI.modal({
         title: '新建', desc: '选择一个业务对象开始',
@@ -810,6 +833,7 @@
   }
 
   Store.init();
+  if (window.V6) V6.ensure();
   // 主题色注入
   try {
     const p = Store.db.shared.theme.primary;

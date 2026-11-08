@@ -138,6 +138,8 @@
       EN.ensureOps2();
       const list = Store.db.campaigns;
       return K.head('触达中心', list.length + ' 个活动 · 本月触达 3,020 人次',
+        '<button class="btn" data-act="go" data-id="lib-messages">' + I('message', 15) + '消息模板</button>' +
+        '<button class="btn" data-act="go" data-id="lib-journeys">' + I('send', 15) + '旅程编排</button>' +
         '<button class="btn primary" data-act="new">' + I('plus', 15) + '新建触达</button>') +
         K.kpis([
           { k: '本月发送', v: '3,020', unit: '人次', d: '3 个活动', icon: 'send' },

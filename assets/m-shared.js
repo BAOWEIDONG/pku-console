@@ -80,7 +80,9 @@
       const rows = list.filter((c) => tab === 'all' || c.type === tab);
       const count = (app) => list.filter((c) => c.on && c.apps.indexOf(app) >= 0).length;
       return K.head('跨端内容', 'Banner、公告、资讯统一在这里生产，按投放端分发',
-        crossBadge('一处生产 · 多端投放') + K.btn('新建内容', 'newContent', { icon: 'plus', cls: 'primary' })) +
+        crossBadge('一处生产 · 多端投放') +
+        '<button class="btn" data-act="go" data-id="lib-assets">' + I('image', 15) + '共享资产</button>' +
+        K.btn('新建内容', 'newContent', { icon: 'plus', cls: 'primary' })) +
         '<div class="grid g-3" style="margin-bottom:16px">' +
           [['pku', '品牌站', count('pku')], ['employee', '职工健康', count('employee')], ['versionall', '减重营', count('versionall')]].map((x) =>
             '<div class="panel" style="padding:14px 16px"><div class="row"><i style="width:8px;height:8px;border-radius:50%;background:' + APP_DOT[x[0]] + '"></i>' +

@@ -396,6 +396,7 @@
     render() {
       const h = H(), e = h.site.entitlement;
       return K.head('企业与权益', h.site.company + ' · 1,780 名员工',
+        '<button class="btn" data-act="go" data-id="lib-benefits">' + I('gift', 15) + '权益与券引擎</button>' +
         K.btn('保存', 'saveOrg', { icon: 'check', cls: 'primary' })) +
         '<div class="grid g-2"><div class="stack">' +
           K.panel({ title: '服务机构', flush: true, body: '<div style="padding:4px 18px 12px">' + h.orgs.map((o, i) =>
