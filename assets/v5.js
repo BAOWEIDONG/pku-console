@@ -455,6 +455,7 @@
   P['workbench'] = {
     app: 'all', title: '指挥中心', sub: '三端经营、待办与发布',
     grp: 'command',
+    preview: 'pku-home', papp: 'pku',
     render() {
       ensure();
       return '<div class="vhome">' + homeHero() + homeKpis() +

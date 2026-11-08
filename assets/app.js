@@ -625,6 +625,7 @@
       },
       versionall: {
         activity: db.versionall.activity,
+        rankingOn: db.versionall.rankingOn,
         tiers: db.versionall.tiers.map((t) => ({ id: t.id, name: t.name, stock: t.stock, active: t.active, requiredDays: t.requiredDays }))
       },
       fivegood: { program: db.fivegood.program, dims: db.fivegood.dims, tiers: db.fivegood.tiers }

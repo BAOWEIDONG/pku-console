@@ -93,6 +93,12 @@
           }
         });
       }
+      if (channel === 'camp' && cfg.versionall && cfg.versionall.rankingOn === false) {
+        document.querySelectorAll('button, a').forEach(function (el) {
+          var t = (el.textContent || '').trim();
+          if (t === '排行' || t === '排行榜' || t === '榜单') el.style.display = 'none';
+        });
+      }
     }
 
     if (Object.keys(map).length) textReplace(document.body, map);
