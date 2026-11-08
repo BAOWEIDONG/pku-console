@@ -164,7 +164,7 @@
   }
 
   function dsHTML(o) {
-    const rows = [['订单号', o.id], ['类型', o.kind], ['客户', o.customer], ['商品 / 服务', o.item], ['渠道', (Store.db.channels.find((c) => c.id === o.channel) || {}).name || o.channel], ['下单时间', o.at], ['明细', o.meta || '—'], ['价格口径', o.price ? '¥' + o.price : '权益 / 积分']];
+    const rows = [['订单号', o.id], ['类型', o.kind], ['客户', (window.Engine && Engine.maskText ? Engine.maskText('customer', o.customer) : o.customer)], ['商品 / 服务', o.item], ['渠道', (Store.db.channels.find((c) => c.id === o.channel) || {}).name || o.channel], ['下单时间', o.at], ['明细', o.meta || '—'], ['价格口径', o.price ? '¥' + o.price : '权益 / 积分']];
     return '<dl class="kv">' + rows.map((r) => '<dt>' + r[0] + '</dt><dd>' + E(r[1]) + '</dd>').join('') + '</dl>';
   }
   function slaHTML(o, fsm) {
