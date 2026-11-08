@@ -18,6 +18,8 @@
     'weight': { resource: '营养师', ageMin: 18, ageMax: 65, gender: 'any', audience: ['BMI ≥ 24'], preSurvey: true, slotsPerDay: 20, needFast: false, needReport: true, note: '28 天营期' },
     'vip': { resource: '专属管家', ageMin: 30, ageMax: 75, gender: 'any', audience: ['企业家', '高管'], preSurvey: false, slotsPerDay: 2, needFast: true, needReport: true, note: '年度服务' }
   };
+  Object.assign(S.bookingRules, R);
+
   S.employee.services.forEach(function (s) {
     s.booking = S.bookingRules[s.id] || { resource: '通用', ageMin: 18, ageMax: 75, gender: 'any', audience: ['全员'], preSurvey: false, slotsPerDay: 10, needFast: false, needReport: false, note: '' };
     s.genderText = { any: '不限', male: '仅男性', female: '仅女性' }[s.booking.gender];
