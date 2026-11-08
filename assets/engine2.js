@@ -124,6 +124,7 @@
           { label: '日期', render: (r) => '<span class="tnum small">' + r.date + '</span>' },
           { label: '时段', render: (r) => '<b class="tnum">' + r.time + '</b>' },
           { label: '服务', render: (r) => '<span class="small">' + E((Store.db.employee.services.find((s) => s.id === r.svc) || {}).name || r.svc) + '</span>' },
+          { label: '资源', render: (r) => '<span class="small muted">' + E(((Store.db.employee.services.find((s) => s.id === r.svc) || {}).booking || {}).resource || '通用') + '</span>' },
           { label: '占号', w: '180px', render: (r) => '<div class="row" style="gap:8px"><div style="flex:1">' + K.progress(r.used / r.cap * 100) + '</div><span class="small tnum">' + r.used + '/' + r.cap + '</span></div>' },
           { label: '状态', render: (r) => r.used >= r.cap ? UI.pill('约满', 'red') : r.used / r.cap > 0.8 ? UI.pill('紧张', 'amber') : UI.pill('可约', 'green') },
           { label: '', align: 'right', render: (r) => '<div class="rowact"><button data-act="editSlot" data-id="' + r.id + '">' + I('edit', 14) + '</button></div>' }
