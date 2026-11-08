@@ -312,6 +312,11 @@
         "stab": "筛查"
       },
       {
+        "id": "chronic",
+        "name": "慢病管理",
+        "stab": "慢病"
+      },
+      {
         "id": "medical",
         "name": "就医服务",
         "stab": "就医"
