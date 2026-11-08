@@ -42,7 +42,7 @@
       const pass = Math.round(ms.filter((m) => m.score >= fg.scoreRule.pass).length / ms.length * 100);
       const dimAvg = fg.dims.map((d) => ({ ...d, avg: Math.round(ms.reduce((a, b) => a + b.dims[d.key], 0) / ms.length) }));
       return K.head('五好生活', fg.program.slogan + ' · ' + (fg.program.status === 'beta' ? '内测中' : '已上线'),
-        K.btn('会员视角预览', 'preview', { icon: 'eye', cls: 'ghost' }) + K.btn('配置五好', 'goConfig', { icon: 'sliders', cls: 'primary' })) +
+        K.btn('会员运营', 'goMembers', { icon: 'users' }) + K.btn('打卡审核', 'goCoach', { icon: 'check' }) + K.btn('配置五好', 'goConfig', { icon: 'sliders', cls: 'primary' })) +
         K.kpis([
           { k: '在册会员', v: 186, unit: '人', d: '进阶版 116 · 尊享 23', icon: 'users' },
           { k: '平均五好指数', v: avg, unit: '', d: '达标线 ' + fg.scoreRule.pass, tone: avg >= fg.scoreRule.pass ? 'up' : 'down', icon: 'target' },
@@ -79,7 +79,9 @@
     },
     actions: {
       preview() { App.setPreview('emp-home'); },
-      goConfig() { App.go('fg-config'); }
+      goConfig() { App.go('fg-config'); },
+      goMembers() { App.go('fg-members'); },
+      goCoach() { App.go('fg-coach'); }
     }
   };
 

@@ -28,7 +28,11 @@
     's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops',
     'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
     'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
-    'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services'
+    'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services',
+    'h-overview': 'v.ops', 'h-service-flow': 'e.services', 'h-profiles': 'v.ops', 'h-risk': 'v.ops',
+    'h-plans': 'v.ops', 'h-followups': 'v.ops', 'h-programs': 'v.ops', 'h-outcomes': 'v.report', 'h-enterprise': 'v.report',
+    'fg-members': 'v.ops', 'fg-tasks': 'v.rules', 'fg-coach': 'v.ops', 'fg-escalation': 'v.ops',
+    'fg-privacy': 'v.report', 'fg-loop': 'v.report'
   };
   const groupOf = (route) => G[route] || (PAGES[route] && PAGES[route].grp) || 'v.ops';
 
@@ -52,6 +56,7 @@
     { id: 'growth', label: '增长', en: 'GROWTH', icon: 'spark', dot: '#48D3C7', home: 'chn-map', desc: '渠道 · 内容 · 触点编排' },
     { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
     { id: 'customer', label: '交易', en: 'TRADE', icon: 'file', dot: '#F0B45E', home: 'trd-orders', desc: '订单 · 预约 · 结算 · 客户' },
+    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '服务履约 · 风险 · 计划 · 随访 · 结果' },
     { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
     { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 触达 · 权益 · 规则' },
     { id: 'insight', label: '洞察', en: 'INSIGHT', icon: 'chart', dot: '#6FE3A8', home: 'g-insights', desc: '经营 · 覆盖 · 健康结果' },
@@ -142,6 +147,25 @@
         { id: 'g-accounts', label: '客户账号', icon: 'lock' }
       ] }
     ],
+    health: [
+      { group: '总览', items: [
+        { id: 'h-overview', label: '健康管理总览', icon: 'grid' }
+      ] },
+      { group: '服务履约', items: [
+        { id: 'h-service-flow', label: '服务履约台', icon: 'stethoscope' }
+      ] },
+      { group: '健康管理', items: [
+        { id: 'h-profiles', label: '健康档案', icon: 'user' },
+        { id: 'h-risk', label: '风险与缺口', icon: 'shield' },
+        { id: 'h-plans', label: '管理计划', icon: 'target' },
+        { id: 'h-followups', label: '随访工作台', icon: 'clock' },
+        { id: 'h-programs', label: '干预项目', icon: 'layers' },
+        { id: 'h-outcomes', label: '结果评估', icon: 'chart' }
+      ] },
+      { group: '企业报告', items: [
+        { id: 'h-enterprise', label: '企业健康报告', icon: 'building' }
+      ] }
+    ],
     program: [
       { group: '五好生活', items: [
         { id: 'fg-overview', label: '五好总览', icon: 'spark' },
@@ -160,6 +184,14 @@
         { id: 'fg-ab', label: 'A/B 实验', icon: 'activity' },
         { id: 'fg-survey', label: '评估问卷', icon: 'file' },
         { id: 'fg-report', label: '月度报告', icon: 'send' }
+      ] },
+      { group: '五好 · 运营', items: [
+        { id: 'fg-members', label: '会员运营', icon: 'users' },
+        { id: 'fg-tasks', label: '任务与发布', icon: 'check' },
+        { id: 'fg-coach', label: '打卡审核', icon: 'message' },
+        { id: 'fg-escalation', label: '信号与升级', icon: 'activity' },
+        { id: 'fg-loop', label: '运营闭环', icon: 'refresh' },
+        { id: 'fg-privacy', label: '授权与隐私', icon: 'lock' }
       ] },
       { group: '减重营 · 营期', items: [
         { id: 'v-dashboard', label: '运营概览', icon: 'grid' },
@@ -318,6 +350,8 @@
     if (route === 'v-annotations') return Store.db.versionall.records.exercise.filter((r) => !r.comments || !r.comments.length).length;
     if (route === 'v-claims') return Store.db.versionall.claims.filter((c) => c.status === 'pending').length;
     if (route === 'e-bookings') return Store.db.employee.bookings.filter((b) => b.status === 'pending').length;
+    if (route === 'h-followups') return Store.db.health.followups.filter((f) => f.status === 'due' || f.status === 'overdue').length || null;
+    if (route === 'fg-coach') return Store.db.fivegood.checkins.filter((c) => c.status === 'pending').length || null;
     if (route === 's-publish') return Store.dirtyCount || null;
     if (route === 'g-gaps' && window.V6) return V6.scanGaps().length || null;
     return null;
@@ -835,6 +869,7 @@
 
   Store.init();
   if (window.V6) V6.ensure();
+  if (window.V7) V7.ensure();
   // 主题色注入
   try {
     const p = Store.db.shared.theme.primary;

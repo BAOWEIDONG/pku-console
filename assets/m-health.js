@@ -20,7 +20,7 @@
       const h = H();
       const svc = h.services;
       return K.head('服务概览', '5 大模块 · ' + svc.filter((s) => s.on).length + ' 项在架服务 · 本月预约 ' + h.bookings.length + ' 单',
-        K.btn('导出月报', 'export', { icon: 'download' })) +
+        K.btn('健康管理总览', 'goHealth', { icon: 'stethoscope' }) + K.btn('导出月报', 'export', { icon: 'download' })) +
         K.kpis([
           { k: '在架服务', v: svc.filter((s) => s.on).length, unit: '项', d: '可预约 ' + svc.filter((s) => s.bookable && s.on).length + ' 项', icon: 'package' },
           { k: '本月预约', v: 326, unit: '单', d: '较上月 <b>+12%</b>', tone: 'up', icon: 'calendar' },
@@ -53,6 +53,7 @@
     },
     actions: {
       export() { UI.toast('月报已导出'); },
+      goHealth() { App.go('h-overview'); },
       goBookings() { App.go('e-bookings'); },
       confirm(d) {
         const b = H().bookings.find((x) => x.id === d.id);
