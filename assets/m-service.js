@@ -74,7 +74,10 @@
       const i = list.indexOf(s);
       const st = P['svc-detail'].state;
       const tabs = [{ id: 'basic', label: '基本信息' }, { id: 'price', label: '价格与 SKU' }, { id: 'rules', label: '履约规则' }, { id: 'assets', label: '素材与长图' }, { id: 'channels', label: '投放渠道' }];
-      return K.head(s.name, s.code + ' · ' + s.cat + ' · ' + chName(s.channels[0] || ''),
+      const val = window.Engine ? Engine.validateService(s) : [];
+      const errs = val.filter((x) => x[0] === 'error');
+      return (errs.length ? '<div class="readonly-bar">' + I('x', 14) + '<b>发布校验未通过</b>：' + errs.map((x) => E(x[1])).join('；') + '</div>' : '') +
+        K.head(s.name, s.code + ' · ' + s.cat + ' · ' + chName(s.channels[0] || ''),
         K.btn('返回商品', 'back', { icon: 'undo' }) + K.btn('保存并发布', 'publish', { icon: 'send', cls: 'primary' })) +
         '<div class="grid g-2-1">' +
           '<div class="stack">' +
