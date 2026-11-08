@@ -115,6 +115,7 @@
       { label: '售价 / 结算', align: 'right', render: (s) => '<b class="tnum">¥' + s.price + '</b><div class="small muted tnum">结算 ¥' + s.settle + '</div>' },
       { label: '库存', align: 'right', render: (s) => '<span class="tnum" style="color:' + (s.stock === 0 ? '#b83c2c' : 'inherit') + '">' + s.stock + '</span>' },
       { label: '已售', align: 'right', render: (s) => '<span class="tnum">' + s.sold + '</span>' },
+      { label: '挂载位', render: (s) => '<span class="small muted">' + E((s.attach || ['meal']).map((x) => x === 'day' ? '全天食谱' : x === 'planner' ? '搭配器' : '餐次').join(' / ')) + '</span>' },
       { label: '上架', render: (s) => '<button class="switch ' + (s.on ? 'on' : '') + '" data-toggle="supplements.' + UI.ix(M().supplements, s) + '.on"></button>' }
     ], M().supplements.map((s) => Object.assign({ _id: s.id }, s))) });
   }
@@ -122,7 +123,7 @@
   /* ------------------------------------------------------------ 搭配器 */
   P['fg-meal'] = {
     app: 'all', grp: 'e.content', papp: 'employee', title: '食谱搭配器', sub: '逐餐选菜品，实时算热量与结构', preview: 'emp-home', hideNav: true,
-    state: { slot: '早餐', pick: { 早餐: [], 午餐: [], 晚餐: [], 加餐: [] } },
+    state: { slot: '早餐', pick: { 早餐: [], 午餐: [], 晚餐: [], 加餐: [] }, supps: [] },
     render(ctx) {
       const st = P['fg-meal'].state;
       if (ctx && ctx.day && !st.loaded) {
@@ -140,6 +141,11 @@
       const calc = (m) => st.pick[m].reduce((a, d) => { const x = mealOf(d); return { kcal: a.kcal + (x.kcal || 0), p: a.p + (x.p || 0), c: a.c + (x.c || 0), f: a.f + (x.f || 0) }; }, { kcal: 0, p: 0, c: 0, f: 0 });
       const total = ['早餐', '午餐', '晚餐', '加餐'].reduce((a, m) => { const x = calc(m); return { kcal: a.kcal + x.kcal, p: a.p + x.p, c: a.c + x.c, f: a.f + x.f }; }, { kcal: 0, p: 0, c: 0, f: 0 });
       const cands = M().dishes.filter((d) => d.on && d.meal.indexOf(st.slot) >= 0);
+      const recos = [];
+      if (total.p < 100) recos.push({ id: 'su1', why: '蛋白 ' + total.p + 'g，低于目标 110g' });
+      if (total.c > 220 || st.pick['午餐'].length + st.pick['晚餐'].length < 4) recos.push({ id: 'su12', why: '蔬菜与纤维不足' });
+      st.pick['早餐'].concat(st.pick['午餐'], st.pick['晚餐'], st.pick['加餐']).forEach((d) => { if (/酸奶|牛奶/.test(mealOf(d).name)) recos.push({ id: 'su10', why: '室内工作，维 D 需求' }); });
+      const recosUniq = recos.filter((x, i, a) => a.findIndex((y) => y.id === x.id) === i).slice(0, 3);
       return K.head(st.name || '我的搭配', '总热量 ' + total.kcal + ' kcal · 蛋白 ' + total.p + 'g · 碳水 ' + total.c + 'g · 脂肪 ' + total.f + 'g',
         K.btn('返回食谱', 'back', { icon: 'undo' }) + K.btn('保存为我的食谱', 'save', { icon: 'check', cls: 'primary' })) +
         '<div class="grid g-1-2" style="align-items:start">' +
@@ -165,6 +171,14 @@
                 '<div class="meta"><b>' + E(d.name) + '</b><span>' + E(d.slot) + ' · ' + d.kcal + ' kcal · 蛋白 ' + d.p + 'g</span></div>' +
                 '<div class="right small mut">' + E(d.tags[0] || '') + '</div></div>';
             }).join('') + '</div>' }) +
+          '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>随餐推荐补剂</h3><span class="sub">按营养缺口与禁忌自动匹配</span></div>' +
+            '<div class="panel-b">' + (recosUniq.length ? recosUniq.map((x) => {
+              const sp = M().supplements.find((y) => y.id === x.id) || {};
+              const on = st.supps.indexOf(x.id) >= 0;
+              return '<div class="listrow"><div class="meta"><b>' + E(sp.name || '') + '</b><span>' + E(x.why) + ' · ¥' + (sp.price || 0) + '</span></div>' +
+                '<button class="btn sm ' + (on ? 'primary' : '') + '" data-act="toggleSupp" data-id="' + x.id + '">' + (on ? '已加入' : '加入食谱') + '</button></div>';
+            }).join('') : '<div class="small mut">营养结构已达标，暂无推荐补剂。</div>') +
+            '<div class="note" style="margin-top:10px">补剂不替代正餐，作为餐次附件展示；下单走积分商城或直接购买。</div></div></div>' +
         '</div>';
     },
     actions: {
@@ -176,11 +190,16 @@
         App.refresh(true);
       },
       back() { App.go('fg-eat'); },
+      toggleSupp(d) {
+        const st = P['fg-meal'].state, i = st.supps.indexOf(d.id);
+        if (i >= 0) st.supps.splice(i, 1); else st.supps.push(d.id);
+        App.refresh(true);
+      },
       save() {
         const st = P['fg-meal'].state;
         const used = Object.keys(st.pick).reduce((a, k) => a + st.pick[k].length, 0);
         if (!used) { UI.toast('还没有选择任何菜品', 'warn'); return; }
-        Store.pushItem('myMeals', { id: 'mm' + Date.now(), name: st.name || '我的搭配', pick: JSON.parse(JSON.stringify(st.pick)), at: '2026-11-08' }, '保存搭配');
+        Store.pushItem('myMeals', { id: 'mm' + Date.now(), name: st.name || '我的搭配', pick: JSON.parse(JSON.stringify(st.pick)), supps: st.supps.slice(), at: '2026-11-08' }, '保存搭配');
         UI.toast('已保存，可在客户端「我的食谱」看到'); App.refresh();
       }
     }
