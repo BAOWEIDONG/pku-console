@@ -47,12 +47,17 @@
           { label: '状态', render: (s) => stPill(s) },
           { label: '更新', w: '64px', render: (s) => '<span class="small tnum muted nw">' + E(s.updatedAt.slice(5, 10)) + '</span>' },
           { label: '', align: 'right', render: (s) => '<div class="rowact"><button data-act="openSvc" data-id="' + s.id + '">' + I('chevron', 14) + '</button></div>' }
-        ], rows.map((s) => Object.assign({ _id: s.id }, s))) });
+        ], rows.map((s) => Object.assign({ _id: s.id }, s))) }) +
+        '<div style="height:14px"></div><div class="panel" style="padding:14px 16px"><div class="row">' +
+        '<div class="ava a" style="border-radius:10px">' + I('gift', 16) + '</div>' +
+        '<div style="flex:1"><b style="font-size:12.5px">营养品、补剂、实物商品</b><div class="small mut" style="margin-top:2px">补剂也是商品：售价、结算价、库存、上下架与挂载位置在这里统一维护</div></div>' +
+        '<button class="btn sm" data-act="goGoods">进入商品库 ›</button></div></div>';
     },
     actions: {
       filterCat(d) { P['svc-catalog'].state.cat = d.id; App.refresh(); },
       openSvc(d) { App.go('svc-detail', { id: d.id }); },
       export() { UI.toast('商品表已导出'); },
+      goGoods() { App.go('svc-goods'); },
       batchPrice() { UI.toast('批量改价：请在价格政策页选择商品'); },
       newSvc() { P['e-services'].actions.newSvc(); }
     }
