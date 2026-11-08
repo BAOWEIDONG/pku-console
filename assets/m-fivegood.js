@@ -83,6 +83,136 @@
     }
   };
 
+
+  /* ------------------------------------------------------ 五好评估问卷 */
+  P['fg-survey'] = {
+    app: 'all', grp: 'e.content', papp: 'employee', title: '五好评估问卷', sub: '入组基线数据的来源，决定五维指数从哪算起',
+    preview: 'emp-home',
+    render() {
+      const fg = FG();
+      const sv = Store.db.fivegood.survey || (Store.db.fivegood.survey = {
+        intro: '用 3 分钟完成 10 道题，我们会生成你的五好基线与短板维度。',
+        force: true, questions: [
+          { id: 'sq1', dim: 'eat', text: '你每天吃早餐的频率是？', opts: ['几乎每天', '每周 3–4 天', '很少'], weight: 30 },
+          { id: 'sq2', dim: 'eat', text: '你每天蔬菜摄入大约多少？', opts: ['≥500g', '200–500g', '不足 200g'], weight: 40 },
+          { id: 'sq3', dim: 'eat', text: '每周外卖或外出就餐次数？', opts: ['≤3 次', '4–8 次', '>8 次'], weight: 30 },
+          { id: 'sq4', dim: 'sleep', text: '你平均每晚睡眠时长？', opts: ['≥7 小时', '6–7 小时', '<6 小时'], weight: 50 },
+          { id: 'sq5', dim: 'sleep', text: '入睡困难或早醒的频率？', opts: ['几乎没有', '偶尔', '经常'], weight: 50 },
+          { id: 'sq6', dim: 'move', text: '每周中等强度运动时长？', opts: ['≥150 分钟', '60–150 分钟', '<60 分钟'], weight: 60 },
+          { id: 'sq7', dim: 'move', text: '每天久坐时长？', opts: ['<6 小时', '6–9 小时', '>9 小时'], weight: 40 },
+          { id: 'sq8', dim: 'mind', text: '近一个月压力自评（0–10）', opts: ['0–3', '4–6', '7–10'], weight: 60 },
+          { id: 'sq9', dim: 'mind', text: '是否经常感到情绪低落？', opts: ['很少', '有时', '经常'], weight: 40 },
+          { id: 'sq10', dim: 'check', text: '最近一次体检距今？', opts: ['1 年内', '1–2 年', '超过 2 年'], weight: 100 }
+        ]
+      });
+      const sv2 = Store.db.fivegood.survey;
+      const byDim = (k) => sv2.questions.filter((q) => q.dim === k).length;
+      return K.head('五好评估问卷', sv2.questions.length + ' 题 · 覆盖 5 个维度',
+        K.btn('试填问卷', 'previewQ', { icon: 'eye', cls: 'ghost' }) + K.btn('新增题目', 'newQ', { icon: 'plus', cls: 'primary' })) +
+        K.kpis([
+          { k: '题目数', v: sv2.questions.length, unit: '题', d: '平均用时 3 分钟', icon: 'file' },
+          { k: '完成率', v: '82', unit: '%', d: '186 名会员中 152 人已填', icon: 'check' },
+          { k: '高风险命中', v: 27, unit: '人', d: '推送健康管理师跟进', tone: 'down', icon: 'shield' },
+          { k: '最近更新', v: '11-06', d: '王雪 · 营养师', icon: 'clock' }
+        ]) +
+        '<div class="grid g-2-1"><div class="stack">' +
+          K.panel({ title: '问卷设置', body: UI.fArea({ label: '引导语', value: sv2.intro, rows: 2, path: 'fivegood.survey.intro' }) +
+            '<div class="hairline"></div>' + UI.fSwitch({ label: '入组强制填写', value: sv2.force, path: 'fivegood.survey.force' }) }) +
+          K.panel({ title: '题目', sub: '按维度分组', flush: true,
+            body: '<div style="padding:6px 18px 12px">' + fg.dims.map((d) => {
+              const qs = sv2.questions.filter((q) => q.dim === d.key);
+              return '<div style="margin-bottom:10px"><div class="row" style="gap:6px;margin-bottom:4px"><span>' + d.icon + '</span><b style="font-size:12px">' + E(d.name) + '</b><span class="small mut">' + qs.length + ' 题</span></div>' +
+                qs.map((q) => '<div class="listrow" style="padding:8px 0 8px 10px"><div class="meta"><b>' + E(q.text) + '</b><span>' + q.opts.length + ' 个选项 · 权重 ' + q.weight + '</span></div>' +
+                '<button class="iconbtn right" data-act="editQ" data-id="' + q.id + '">' + I('edit', 13) + '</button></div>').join('') + '</div>';
+            }).join('') + '</div>' }) +
+        '</div><div class="stack">' +
+          K.panel({ title: '维度覆盖', body: '<div class="stack" style="gap:10px">' + fg.dims.map((d) =>
+            '<div class="row small"><span style="width:32px">' + d.name + '</span><div style="flex:1">' + K.progress(byDim(d.key) / 3 * 100) + '</div><b class="tnum">' + byDim(d.key) + '</b></div>').join('') +
+            '</div><div class="note" style="margin-top:10px">每个维度建议 ≥2 题，少于 2 题无法形成基线。</div>' }) +
+          K.panel({ title: '结果怎么用', body: '<div class="small mut" style="line-height:1.9">' +
+            '① 每题按选项折算 0–100 分<br>② 维度分 = 题分加权平均<br>③ 维度分即会员的五好基线<br>④ 高风险选项触发健康管理师跟进</div>' +
+            '<div class="note warn" style="margin-top:10px">题目改动会使历史基线口径不一致，建议按年度版本管理。</div>' }) +
+        '</div></div>';
+    },
+    actions: {
+      previewQ() { UI.modal({ title: '试填 · 五好评估问卷', desc: '10 题 · 约 3 分钟',
+        body: '<div class="stack" style="gap:12px">' + (Store.db.fivegood.survey.questions.slice(0, 4)).map((q, i) =>
+          '<div><div class="small strong">' + (i + 1) + '. ' + E(q.text) + '</div><div class="chips" style="margin-top:6px">' + q.opts.map((o) => '<span class="chip">' + E(o) + '</span>').join('') + '</div></div>').join('') + '</div>',
+        okText: '提交', onOk() { UI.toast('已提交，基线已更新'); } }); },
+      newQ() { UI.formDrawer({ title: '新增题目', sub: '加入五好评估问卷', icon: 'file',
+        fields: [{ key: 'text', label: '题干', type: 'area', rows: 2 },
+          { key: 'dim', label: '维度', type: 'select', options: FG().dims.map((d) => ({ v: d.key, l: d.name })) },
+          { key: 'opts', label: '选项（用 / 分隔）', value: '是 / 偶尔 / 否' },
+          { key: 'weight', label: '权重', type: 'num', value: 30 }],
+        onSave(v) { const s = Store.db.fivegood.survey; s.questions.push({ id: 'sq' + Date.now(), dim: v.dim, text: v.text || '新题目', opts: v.opts.split('/').map((x) => x.trim()), weight: v.weight }); Store.mark('fivegood.survey', '新增题目'); UI.toast('题目已添加'); App.refresh(); } }); },
+      editQ(d) { UI.toast('题目编辑'); }
+    }
+  };
+
+  /* ------------------------------------------------------ 月度报告 */
+  P['fg-report'] = {
+    app: 'all', grp: 'e.content', papp: 'employee', title: '月度报告', sub: '每月自动生成五好指数报告，推送给会员',
+    preview: 'emp-home',
+    render() {
+      const ms = FG().members;
+      const rpt = Store.db.fivegood.report || (Store.db.fivegood.report = {
+        title: '我的五好月度报告', push: true, pushDay: 1,
+        sections: [
+          { key: 'score', name: '五好指数与变化', on: true },
+          { key: 'radar', name: '五维雷达', on: true },
+          { key: 'dim', name: '维度解读', on: true },
+          { key: 'task', name: '任务完成情况', on: true },
+          { key: 'advice', name: '下月建议', on: true },
+          { key: 'benefit', name: '权益使用提醒', on: false }
+        ]
+      });
+      const r = Store.db.fivegood.report;
+      return K.head('月度报告', '每月 1 日生成上月报告 · 已推送 ' + ms.length + ' 人',
+        K.btn('预览报告', 'previewReport', { icon: 'eye' }) + K.btn('立即生成', 'gen', { icon: 'send', cls: 'primary' })) +
+        K.kpis([
+          { k: '本月已生成', v: ms.length, unit: '份', d: '覆盖率 100%', icon: 'file' },
+          { k: '打开率', v: '68', unit: '%', d: '较上月 +5pt', tone: 'up', icon: 'eye' },
+          { k: '平均指数变化', v: '+2.4', d: '较上月', tone: 'up', icon: 'chart' }
+        ]) +
+        '<div class="grid g-2-1"><div class="stack">' +
+          K.panel({ title: '报告模板', sub: '模块顺序即阅读顺序', flush: true,
+            body: '<div style="padding:4px 18px 12px">' + r.sections.map((sec, i) =>
+              '<div class="listrow"><span class="tnum small mut" style="width:18px">' + (i + 1) + '</span>' +
+              '<div class="meta"><b>' + E(sec.name) + '</b><span>' + (sec.on ? '已启用' : '已关闭') + '</span></div>' +
+              '<button class="switch right ' + (sec.on ? 'on' : '') + '" data-toggle="fivegood.report.sections.' + i + '.on"></button></div>').join('') + '</div>' }) +
+          K.panel({ title: '报告明细', sub: '最近一期', flush: true, body: UI.table([
+            { label: '会员', render: (m) => '<div class="cellflex">' + UI.avatar(m.name, 'g') + '<div><div class="strong">' + E(m.name) + '</div><div class="small muted">' + E(m.tier) + '</div></div></div>' },
+            { label: '指数', align: 'right', render: (m) => '<span class="tnum strong">' + m.score + '</span>' },
+            { label: '状态', render: (m) => UI.pill('已推送', 'green') },
+            { label: '', align: 'right', render: (m) => '<div class="rowact"><button data-act="viewRpt" data-id="' + m.id + '">' + I('eye', 13) + '</button></div>' }
+          ], ms.map((m) => Object.assign({ _id: m.id }, m))) })
+        + '</div><div class="stack">' +
+          K.panel({ title: '推送设置', body: '<div class="stack" style="gap:12px">' +
+            UI.fInput({ label: '报告标题', value: r.title, path: 'fivegood.report.title' }) +
+            UI.fNum({ label: '每月生成日', value: r.pushDay, path: 'fivegood.report.pushDay' }) +
+            UI.fSwitch({ label: '自动推送', value: r.push, path: 'fivegood.report.push' }) +
+            '</div><div class="note">报告通过企业微信与短信触达，未读会在 3 天后提醒一次。</div>' }) +
+          K.panel({ title: '报告会回答的问题', body: '<div class="small mut" style="line-height:1.9">' +
+            '· 我这个月有没有变好？<br>· 哪个维度拖了后腿？<br>· 下个月该做哪三件事？<br>· 还有哪些权益没用？</div>' }) +
+        '</div></div>';
+    },
+    actions: {
+      previewReport() {
+        const m = FG().members[0];
+        UI.modal({ title: '我的五好月度报告', desc: m.name + ' · 2026 年 10 月 · 指数 ' + m.score,
+          body: '<div class="stack" style="gap:12px">' +
+            '<div class="row"><div style="font-size:22px;font-weight:600">' + m.score + '</div><div style="margin-left:8px" class="small mut">较上月 +2.4<br>超过 68% 的会员</div></div>' +
+            '<div class="progress"><b style="width:' + m.score + '%"></b></div>' +
+            '<div class="hairline"></div>' +
+            FG().dims.map((d) => '<div class="row small"><span style="width:34px">' + d.name + '</span><div style="flex:1">' + K.progress(m.dims[d.key]) + '</div><b class="tnum">' + m.dims[d.key] + '</b></div>').join('') +
+            '<div class="note" style="margin-top:6px">本月短板：' + FG().dims.slice().sort((a, b) => m.dims[a.key] - m.dims[b.key])[0].name + '。下月建议先做一次专项评估。</div></div>',
+          okText: '关闭', cancelText: false });
+      },
+      gen() { UI.toast('已生成 ' + FG().members.length + ' 份报告并推送'); },
+      viewRpt(d) { P['fg-report'].actions.previewReport(); }
+    }
+  };
+
   P['fg-config'] = {
     app: 'all', grp: 'e.content', papp: 'employee', title: '五好配置', sub: '维度权重、权益、任务库与评分规则',
     preview: 'emp-home',

@@ -56,6 +56,28 @@
     /** 旧版本缓存补齐新增结构，避免升级后按钮报错 */
     migrate() {
       const S = window.SEED;
+      // 1) 顶层缺失的整块数据（channels/bundles/fivegood/settle/price…）
+      Object.keys(S).forEach((k) => {
+        if (db[k] === undefined) { db[k] = deep(S[k]); }
+      });
+      // 2) 集合型数据按 id 补齐新字段（v4 给服务加了 pricing/rules/assets/channels）
+      const mergeList = (target, src, keys) => {
+        if (!Array.isArray(target) || !Array.isArray(src)) return;
+        target.forEach((item) => {
+          const def = src.find((x) => x && x.id === item.id);
+          if (!def) return;
+          keys.forEach((k) => { if (item[k] === undefined) item[k] = deep(def[k]); });
+        });
+      };
+      if (db.employee && db.employee.services) mergeList(db.employee.services, S.employee.services, ['code', 'cat', 'owner', 'channels', 'pricing', 'rules', 'assets', 'updatedAt', 'status', 'margin']);
+      if (db.brand && db.brand.institutions) mergeList(db.brand.institutions, S.brand.institutions, ['platforms', 'bookable', 'campSite']);
+      if (db.versionall && db.versionall.tiers) mergeList(db.versionall.tiers, S.versionall.tiers, ['delivery', 'active', 'sort']);
+      this.__extraMigrate();
+      this.persist();
+    },
+
+    __extraMigrate() {
+      const S = window.SEED;
       let changed = false;
       const fill = (obj, src, key) => {
         if (obj[key] == null) { obj[key] = deep(src[key]); changed = true; }

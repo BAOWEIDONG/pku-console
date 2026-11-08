@@ -88,6 +88,7 @@
       const byApp = {};
       dirty.forEach((d) => { (byApp[d.app] = byApp[d.app] || []).push(d); });
       return K.head('发布中心', '当前有 ' + dirty.length + ' 项未发布变更 · 发布后线上 H5 拉取新配置',
+        '<button class="btn" data-act="configFile">' + I('file', 15) + '生成配置文件</button>' +
         (dirty.length ? '<button class="btn" data-act="discard" style="color:var(--coral)">丢弃全部变更</button>' : '') +
         '<button class="btn primary" data-act="publish"' + (dirty.length ? '' : ' disabled') + '>' + I('send', 15) + '发布 ' + dirty.length + ' 项</button>') +
         K.kpis([
@@ -129,6 +130,7 @@
     },
     actions: {
       publish() { App.openPublish('本次发布'); },
+      configFile() { App.configDialog(); },
       discard() {
         UI.confirm({ title: '丢弃 ' + Store.dirtyCount + ' 项未发布变更？', desc: '本地改动将回到上次发布的状态，不可恢复。', danger: true, okText: '丢弃' })
           .then((ok) => { if (!ok) return; Store.discard(); UI.toast('已丢弃未发布变更'); App.refresh(); });

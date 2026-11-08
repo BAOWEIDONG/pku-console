@@ -65,7 +65,7 @@
       { group: '全局', items: [{ id: 'g-brand', label: '品牌与主体', icon: 'spark' }, { id: 'g-theme', label: '主题与入口', icon: 'sliders' }] }
     ],
     program: [
-      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-config', label: '五好配置', icon: 'sliders' }] },
+      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-config', label: '五好配置', icon: 'sliders' }, { id: 'fg-survey', label: '评估问卷', icon: 'file' }, { id: 'fg-report', label: '月度报告', icon: 'send' }] },
       { group: '减重营 · 营期', items: [{ id: 'v-dashboard', label: '运营概览', icon: 'grid' }, { id: 'v-camps', label: '营期管理', icon: 'calendar' }, { id: 'v-students', label: '学员管理', icon: 'users' }, { id: 'v-records', label: '打卡记录', icon: 'check' }, { id: 'v-annotations', label: '批注工作台', icon: 'message' }, { id: 'v-attendance', label: '出勤看板', icon: 'layout' }, { id: 'v-content', label: '活动与课程', icon: 'video' }, { id: 'v-messages', label: '消息与公告', icon: 'bell' }] },
       { group: '减重营 · 规则', items: [{ id: 'v-rules', label: '打卡规则', icon: 'sliders' }, { id: 'v-points-rules', label: '积分规则', icon: 'target' }, { id: 'v-metrics', label: '健康指标库', icon: 'activity' }, { id: 'v-questionnaire', label: '入营问卷', icon: 'file' }, { id: 'v-activities', label: '活动与入口', icon: 'spark' }, { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' }, { id: 'v-products', label: '积分商城', icon: 'package' }, { id: 'v-badges', label: '徽章体系', icon: 'medal' }, { id: 'v-ranking', label: '排行榜', icon: 'star' }] },
       { group: '减重营 · 报告', items: [{ id: 'v-stats', label: '营期统计', icon: 'chart' }, { id: 'v-report', label: '结营报告', icon: 'file' }, { id: 'v-enterprise', label: '企业健康报告', icon: 'building' }, { id: 'v-supervisor', label: '督导总览', icon: 'eye' }] }
@@ -205,12 +205,22 @@
       '<div class="scrollarea scroll"><div class="page ' + (readonly ? 'readonly' : '') + '">' +
       (readonly ? '<div class="readonly-bar">' + I('lock', 14) + '<b>' + E(Store.role.name) + '</b> 对该模块仅有查看权限，编辑与发布已关闭' +
         '<button class="btn sm" data-act="switchSuper" style="margin-left:auto">切换为超级管理员</button></div>' : '') +
-      page.render(state.ctx) + '</div></div>' +
+      safeRender(page, state.ctx) + '</div></div>' +
       dockHTML() + '</div></div></div>';
     const sc = document.querySelector('.scrollarea');
     if (sc) sc.scrollTop = top;
     wireLive();
     syncPreview();
+  }
+
+  function safeRender(page, ctx) {
+    try { return page.render(ctx); }
+    catch (e) {
+      console.error(e);
+      return '<div class="panel" style="padding:28px"><div class="empty"><b>该页面加载失败</b>' +
+        '请刷新页面；若仍失败，可能是本地缓存与新版本不兼容。<br>' +
+        '<button class="btn" style="margin-top:12px" data-act="clearCache">清理本地缓存并刷新</button></div></div>';
+    }
   }
 
   function wireLive() {
@@ -377,10 +387,87 @@
       setTimeout(() => input.focus(), 30);
     }
   };
+
+  /* ---------------------------------------------------------- 配置文件 */
+  function buildConfig() {
+    const db = Store.db;
+    return {
+      version: db.meta.version,
+      updatedAt: db.meta.publishedAt,
+      brand: db.shared.brand,
+      contact: db.shared.contact,
+      theme: db.shared.theme,
+      employee: {
+        site: db.employee.site,
+        modules: db.employee.modules.filter((m) => m.on).map((m) => ({ id: m.id, name: m.name, stab: m.stab })),
+        services: db.employee.services.map((s) => ({
+          id: s.id, name: s.name, intro: s.intro, status: s.status, cat: s.cat,
+          pricing: s.pricing, channels: s.channels, bookable: s.bookable
+        }))
+      },
+      versionall: {
+        activity: db.versionall.activity,
+        tiers: db.versionall.tiers.map((t) => ({ id: t.id, name: t.name, stock: t.stock, active: t.active, requiredDays: t.requiredDays }))
+      },
+      fivegood: { program: db.fivegood.program, dims: db.fivegood.dims, tiers: db.fivegood.tiers }
+    };
+  }
+
+  App.exportConfig = function () {
+    const cfg = buildConfig();
+    const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'admin-config.json'; a.click();
+    UI.toast('配置文件已下载');
+    return cfg;
+  };
+
+  App.pushConfig = function (token) {
+    const cfg = buildConfig();
+    const json = JSON.stringify(cfg, null, 2);
+    const content = btoa(unescape(encodeURIComponent(json)));
+    const url = 'https://api.github.com/repos/BAOWEIDONG/pku-console/contents/config.json';
+    return fetch(url, { headers: { Authorization: 'token ' + token } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((meta) => fetch(url, {
+        method: 'PUT',
+        headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'chore: 更新运营配置 ' + cfg.version, content: content, sha: meta && meta.sha })
+      }))
+      .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  };
+
+  App.configDialog = function () {
+    const saved = localStorage.getItem('pku-gh-token') || '';
+    UI.modal({
+      title: '发布配置文件', desc: '三端 H5 在启动时读取同一份 config.json',
+      body: '<div class="stack" style="gap:12px">' +
+        '<div class="small mut" style="line-height:1.8">① 生成 config.json（品牌 / 服务 / 价格 / 渠道 / 五好）<br>② 推送到 pku-console 仓库根目录<br>③ H5 启动时同域读取，覆盖默认值</div>' +
+        UI.fInput({ label: 'GitHub Token', value: saved, ph: 'ghp_… 仅存本地', hint: '需要该仓库 contents 写权限' }) +
+        '<div class="note warn">Token 只存在浏览器 localStorage，仅用于这次提交。</div></div>',
+      okText: '推送到 GitHub',
+      extra: '<button class="btn" data-dl>仅下载 JSON</button>',
+      mount(n) {
+        n.querySelector('[data-dl]').addEventListener('click', () => { App.exportConfig(); });
+      },
+      onOk(n) {
+        const token = (n.querySelector('.input') || {}).value || '';
+        if (!token) { UI.toast('请填写 Token，或改用「仅下载 JSON」', 'warn'); return false; }
+        localStorage.setItem('pku-gh-token', token);
+        UI.toast('正在推送…');
+        App.pushConfig(token).then(() => {
+          Store.publish('发布配置文件');
+          UI.toast('配置已推送到线上，H5 下次打开即生效');
+          App.refresh(true);
+        }).catch((e) => UI.toast('推送失败：' + e.message, 'warn'));
+      }
+    });
+  };
+
   window.App = App;
 
   /* ---------------------------------------------------------- events */
-  const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|switchSuper|impact|search|filter|tab|seg|pickRole|previewRole)/;
+  const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|switchSuper|clearCache|impact|search|filter|tab|seg|pickRole|previewRole)/;
 
   document.addEventListener('click', (e) => {
     const sw = e.target.closest('[data-app]');
@@ -425,6 +512,7 @@
     if (name === 'notify') { UI.toast('暂无新通知'); return; }
     if (name === 's-settings') { App.go('s-settings'); return; }
     if (name === 'preview') { App.openPreview(); return; }
+    if (name === 'clearCache') { localStorage.removeItem('pku-console-v1'); location.reload(); return; }
     if (!ALLOW_READONLY.test(name) && !canEdit(state.route)) { UI.toast('当前角色没有编辑权限'); return; }
     const page = currentPage();
     const fn = page.actions && page.actions[name];
