@@ -24,7 +24,7 @@
         { id: 'sup', label: '营养补剂', n: M().supplements.length }
       ];
       return K.head('吃好 · 食谱工程', '不只是单道菜：一餐 = 主食 + 蛋白 + 蔬菜 + 汤，一天 = 四餐',
-        K.btn('去搭配器', 'goPlanner', { icon: 'sliders' }) + K.btn('新建全天食谱', 'newDay', { icon: 'plus', cls: 'primary' })) +
+        K.btn('去搭配器', 'goPlanner', { icon: 'sliders' }) + K.btn('新增菜品', 'addDish', { icon: 'layers', cls: 'ghost' }) + K.btn('新建全天食谱', 'newDay', { icon: 'plus', cls: 'primary' })) +
         K.kpis([
           { k: '全天食谱', v: M().dayPlans.length, unit: '套', d: '在架 ' + M().dayPlans.filter((d) => d.on).length, icon: 'package' },
           { k: '菜品 / 食材', v: M().dishes.length + ' / ' + M().ingredients.length, d: '可自由组合', icon: 'layers' },
@@ -52,7 +52,26 @@
         Store.pushItem('dayPlans', Object.assign({}, p, { id: 'dp' + Date.now(), name: p.name + '（副本）', used: 0 }), '复制食谱');
         UI.toast('已复制'); App.refresh();
       },
-      addDish() { UI.toast('新增菜品：可先选食材组合'); },
+      goGoods() { App.go('svc-goods'); },
+      addDish() {
+        const ings = M().ingredients.map((i) => i.name);
+        UI.formDrawer({ title: '新增菜品', sub: '选食材组合，热量自动估算', icon: 'layers', section: '菜品',
+          fields: [
+            { key: 'name', label: '菜品名称' },
+            { key: 'slot', label: '槽位', type: 'select', options: ['主食', '蛋白', '蔬菜', '汤', '乳品', '蔬果', '加餐'] },
+            { key: 'meal', label: '适用餐次', type: 'select', options: ['早餐', '午餐', '晚餐', '加餐'] },
+            { key: 'ing1', label: '主食材', type: 'select', options: ings },
+            { key: 'ing2', label: '搭配食材', type: 'select', options: ings },
+            { key: 'kcal', label: '热量', type: 'num', value: 180 }
+          ],
+          hint: '保存后会出现在搭配器候选里。',
+          onSave(v) {
+            const i1 = M().ingredients.find((i) => i.name === v.ing1) || M().ingredients[0];
+            const i2 = M().ingredients.find((i) => i.name === v.ing2) || M().ingredients[1];
+            Store.pushItem('dishes', { id: 'd' + Date.now(), name: v.name || '新菜品', meal: [v.meal], slot: v.slot, ing: [[i1.id, 120], [i2.id, 80]], kcal: v.kcal, p: 12, c: 20, f: 6, tags: ['自建'], allerg: [], on: true }, '新增菜品');
+            UI.toast('菜品已创建'); App.refresh();
+          } });
+      },
       addIng() { UI.toast('新增食材'); },
       editSup(d) { UI.toast('补剂编辑'); }
     }
@@ -108,7 +127,7 @@
         { label: '成本', align: 'right', render: (i) => '<span class="tnum">¥' + i.price.toFixed(1) + '</span>' }
       ], M().ingredients.map((i) => Object.assign({ _id: i.id }, i))) });
     }
-    return K.panel({ flush: true, body: UI.table([
+    return '<div class="note" style="margin-bottom:12px">商品（补剂/实物）的售价、库存与上下架统一在「服务与商品 · 商品库」维护，这里只配置推荐与挂载位置。<button class="btn sm" data-act="goGoods" style="margin-left:8px">⤷ 去商品库</button></div>' + K.panel({ flush: true, body: UI.table([
       { label: '补剂', render: (s) => '<div><div class="strong">' + E(s.name) + '</div><div class="small muted">' + E(s.cat) + '</div></div>' },
       { label: '适用', render: (s) => '<span class="small">' + E(s.fit) + '</span>' },
       { label: '禁忌', render: (s) => s.avoid.length ? '<span class="small" style="color:#b83c2c">' + E(s.avoid.join(' / ')) + '</span>' : '<span class="muted small">无</span>' },
@@ -122,7 +141,7 @@
 
   /* ------------------------------------------------------------ 搭配器 */
   P['fg-meal'] = {
-    app: 'all', grp: 'e.content', papp: 'employee', title: '食谱搭配器', sub: '逐餐选菜品，实时算热量与结构', preview: 'emp-home', hideNav: true,
+    app: 'all', grp: 'e.content', papp: 'employee', title: '食谱搭配器', sub: '逐餐选菜品，实时算热量与结构', hideNav: true,
     state: { slot: '早餐', pick: { 早餐: [], 午餐: [], 晚餐: [], 加餐: [] }, supps: [] },
     render(ctx) {
       const st = P['fg-meal'].state;
@@ -207,7 +226,7 @@
 
   /* ------------------------------------------------------ 推荐引擎 */
   P['fg-reco'] = {
-    app: 'all', grp: 'e.content', papp: 'employee', title: '推荐引擎', sub: '人群分层 × 特征权重 × 多维打分，不是单条件 if', preview: 'emp-home',
+    app: 'all', grp: 'e.content', papp: 'employee', title: '推荐引擎', sub: '人群分层 × 特征权重 × 多维打分，不是单条件 if',
     render() {
       const eng = Store.db.recoEngine;
       const rules = eng.rules;
