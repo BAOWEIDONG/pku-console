@@ -194,6 +194,56 @@
       '<div class="note warn" style="margin-top:12px">改价与改规则会影响新订单；已支付订单按下单快照执行。</div>' });
   }
 
+
+  /* ------------------------------------------------------ 5 商品库（补剂/实物） */
+  P['svc-goods'] = {
+    app: 'all', grp: 'e.services', papp: 'employee', title: '商品库', sub: '营养补剂与实物商品，统一按商品管理', preview: 'emp-home',
+    render() {
+      const list = Store.db.supplements;
+      const on = list.filter((g) => g.on);
+      const gm = Math.round(on.reduce((a, g) => a + (g.settle - g.cost) / g.settle * 100, 0) / (on.length || 1));
+      return K.head('商品库', list.length + ' 个商品 · 在售 ' + on.length + ' · 平均毛利 ' + gm + '%',
+        K.btn('导入商品', 'imp', { icon: 'upload' }) + K.btn('新增商品', 'newGoods', { icon: 'plus', cls: 'primary' })) +
+        K.kpis([
+          { k: '在售商品', v: on.length, unit: '个', d: '补剂 ' + on.filter((g) => g.cat !== '实物').length + ' · 实物 2', icon: 'gift' },
+          { k: '平均毛利率', v: gm, unit: '%', d: '低于 30% 的 2 个', tone: 'down', icon: 'chart' },
+          { k: '本月销售', v: '2.4', unit: '万', d: '复购 31%', tone: 'up', icon: 'target' },
+          { k: '缺货', v: list.filter((g) => g.stock === 0).length, unit: '个', d: '益生菌待补货', tone: 'down', icon: 'package' }
+        ]) +
+        '<div class="note" style="margin-bottom:14px">' + UI.icon('link', 14) + ' 商品可挂载到：全天食谱（随餐建议）· 搭配器 · 积分商城 · 订单。补剂的推荐规则在「吃好 · 食谱工程」里配置。</div>' +
+        K.panel({ flush: true, body: UI.table([
+          { label: '商品', render: (g) => '<div><div class="strong">' + E(g.name) + '</div><div class="small muted">' + E(g.cat) + '</div></div>' },
+          { label: '售价 / 结算', align: 'right', render: (g) => '<b class="tnum">¥' + g.price + '</b><div class="small muted tnum">结算 ¥' + g.settle + '</div>' },
+          { label: '毛利', align: 'right', render: (g) => '<span class="pill ' + ((g.settle - g.cost) / g.settle < 0.3 ? 'amber' : 'green') + '">' + Math.round((g.settle - g.cost) / g.settle * 100) + '%</span>' },
+          { label: '库存', align: 'right', render: (g) => '<span class="tnum" style="color:' + (g.stock === 0 ? '#b83c2c' : 'inherit') + '">' + g.stock + '</span>' },
+          { label: '适用 / 禁忌', render: (g) => '<div class="small">' + E(g.fit) + '</div><div class="small" style="color:#b83c2c">' + E((g.avoid || []).join(' / ') || '') + '</div>' },
+          { label: '挂载', render: (g) => '<span class="small muted">' + E((g.attach || ['meal']).map((x) => x === 'day' ? '食谱' : x === 'planner' ? '搭配器' : '餐次').join(' / ')) + '</span>' },
+          { label: '已售', align: 'right', render: (g) => '<span class="tnum">' + g.sold + '</span>' },
+          { label: '上架', render: (g) => '<button class="switch ' + (g.on ? 'on' : '') + '" data-toggle="supplements.' + UI.ix(list, g) + '.on"></button>' }
+        ], list.map((g) => Object.assign({ _id: g.id }, g))) });
+    },
+    actions: {
+      imp() { UI.toast('请上传商品表 xlsx'); },
+      newGoods() {
+        UI.formDrawer({ title: '新增商品', sub: '补剂与实物统一入口', icon: 'gift', section: '商品',
+          fields: [
+            { key: 'name', label: '商品名称' },
+            { key: 'cat', label: '分类', type: 'select', options: ['蛋白补充', '基础营养', '心血管', '肠道', '骨骼', '睡眠', '实物'] },
+            { key: 'price', label: '售价', type: 'num', value: 168 },
+            { key: 'settle', label: '结算价', type: 'num', value: 132 },
+            { key: 'stock', label: '库存', type: 'num', value: 100 },
+            { key: 'fit', label: '适用人群', ph: '如 饮食不规律' },
+            { key: 'attach', label: '挂载位', type: 'select', options: ['全天食谱', '餐次', '搭配器'] }
+          ],
+          hint: '创建后可在食谱工程里配置随餐推荐。',
+          onSave(v) {
+            Store.pushItem('supplements', { id: 'su' + Date.now(), name: v.name || '新商品', cat: v.cat, price: v.price, settle: v.settle, cost: Math.round(v.settle * 0.58), stock: v.stock, on: true, fit: v.fit, avoid: [], sold: 0, svc: '', attach: [v.attach === '全天食谱' ? 'day' : v.attach === '搭配器' ? 'planner' : 'meal'] }, '新增商品');
+            UI.toast('商品已创建'); App.refresh();
+          } });
+      }
+    }
+  };
+
   /* ------------------------------------------------------ 3 价格政策 */
   P['svc-pricing'] = {
     app: 'all', grp: 'e.services', papp: 'employee', title: '价格与政策', sub: '挂牌价、结算价、协议价与毛利一屏看清',
