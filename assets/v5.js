@@ -435,7 +435,7 @@
       { k: '减重营', n: COVERAGE.filter((c) => c.ch === 'camp').length, tone: 'blue' }
     ];
     return '<section class="vcard vcoverage">' +
-      '<div class="vcard-h"><div><h3>前端覆盖矩阵</h3><p>每个 H5 功能是否都有后台操控</p></div>' +
+      '<div class="vcard-h"><div><h3>前端功能地图</h3><p>每个 H5 功能是否都有后台操控</p></div>' +
         '<button class="vlink" data-act="go" data-id="g-coverage">打开矩阵 ' + I('chevron', 13) + '</button></div>' +
       '<div class="vcov-body">' + ring(full / total * 100, 88, '#0B63E5', '完全覆盖') +
         '<div class="vcov-nums"><div><b>' + total + '</b><span>前端功能点</span></div><div><b class="teal">' + full + '</b><span>完全可管</span></div>' +

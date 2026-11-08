@@ -243,7 +243,7 @@
       { group: '经营', items: [
         { id: 'g-insights', label: '经营洞察', icon: 'chart' },
         { id: 'g-depth', label: '模块复盘', icon: 'target' },
-        { id: 'g-coverage', label: '前端覆盖矩阵', icon: 'target' },
+        { id: 'g-coverage', label: '前端功能地图', icon: 'target' },
         { id: 'rpt-report', label: '报表与口径', icon: 'file' }
       ] },
       { group: '渠道分析', items: [
