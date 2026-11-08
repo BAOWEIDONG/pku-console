@@ -65,14 +65,16 @@
           { label: '金额', align: 'right', render: (r) => r.amount ? '<b class="tnum">' + money(r.amount) + '</b>' : '<span class="muted small">积分/权益</span>' },
           { label: '来源渠道', render: (r) => '<span class="small muted nw">' + E((Store.db.channels.find((c) => c.id === r.channel) || {}).name || r.channel) + '</span>' },
           { label: '状态', render: (r) => stPill(r.status) },
-          { label: '时间', render: (r) => '<span class="small tnum muted">' + E(r.at.slice(0, 10)) + '</span>' }
+          { label: '时间', render: (r) => '<span class="small tnum muted">' + E(r.at.slice(0, 10)) + '</span>' },
+          { label: '', align: 'right', render: (r) => '<div class="rowact"><button data-act="openOrder" data-id="' + r.id + '">' + I('chevron', 14) + '</button></div>' }
         ], rows.map((r) => Object.assign({ _id: r.id }, r)), { emptyTitle: '没有符合条件的订单' }) });
     },
     actions: {
       kindTab(d) { P['trd-orders'].state.kind = d.id; App.refresh(); },
       statusTab(d) { P['trd-orders'].state.status = d.id; App.refresh(); },
       search() {},
-      export() { UI.toast('订单已导出'); }
+      export() { UI.toast('订单已导出'); },
+      openOrder(d) { App.go('trd-order', { id: d.id }); }
     }
   };
 
