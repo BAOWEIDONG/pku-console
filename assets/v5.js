@@ -84,10 +84,11 @@
 
     /* 职工健康 */
     { ch: 'employee', page: '首页', feature: '公司名 / 问候 / 客服热线', route: 'e-site', ctrl: '职工端站点', status: 'full', note: '企业名称、标题、热线、搜索占位' },
-    { ch: 'employee', page: '首页', feature: '品牌横幅轮播与自动播放', route: 'e-site', ctrl: '职工端站点 · 轮播', status: 'full', note: '速度、圆点、自动播放' },
+    { ch: 'employee', page: '首页', feature: '品牌横幅轮播与自动播放', route: 'content-banners', ctrl: '轮播与开屏', status: 'full', note: '图片上传、文案、跳转、排序、投放时间、自动播放' },
     { ch: 'employee', page: '首页', feature: '五大服务模块（筛查/慢病/就医/特色/应急）', route: 'e-modules', ctrl: '模块与分类', status: 'full', note: '名称、副标题、图标色、显隐、排序' },
     { ch: 'employee', page: '服务', feature: '服务列表、分类、搜索、热门推荐', route: 'e-services', ctrl: '服务目录', status: 'full', note: '分类、标签、推荐位、上下架' },
-    { ch: 'employee', page: '服务详情', feature: '图文详情 / 服务须知 / 流程 / 机构', route: 'e-services', ctrl: '服务详情', status: 'full', note: '介绍、包含项、须知、流程、履约机构' },
+    { ch: 'employee', page: '服务详情', feature: '图文详情 / 服务须知 / 流程 / 机构', route: 'e-services', ctrl: '服务详情', status: 'partial', note: '文字介绍、流程与机构可改；服务主图与图文块尚待接入' },
+    { ch: 'employee', page: '商品详情', feature: '商品主图 / 图集 / 图文详情 / SKU', route: 'svc-goods', ctrl: '实物商品', status: 'full', note: '主图与图集上传、图文块、规格 SKU、物流售后' },
     { ch: 'employee', page: '服务详情', feature: '价格、规格与权益抵扣', route: 'svc-pricing', ctrl: '价格与政策', status: 'full', note: '成本/结算/挂牌/协议价、税点、有效期' },
     { ch: 'employee', page: '预约', feature: '机构 / 日期 / 时段 / 表单字段', route: 'e-booking', ctrl: '预约设置', status: 'full', note: '可约机构、时段、字段必填与顺序' },
     { ch: 'employee', page: '预约', feature: '我的预约与取消', route: 'e-bookings', ctrl: '预约订单', status: 'full', note: '状态、改约、取消、履约记录' },
@@ -109,6 +110,7 @@
     { ch: 'camp', page: '排行', feature: '积分 / 减重 / 打卡排行', route: 'v-ranking', ctrl: '排行榜', status: 'full', note: '榜单维度、周期、展示人数、匿名规则' },
     { ch: 'camp', page: '积分', feature: '积分明细与规则', route: 'v-points-rules', ctrl: '积分规则', status: 'full', note: '行为、分值、上限、生效营期' },
     { ch: 'camp', page: '商城', feature: '积分商品、兑换、库存', route: 'v-products', ctrl: '积分商城', status: 'full', note: '商品、积分价、库存、上下架、每人限兑' },
+    { ch: 'camp', page: '商品详情', feature: '商品主图、图文介绍、规格', route: 'svc-goods', ctrl: '实物商品', status: 'full', note: '与职工端共用一份商品素材与图文详情' },
     { ch: 'camp', page: '奖励', feature: '连续打卡奖励与领取', route: 'v-tiers', ctrl: '连续打卡奖励', status: 'full', note: '天数门槛、库存、配送方式、排序' },
     { ch: 'camp', page: '奖励', feature: '领取订单与发货', route: 'v-claims', ctrl: '领奖订单', status: 'full', note: '待发货、物流单号、批量导出' },
     { ch: 'camp', page: '徽章', feature: '徽章获得与展示', route: 'v-badges', ctrl: '徽章体系', status: 'full', note: '徽章、条件、稀有度、展示位' },
@@ -485,7 +487,7 @@
   /* ============================================================ COVERAGE */
   let covFilter = { ch: 'all', status: 'all' };
   P['g-coverage'] = {
-    app: 'all', title: '前端覆盖矩阵', sub: 'H5 功能 ↔ 后台操作',
+    app: 'all', title: '前端功能地图', sub: '三个 H5 每个可见功能 ↔ 后台具体入口',
     grp: 'insight',
     render() {
       const total = COVERAGE.length;
@@ -494,7 +496,7 @@
       const missing = COVERAGE.filter((c) => c.status === 'missing').length;
       const rows = COVERAGE.filter((c) => (covFilter.ch === 'all' || c.ch === covFilter.ch) && (covFilter.status === 'all' || c.status === covFilter.status));
       const ends = [['all', '全部端'], ['pku', '品牌站'], ['employee', '职工健康'], ['camp', '减重营']];
-      return K.head('前端覆盖矩阵', '把三个 H5 的每个用户可见功能，落到一个明确的后台操作入口',
+      return K.head('前端功能地图', '用户在前端看到的每一块，都能在右边找到对应的后台页面；点进去就是配置入口',
         '<button class="btn" data-act="exportCoverage">' + I('download', 15) + '导出覆盖报告</button>' +
         '<button class="btn primary" data-act="go" data-id="chn-map">' + I('layers', 15) + '渠道图谱</button>', 'INSIGHT / COVERAGE') +
         '<div class="vsummary">' +

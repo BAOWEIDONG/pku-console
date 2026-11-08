@@ -436,11 +436,18 @@
           K.panel({ title: '主题', body: '<div class="small mut" style="line-height:1.8">职工端默认使用暖橙，可由「全局 · 主题与入口」统一切换为品牌蓝。</div>' +
             '<div style="margin-top:12px"><button class="btn" data-act="goTheme">' + I('sliders', 15) + '前往主题与入口</button></div>' +
             '<div class="hairline"></div><div class="row"><span class="small mut">上次发布</span><b class="right small tnum">' + Store.db.meta.publishedAt + '</b></div>' }) +
+          '<div style="grid-column:1/-1">' + K.panel({ title: '首页轮播', sub: '图片、文案、跳转与投放时间', body:
+            '<div class="stack" style="gap:8px">' + (H().banners || []).slice(0, 3).map((b, i) =>
+              '<div class="row" style="gap:9px"><div style="width:64px;height:36px;border-radius:7px;overflow:hidden;background:#eef3f9;flex:none">' +
+              '<img src="' + E(b.image || '') + '" style="width:100%;height:100%;object-fit:cover" alt=""></div>' +
+              '<div style="flex:1;min-width:0"><div class="small strong clip">' + E(b.title) + '</div><div class="small muted">第 ' + (i + 1) + ' 张 · ' + (b.on === false ? '未上线' : '投放中') + '</div></div></div>').join('') +
+            '</div><div style="margin-top:12px"><button class="btn" data-act="goBanners">' + I('image', 15) + '管理轮播与开屏</button></div>' }) + '</div>' +
         '</div>';
     },
     actions: {
       saveSite() { UI.toast('站点设置已保存'); },
-      goTheme() { App.go('g-theme'); }
+      goTheme() { App.go('g-theme'); },
+      goBanners() { Media.ensure(); App.go('content-banners'); }
     }
   };
 

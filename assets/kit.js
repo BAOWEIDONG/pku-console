@@ -8,10 +8,15 @@
 
   const K = {
     head(title, desc, actions, eyebrow) {
+      const help = window.PAGE_HELP && window.App && window.PAGE_HELP[App.route];
       return '<div class="page-head"><div class="t">' +
         (eyebrow ? '<div class="crumb" style="margin-bottom:7px">' + eyebrow + '</div>' : '') +
         '<h1>' + E(title) + '</h1>' + (desc ? '<p>' + E(desc) + '</p>' : '') + '</div>' +
-        (actions ? '<div class="h-actions">' + actions + '</div>' : '') + '</div>';
+        (actions ? '<div class="h-actions">' + actions + '</div>' : '') + '</div>' +
+        (help ? '<div class="page-help">' +
+          '<div><b>这页做什么</b><span>' + E(help.what) + '</span></div>' +
+          '<div><b>改完影响哪里</b><span>' + E(help.front) + '</span></div>' +
+          '<div class="who"><b>谁负责</b><span>' + E(help.who) + '</span></div></div>' : '');
     },
     btn(label, act, opts) {
       opts = opts || {};

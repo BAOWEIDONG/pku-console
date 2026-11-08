@@ -29,6 +29,7 @@
     'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
     'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
     'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services',
+    'content-banners': 'shared.content', 'media-lib': 'shared.content', 'feature-map': 'v.report',
     'h-overview': 'v.ops', 'h-service-flow': 'e.services', 'h-profiles': 'v.ops', 'h-risk': 'v.ops',
     'h-plans': 'v.ops', 'h-followups': 'v.ops', 'h-programs': 'v.ops', 'h-outcomes': 'v.report', 'h-enterprise': 'v.report',
     'fg-members': 'v.ops', 'fg-tasks': 'v.rules', 'fg-coach': 'v.ops', 'fg-escalation': 'v.ops',
@@ -67,12 +68,12 @@
     command: [
       { group: '今天', items: [
         { id: 'workbench', label: '指挥中心', icon: 'grid' },
-        { id: 'g-impact', label: '变更影响', icon: 'activity' },
+        { id: 'g-impact', label: '改动影响检查', icon: 'activity' },
         { id: 's-publish', label: '发布中心', icon: 'send' }
       ] },
       { group: '快速进入', items: [
         { id: 'chn-map', label: '渠道图谱', icon: 'layers' },
-        { id: 'g-coverage', label: '覆盖矩阵', icon: 'target' },
+        { id: 'g-coverage', label: '前端功能地图', icon: 'target' },
         { id: 'crm-360', label: '客户 360', icon: 'user' },
         { id: 'v-dashboard', label: '减重营概览', icon: 'activity' }
       ] }
@@ -84,6 +85,7 @@
       ] },
       { group: '品牌站', items: [
         { id: 'b-home', label: '首页内容', icon: 'layout' },
+        { id: 'content-banners', label: '轮播与开屏', icon: 'image' },
         { id: 'b-hospitals', label: '分院网络', icon: 'hospital' },
         { id: 'b-departments', label: '学科与科室', icon: 'layers' },
         { id: 'b-team', label: '师资团队', icon: 'stethoscope' },
@@ -91,14 +93,15 @@
         { id: 'b-about', label: '品牌页', icon: 'file' }
       ] },
       { group: '职工端', items: [
-        { id: 'e-site', label: '站点与轮播', icon: 'sliders' },
+        { id: 'e-site', label: '站点设置', icon: 'sliders' },
         { id: 'e-modules', label: '模块与分类', icon: 'grid' },
         { id: 'e-content', label: '内容与科普', icon: 'video' },
         { id: 'e-qa', label: '深度问答', icon: 'message' },
         { id: 'b-site', label: '站点设置', icon: 'settings' }
       ] },
       { group: '内容资产', items: [
-        { id: 'g-content', label: '内容中心', icon: 'image' },
+        { id: 'g-content', label: '内容中心', icon: 'file' },
+        { id: 'media-lib', label: '图片素材库', icon: 'image' },
         { id: 'msg-center', label: '触达中心', icon: 'send' },
         { id: 'g-brand', label: '品牌与主体', icon: 'spark' },
         { id: 'g-theme', label: '主题与入口', icon: 'sliders' }
@@ -291,7 +294,7 @@
     route: 'workbench', ctx: {}, app: 'command', openGroups: {},
     previewOpen: false, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
-    history: [], autoMocked: false
+    history: [], autoMocked: false, origin: null, navOpen: false
   };
 
   function currentPage() { return PAGES[state.route] || PAGES.workbench; }
@@ -317,8 +320,11 @@
     const space = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
     const nav = NAV_OF[state.app] || NAV_OF.platform;
     const navOpen = state.openGroups[state.app] || nav.map((g) => g.group || '_top');
-    return '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + '</div>' +
-        '<h2>' + E(space.label) + '<span>' + E(space.desc) + '</span></h2>' +
+    return '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + ' · 工作区</div>' +
+        '<button class="space-switch" data-act="spaceMenu" title="切换工作区">' +
+          '<span class="sp-dot" style="background:' + space.dot + '"></span>' +
+          '<b>' + E(space.label) + '</b>' + I('down', 13) + '</button>' +
+        '<div class="sp-desc">' + E(space.desc) + '</div>' +
         '<button class="subnav-new" data-act="quickNew">' + I('plus', 14) + '新建</button></div>' +
       '<div class="subnav-search" data-act="cmd">' + I('search', 14) + '<span>搜索 ' + E(space.label) + ' 内页面</span><kbd>⌘K</kbd></div>' +
       '<nav class="nav">' + nav.map((g) => {
@@ -362,9 +368,13 @@
     const page = currentPage();
     const wb = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
     const dirty = Store.dirtyCount;
-    return '<div class="tb-left"><button class="tb-back" data-act="back" title="返回">' + I('chevron', 15) + '</button>' +
+    return '<div class="tb-left"><button class="tb-menu" data-act="toggleNav" title="展开菜单" aria-label="展开菜单">' +
+        '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
+      '<button class="tb-back" data-act="back" title="返回">' + I('chevron', 15) + '</button>' +
+      (state.route === 'workbench' ? '' : '<button class="tb-home" data-act="home">' + I('grid', 14) + '<span>指挥中心</span></button>') +
       '<div class="crumb"><span class="crumb-space"><i style="background:' + wb.dot + '"></i>' + E(wb.label) + '</span>' +
       '<span class="sep">/</span><b>' + E(page.title || '') + '</b>' +
+      (state.origin && state.origin.route !== state.route ? '<button class="tb-restore" data-act="restore">' + I('undo', 11) + '回到 ' + E(state.origin.label) + '</button>' : '') +
       (Store.role.perms === 'ALL' ? '' : '<span class="pill grey">' + E(Store.role.name) + '</span>') + '</div></div>' +
       '<div class="top-actions">' +
       '<button class="searchbtn" data-act="cmd"><span class="sb-ic">' + I('search', 15) + '</span><span>搜索页面、客户、服务、订单</span><kbd>⌘K</kbd></button>' +
@@ -375,6 +385,37 @@
       '<button class="tb-user" data-act="roleMenu"><span class="ava">' + E(Store.role.name.slice(0, 1)) + '</span>' +
       '<span class="tb-user-t">' + E(Store.role.name) + '</span>' + I('down', 11) + '</button>' +
       '</div>';
+  }
+
+  /* ---------------------------------------------------------- 工作区切换面板 */
+  function openSpaceMenu() {
+    document.querySelectorAll('.space-menu, .space-menu-mask').forEach((x) => x.remove());
+    const mask = document.createElement('div');
+    mask.className = 'space-menu-mask';
+    const box = document.createElement('div');
+    box.className = 'space-menu';
+    box.innerHTML =
+      '<div class="space-menu-h"><div><h3>切换工作区</h3><p>每个工作区是一组职责相近的后台页面；页面说明会告诉你改完影响哪一端。</p></div>' +
+        '<button class="iconbtn" data-space-close>' + I('x', 16) + '</button></div>' +
+      '<div class="space-grid">' + WORKBENCHES.map((w) =>
+        '<button class="space-card ' + (w.id === state.app ? 'on' : '') + '" data-space="' + w.id + '">' +
+          '<span class="sp-ic" style="background:' + w.dot + ';color:#07223f">' + I(w.icon, 17) + '</span>' +
+          '<span><b>' + E(w.label) + (w.id === state.app ? ' · 当前' : '') + '</b><span>' + E(w.desc) + '</span></span>' +
+        '</button>').join('') + '</div>' +
+      '<div class="row" style="margin-top:12px;justify-content:space-between">' +
+        '<span class="small mut">找不到页面时，用 ⌘K 搜页面名；或在「前端功能地图」里按 H5 找。</span>' +
+        '<button class="btn sm" data-space-map>' + I('target', 13) + '前端功能地图</button></div>';
+    document.body.appendChild(mask);
+    document.body.appendChild(box);
+    const close = () => { mask.remove(); box.remove(); };
+    mask.addEventListener('click', close);
+    box.querySelector('[data-space-close]').addEventListener('click', close);
+    box.querySelector('[data-space-map]').addEventListener('click', () => { close(); App.go('g-coverage'); });
+    box.querySelectorAll('[data-space]').forEach((b) => b.addEventListener('click', () => {
+      const def = WORKBENCHES.find((w) => w.id === b.dataset.space);
+      close();
+      if (def) App.go(def.home);
+    }));
   }
 
   /* ---------------------------------------------------------- dock */
@@ -417,6 +458,7 @@
     const top = keepScroll && sc0 ? sc0.scrollTop : 0;
     const readonly = !canEdit(state.route);
     document.getElementById('app').innerHTML =
+      '<div class="nav-scrim" data-act="toggleNav"></div>' +
       '<div class="shell"><aside class="bdock" aria-label="工作区">' + railDockHTML() + '</aside>' +
       '<aside class="subnav" aria-label="模块导航">' + subnavHTML() + '</aside><div class="main">' +
       '<header class="topbar">' + topbarHTML() + '</header>' +
@@ -465,15 +507,27 @@
 
   /* ---------------------------------------------------------- router */
   const App = {
-    go(route, ctx) {
+    go(route, ctx, opts) {
       if (!PAGES[route]) return;
       if (!visible(route)) { UI.toast('当前角色无权访问该模块'); return; }
-      state.history.push({ route: state.route, ctx: state.ctx });
+      opts = opts || {};
+      const from = { route: state.route, ctx: state.ctx, app: state.app, origin: state.origin };
+      state.history.push(from);
       if (state.history.length > 30) state.history.shift();
+      if (route === 'workbench') { state.app = 'command'; state.origin = null; }
+      const targetApp = wbOf(route);
+      const inNav = route === 'workbench' ||
+        (NAV_OF[state.app] || []).some((g) => g.items.some((it) => it.id === route));
+      if (targetApp !== state.app && !inNav && !opts.keepApp) {
+        state.origin = { route: from.route, app: from.app, label: (PAGES[from.route] || {}).title || '上一页' };
+        state.app = targetApp;
+      } else if (targetApp === state.app) {
+        state.origin = null;
+      }
       state.route = route;
-      state.app = wbOf(route);
-      delete state.openGroups[state.app];
       state.ctx = ctx || {};
+      state.navOpen = false;
+      document.body.classList.remove('nav-open');
       const page = currentPage();
       const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
       if (Preview.SCREENS[app]) {
@@ -492,9 +546,12 @@
       const prev = state.history.pop();
       if (!prev) return this.go('workbench');
       state.route = prev.route; state.ctx = prev.ctx;
+      if (prev.app) state.app = prev.app;
+      state.origin = prev.origin || null;
       location.hash = '#/' + prev.route; render();
     },
     refresh(keep) { render(keep); },
+    get route() { return state.route; },
     setPreview(screen, ctx) {
       state.previewScreen = screen;
       if (ctx) state.previewCtx = ctx;
@@ -792,6 +849,20 @@
     if (name === 'cmdk') { App.cmdOpen(); return; }
     if (name === 'cmd') { App.cmdOpen(); return; }
     if (name === 'back') { App.back(); return; }
+    if (name === 'home') { App.go('workbench', null, { keepApp: true }); return; }
+    if (name === 'toggleNav') {
+      state.navOpen = !state.navOpen;
+      document.body.classList.toggle('nav-open', state.navOpen);
+      return;
+    }
+    if (name === 'spaceMenu') { openSpaceMenu(); return; }
+    if (name === 'restore') {
+      const o = state.origin;
+      if (!o) return;
+      state.history.push({ route: state.route, ctx: state.ctx, app: state.app, origin: state.origin });
+      state.route = o.route; state.app = o.app; state.origin = null; state.ctx = {};
+      location.hash = '#/' + o.route; render(); return;
+    }
     if (name === 'quickNew') { App.quickNew(); return; }
     if (name === 'roleMenu') { App.roleMenu(act); return; }
     if (name === 'switchSuper') { Store.setRole('super'); UI.toast('已切换为超级管理员'); App.refresh(); return; }
@@ -870,6 +941,7 @@
   Store.init();
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
+  if (window.V8) V8.ensure();
   // 主题色注入
   try {
     const p = Store.db.shared.theme.primary;
@@ -881,8 +953,8 @@
     const h = location.hash.replace(/^#\/?/, '').split('?')[0];
     if (h && PAGES[h] && h !== state.route) {
       state.route = h;
-      state.app = wbOf(h);
-      delete state.openGroups[state.app];
+      const inNav = h === 'workbench' || (NAV_OF[state.app] || []).some((g) => g.items.some((it) => it.id === h));
+      if (!inNav) state.app = wbOf(h);
       render();
     }
   });
