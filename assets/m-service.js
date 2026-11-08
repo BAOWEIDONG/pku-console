@@ -50,7 +50,7 @@
         ], rows.map((s) => Object.assign({ _id: s.id }, s))) }) +
         '<div style="height:14px"></div><div class="panel" style="padding:14px 16px"><div class="row">' +
         '<div class="ava a" style="border-radius:10px">' + I('gift', 16) + '</div>' +
-        '<div style="flex:1"><b style="font-size:12.5px">营养品、补剂、实物商品</b><div class="small mut" style="margin-top:2px">补剂也是商品：售价、结算价、库存、上下架与挂载位置在这里统一维护</div></div>' +
+        '<div style="flex:1"><b style="font-size:12.5px">实物商品：补剂、耗材与器械</b><div class="small mut" style="margin-top:2px">实物商品与补剂共用一套价格、库存与上下架规则</div></div>' +
         '<button class="btn sm" data-act="goGoods">进入商品库 ›</button></div></div>';
     },
     actions: {
@@ -202,12 +202,12 @@
 
   /* ------------------------------------------------------ 5 商品库（补剂/实物） */
   P['svc-goods'] = {
-    app: 'all', grp: 'e.services', papp: 'employee', title: '商品库', sub: '营养补剂与实物商品，统一按商品管理', preview: 'emp-home',
+    app: 'all', grp: 'e.services', papp: 'employee', title: '实物商品', sub: '补剂、耗材、器械等实物，按商品管理', preview: 'emp-home',
     render() {
       const list = Store.db.supplements;
       const on = list.filter((g) => g.on);
       const gm = Math.round(on.reduce((a, g) => a + (g.settle - g.cost) / g.settle * 100, 0) / (on.length || 1));
-      return K.head('商品库', list.length + ' 个商品 · 在售 ' + on.length + ' · 平均毛利 ' + gm + '%',
+      return K.head('实物商品', list.length + ' 个商品 · 在售 ' + on.length + ' · 平均毛利 ' + gm + '%',
         K.btn('导入商品', 'imp', { icon: 'upload' }) + K.btn('新增商品', 'newGoods', { icon: 'plus', cls: 'primary' })) +
         K.kpis([
           { k: '在售商品', v: on.length, unit: '个', d: '补剂 ' + on.filter((g) => g.cat !== '实物').length + ' · 实物 2', icon: 'gift' },
