@@ -131,7 +131,7 @@
         { label: '成本', align: 'right', render: (i) => '<span class="tnum">¥' + i.price.toFixed(1) + '</span>' }
       ], M().ingredients.map((i) => Object.assign({ _id: i.id }, i))) });
     }
-    return '<div class="note" style="margin-bottom:12px">商品（补剂/实物）的售价、库存与上下架统一在「服务与商品 · 商品库」维护，这里只配置推荐与挂载位置。<button class="btn sm" data-act="goGoods" style="margin-left:8px">⤷ 去商品库</button></div>' + K.panel({ flush: true, body: UI.table([
+    return '<div class="note" style="margin-bottom:12px">补剂属于实物商品，售价、库存与上下架统一在「服务与商品 · 实物商品」维护，这里只配置推荐与挂载位置。<button class="btn sm" data-act="goGoods" style="margin-left:8px">⤷ 去实物商品</button></div>' + K.panel({ flush: true, body: UI.table([
       { label: '补剂', w: '240px', render: (s) => '<div class="cellflex">' + thumb(s.id, 'goods', 44, 32) + '<div style="min-width:0"><div class="strong clip">' + E(s.name) + '</div><div class="small muted">' + E(s.cat) + '</div></div></div>' },
       { label: '适用', render: (s) => '<span class="small">' + E(s.fit) + '</span>' },
       { label: '禁忌', render: (s) => s.avoid.length ? '<span class="small" style="color:#b83c2c">' + E(s.avoid.join(' / ')) + '</span>' : '<span class="muted small">无</span>' },
