@@ -47,7 +47,7 @@
 
   const NAV_OF = {
     service: [
-      { group: '', items: [{ id: 'svc-catalog', label: '服务商品', icon: 'package' }, { id: 'svc-goods', label: '实物商品', icon: 'gift' }] },
+      { group: '', items: [{ id: 'svc-catalog', label: '服务商品', icon: 'package' }, { id: 'svc-goods', label: '实物商品', icon: 'gift' }, { id: 'trd-stock', label: '库存与预留', icon: 'package' }] },
       { group: '定价', items: [{ id: 'svc-pricing', label: '价格与政策', icon: 'target' }, { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }] },
 
       { group: '履约基础', items: [{ id: 'g-orgs', label: '服务机构', icon: 'hospital' }, { id: 'e-booking', label: '预约设置', icon: 'calendar' }, { id: 'e-dashboard', label: '服务概览', icon: 'grid' }] }
