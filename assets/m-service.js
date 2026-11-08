@@ -212,7 +212,7 @@
         ]) +
         '<div class="note" style="margin-bottom:14px">' + UI.icon('link', 14) + ' 商品可挂载到：全天食谱（随餐建议）· 搭配器 · 积分商城 · 订单。补剂的推荐规则在「吃好 · 食谱工程」里配置。</div>' +
         K.panel({ flush: true, body: UI.table([
-          { label: '商品', render: (g) => '<div><div class="strong">' + E(g.name) + '</div><div class="small muted">' + E(g.cat) + '</div></div>' },
+          { label: '商品', w: '250px', render: (g) => '<div class="cellflex"><img src="' + (window.IMG || {})['g' + ((String(g.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 10 + 1)] + '" style="width:44px;height:32px;border-radius:8px;object-fit:cover;flex:none" alt=""><div style="min-width:0"><div class="strong clip">' + E(g.name) + '</div><div class="small muted">' + E(g.cat) + '</div></div></div>' },
           { label: '售价 / 结算', align: 'right', render: (g) => '<b class="tnum">¥' + g.price + '</b><div class="small muted tnum">结算 ¥' + g.settle + '</div>' },
           { label: '毛利', align: 'right', render: (g) => '<span class="pill ' + ((g.settle - g.cost) / g.settle < 0.3 ? 'amber' : 'green') + '">' + Math.round((g.settle - g.cost) / g.settle * 100) + '%</span>' },
           { label: '库存', align: 'right', render: (g) => '<span class="tnum" style="color:' + (g.stock === 0 ? '#b83c2c' : 'inherit') + '">' + g.stock + '</span>' },
