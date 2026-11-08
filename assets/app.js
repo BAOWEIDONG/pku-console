@@ -65,7 +65,7 @@
       { group: '全局', items: [{ id: 'g-brand', label: '品牌与主体', icon: 'spark' }, { id: 'g-theme', label: '主题与入口', icon: 'sliders' }] }
     ],
     program: [
-      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-config', label: '五好配置', icon: 'sliders' }, { id: 'fg-survey', label: '评估问卷', icon: 'file' }, { id: 'fg-report', label: '月度报告', icon: 'send' }] },
+      { group: '五好生活', items: [{ id: 'fg-overview', label: '五好生活', icon: 'spark' }, { id: 'fg-eat', label: '吃好 · 食谱', icon: 'package' }, { id: 'fg-sleep', label: '睡好 · 睡眠', icon: 'moon' }, { id: 'fg-move', label: '动好 · 运动', icon: 'run' }, { id: 'fg-mind', label: '心好 · 心理', icon: 'heart' }, { id: 'fg-check', label: '查好 · 体检', icon: 'stethoscope' }, { id: 'fg-reco', label: '推荐规则', icon: 'target' }, { id: 'fg-survey', label: '评估问卷', icon: 'file' }, { id: 'fg-report', label: '月度报告', icon: 'send' }, { id: 'fg-config', label: '评分与权重', icon: 'sliders' }] },
       { group: '减重营 · 营期', items: [{ id: 'v-dashboard', label: '运营概览', icon: 'grid' }, { id: 'v-camps', label: '营期管理', icon: 'calendar' }, { id: 'v-students', label: '学员管理', icon: 'users' }, { id: 'v-records', label: '打卡记录', icon: 'check' }, { id: 'v-annotations', label: '批注工作台', icon: 'message' }, { id: 'v-attendance', label: '出勤看板', icon: 'layout' }, { id: 'v-content', label: '活动与课程', icon: 'video' }, { id: 'v-messages', label: '消息与公告', icon: 'bell' }] },
       { group: '减重营 · 规则', items: [{ id: 'v-rules', label: '打卡规则', icon: 'sliders' }, { id: 'v-points-rules', label: '积分规则', icon: 'target' }, { id: 'v-metrics', label: '健康指标库', icon: 'activity' }, { id: 'v-questionnaire', label: '入营问卷', icon: 'file' }, { id: 'v-activities', label: '活动与入口', icon: 'spark' }, { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' }, { id: 'v-products', label: '积分商城', icon: 'package' }, { id: 'v-badges', label: '徽章体系', icon: 'medal' }, { id: 'v-ranking', label: '排行榜', icon: 'star' }] },
       { group: '减重营 · 报告', items: [{ id: 'v-stats', label: '营期统计', icon: 'chart' }, { id: 'v-report', label: '结营报告', icon: 'file' }, { id: 'v-enterprise', label: '企业健康报告', icon: 'building' }, { id: 'v-supervisor', label: '督导总览', icon: 'eye' }] }
@@ -91,7 +91,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {}, app: 'platform', collapsed: {},
+    route: 'workbench', ctx: {}, app: 'platform', openGroup: {},
     previewOpen: true, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false
@@ -103,6 +103,7 @@
   function railHTML() {
     const role = Store.role;
     const nav = NAV_OF[state.app] || NAV_OF.platform;
+    const navOpen = state.openGroup[state.app] || ((nav.find((g) => g.items.some((it) => it.id === state.route)) || nav[0] || {}).group || '_top');
     return '<div class="rail-inner">' +
       '<div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></div>' +
       '<div class="brand-txt"><b>北大医疗</b><span>SUPER CONSOLE</span></div></div>' +
@@ -113,10 +114,11 @@
         const items = g.items.filter((it) => visible(it.id));
         if (!items.length) return '';
         const key = g.group || '_top';
-        const cl = state.collapsed[key];
+        const cl = g.group ? key !== navOpen : false;
         return '<div class="navgrp ' + (cl ? 'collapsed' : '') + '">' +
           (g.group ? '<button class="navgrp-h" data-collapse="' + key + '">' + E(g.group) +
-            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:auto;opacity:.55;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
+            '<span style="margin-left:auto;font-size:10px;opacity:.5">' + items.length + '</span>' +
+            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:6px;opacity:.55;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
           items.map((it) => {
             const cnt = navCount(it.id);
             const lvl = Store.can(groupOf(it.id), 2);
@@ -253,6 +255,7 @@
       if (state.history.length > 30) state.history.shift();
       state.route = route;
       state.app = wbOf(route);
+      delete state.openGroup[state.app];
       state.ctx = ctx || {};
       const page = currentPage();
       const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
@@ -479,7 +482,7 @@
     const col = e.target.closest('[data-collapse]');
     if (col) {
       const k = col.dataset.collapse;
-      if (state.collapsed[k]) delete state.collapsed[k]; else state.collapsed[k] = true;
+      state.openGroup[state.app] = (state.openGroup[state.app] === k) ? '' : k;
       render(true);
       return;
     }
