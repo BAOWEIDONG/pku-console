@@ -132,8 +132,11 @@
           ],
           onSave(v) {
             const g = Store.db.supplements.find((x) => x.id === v.sku) || supps[0];
-            Store.pushItem('supplementOrders', { id: 'GD' + Date.now(), customer: v.customer, item: g.name, sku: g.id, qty: v.qty, amount: g.price * v.qty, at: '2026-11-08 10:30', status: 'pending', source: v.source }, '生成商品订单');
-            UI.toast('订单已生成，可在订单中心支付'); App.refresh();
+            var oid = 'GD' + Date.now();
+            var r = window.Engine.reserve ? Engine.reserve(g.id, v.qty, oid) : { ok: true };
+            if (!r.ok) { UI.toast(r.reason, 'warn'); return false; }
+            Store.pushItem('supplementOrders', { id: oid, customer: v.customer, item: g.name, sku: g.id, qty: v.qty, amount: g.price * v.qty, at: '2026-11-08 10:30', status: 'pending', source: v.source }, '生成商品订单');
+            UI.toast('订单已生成，已占货 ' + v.qty + ' 件'); App.refresh();
           } });
       },
       open(d) { App.go('trd-order', { id: d.id }); }
