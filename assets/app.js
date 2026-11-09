@@ -113,44 +113,59 @@
     route: 'fuse-command', ctx: {}, app: 'command', openGroups: {},
     previewOpen: false, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
-    history: [], autoMocked: false, origin: null, navOpen: false
+    history: [], autoMocked: false, origin: null, navOpen: false, railCollapsed: false, openTabs: {}
   };
 
   function currentPage() { return PAGES[state.route] || PAGES.workbench; }
 
   function subnavHTML() {
     const space = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
+    const area = (window.Fusion && Fusion.AREAS[state.app]) || { tabs: [] };
+    const cur = (window.Fusion && Fusion.tabOf(state.app)) || null;
+    const curTab = (cur && cur.id) || (area.tabs[0] || {}).id;
+    const curView = (window.Fusion && Fusion.current() || {}).view;
+    const open = (state.openTabs && state.openTabs[state.app]) || [curTab];
+    const isOpen = (id) => open.indexOf(id) >= 0;
+
+    const tree = area.tabs.map((t) => {
+      const items = t.pages.filter((x) => !x.hidden);
+      if (!items.length) return '';
+      return '<div class="sn-sec">' +
+        '<button class="sn-h" data-act="tabToggle" data-id="' + t.id + '">' +
+          '<span class="sn-h-t">' + E(t.label) + '</span>' +
+          '<span class="sn-n">' + items.length + '</span>' +
+          '<svg class="sn-cv" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>' +
+        '</button>' +
+        '<div class="sn-items' + (isOpen(t.id) ? '' : ' off') + '">' +
+          items.map((x) => '<button class="sn-item' + ((x.route === curView || x.route === state.route) ? ' on' : '') + '" data-nav="' + x.route + '" title="' + E(x.label) + '">' +
+            '<i class="sn-dot"></i>' + E(x.label) + '</button>').join('') +
+        '</div></div>';
+    }).join('');
+
     return '<div class="side-brand">' +
         '<span class="side-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>' +
         '<span class="side-name"><b>北大医疗</b><em>超级管理后台</em></span>' +
+        '<button class="sn-fold" data-act="railToggle" title="收起/展开侧栏">' +
+          '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>' +
       '</div>' +
       '<div class="ws-picker">' +
-        '<div class="ws-picker-h"><span>工作区</span><em>直接点选</em></div>' +
-        '<div class="ws-grid">' + WORKBENCHES.map((w) => {
-          return '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.title) + '">' +
-            '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 11) + '</span><b>' + E(w.label) + '</b>' +
-            '</button>';
-        }).join('') + '</div>' +
-        '<div class="ws-context">' +
-          '<div class="ws-context-t"><b>' + E(space.title) + '</b><span>' + E(space.desc) + '</span></div>' +
-          '<button class="subnav-new" data-act="quickNew">' + I('plus', 12) + '新建</button>' +
+        '<div class="ws-picker-h"><span>工作区</span><em>6 个</em></div>' +
+        '<div class="ws-grid">' + WORKBENCHES.map((w) =>
+          '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.title) + '">' +
+          '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 11) + '</span><b>' + E(w.label) + '</b></button>').join('') +
         '</div>' +
       '</div>' +
-      '<div class="subnav-search" data-act="cmd">' + I('search', 14) + '<span>搜索 ' + E(space.label) + ' 内页面</span><kbd>⌘K</kbd></div>' +
-      '<div class="nav ws-nav-note">' +
-        '<div class="ws-note"><b>一个工作区，一套业务</b><span>客户、商品、健康、项目、内容、平台都在各自页内完成，不再拆成多个左侧入口。</span></div>' +
+      '<div class="sn-work">' +
+        '<div class="sn-work-h"><b>' + E(space.title) + '</b><span>' + E(space.desc) + '</span></div>' +
+        '<div class="sn-tree">' + (tree || '<div class="sn-empty">该工作区暂无可展示页面</div>') + '</div>' +
       '</div>' +
-      '<div class="subnav-foot">' +
-        '<div class="side-global">' +
-          '<button data-nav="g-impact" title="查看未发布改动会影响哪些页面">' + I('activity', 12) + '变更影响</button>' +
-          '<button data-nav="s-publish" title="统一发布到三个 H5">' + I('send', 12) + '发布</button>' +
-          '<button data-nav="g-coverage" title="逐项查看前端功能对应的后台入口">' + I('target', 12) + '功能地图</button>' +
-        '</div>' +
-        '<div class="subnav-sync"><span class="' + (Store.dirtyCount ? 'warn' : 'ok') + '"></span>' +
-          '<div><b>' + (Store.dirtyCount ? Store.dirtyCount + ' 项待发布' : '全部已同步') + '</b><em>v' + Store.db.meta.version + ' · ' + Store.db.meta.publishedAt.slice(5) + '</em></div>' +
-          '<button data-act="goPublish" title="发布中心">' + I('chevron', 13) + '</button></div>' +
+      '<div class="sn-foot">' +
+        '<button data-act="cmd">' + I('search', 13) + '<span>全部功能（⌘K）</span></button>' +
+        '<button data-nav="g-coverage">' + I('target', 13) + '<span>功能地图</span></button>' +
+        '<button data-nav="s-publish">' + I('send', 13) + '<span>发布中心' + (Store.dirtyCount ? ' · ' + Store.dirtyCount : '') + '</span></button>' +
       '</div>';
   }
+
   function dot(c) { return c === 'green' ? '#0aa39a' : c === 'violet' ? '#8b7cf6' : c === 'amber' ? '#c8871a' : c === 'grey' ? '#94a7c0' : '#3f8cff'; }
   function navCount(route) {
     if (window.Fusion && Fusion.ownerOf(route)) return Fusion.navCount(Fusion.roomOf(route));
@@ -262,7 +277,7 @@
     const readonly = !canEdit(state.route);
     document.getElementById('app').innerHTML =
       '<div class="nav-scrim" data-act="toggleNav"></div>' +
-      '<div class="shell"><aside class="subnav" aria-label="主导航">' + subnavHTML() + '</aside><div class="main">' +
+      '<div class="shell' + (state.railCollapsed ? ' rail-collapsed' : '') + '"><aside class="subnav" aria-label="主导航">' + subnavHTML() + '</aside><div class="main">' +
       '<header class="topbar">' + topbarHTML() + '</header>' +
       '<div class="canvas ' + (state.previewOpen ? 'has-dock' : '') + '">' +
       '<div class="scrollarea scroll"><div class="page ' + (readonly ? 'readonly' : '') + '">' +
@@ -685,6 +700,23 @@
     const act = e.target.closest('[data-act]');
     if (!act) return;
     const name = act.dataset.act;
+    if (name === 'railToggle') {
+      state.railCollapsed = !state.railCollapsed;
+      try { localStorage.setItem('pku-rail-collapsed', state.railCollapsed ? '1' : '0'); } catch (e) {}
+      render(true);
+      return;
+    }
+    if (name === 'tabToggle') {
+      const id = act.dataset.id;
+      const cur = (window.Fusion && Fusion.tabOf(state.app)) || {};
+      const arr = (state.openTabs[state.app] || [cur.id]).slice();
+      const i = arr.indexOf(id);
+      if (i >= 0) arr.splice(i, 1); else arr.push(id);
+      if (!arr.length) arr.push(id);
+      state.openTabs[state.app] = arr;
+      render(true);
+      return;
+    }
     if (name === 'togglePreview') { state.previewOpen = !state.previewOpen; render(true); return; }
     if (name === 'closePreview') { state.previewOpen = false; render(true); return; }
     if (name === 'previewMode') { state.previewMode = act.dataset.id; state.autoMocked = false; render(true); return; }
@@ -796,6 +828,7 @@
   }
 
   Store.init();
+  try { state.railCollapsed = localStorage.getItem('pku-rail-collapsed') === '1'; } catch (e) {}
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
   if (window.V8) V8.ensure();
