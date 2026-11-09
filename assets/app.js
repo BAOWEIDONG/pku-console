@@ -52,214 +52,72 @@
 
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
-    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '实时经营 · 待办 · 发布状态' },
-    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'b-home', desc: '品牌站 · 职工端 · 内容资产' },
-    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
-    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'crm-hub', desc: '全渠道客户 · 360 档案 · 服务痕迹' },
-    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '服务履约 · 风险 · 计划 · 随访 · 结果' },
-    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
-    { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 权益 · 规则 · 模板' },
-    { id: 'insight', label: '洞察', en: 'INSIGHT', icon: 'chart', dot: '#6FE3A8', home: 'g-insights', desc: '经营 · 覆盖 · 健康结果' },
-    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 's-publish', desc: '发布 · 影响 · 权限 · 审计' }
+    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '经营 · 洞察 · 发布' },
+    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'hub-customer', desc: '客户 · 交易 · 履约 · 结算' },
+    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'hub-catalog', desc: '服务 · 商品 · 价格 · 履约' },
+    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '履约 · 档案 · 计划 · 随访 · 结果' },
+    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'hub-fivegood', desc: '五好生活 · 减重营 · 激励' },
+    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'hub-content-brand', desc: '品牌站 · 职工端 · 公共素材' },
+    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'hub-platform-commons', desc: '公共资源 · 权限 · 发布' }
   ];
 
   const NAV_OF = {
     command: [
       { group: '今天', items: [
         { id: 'workbench', label: '指挥中心', icon: 'grid' },
-        { id: 'g-impact', label: '改动影响检查', icon: 'activity' },
-        { id: 's-publish', label: '发布中心', icon: 'send' }
+        { id: 's-publish', label: '发布中心', icon: 'send' },
+        { id: 'g-impact', label: '变更影响', icon: 'activity' }
       ] },
-      { group: '快速进入', items: [
-        { id: 'g-coverage', label: '前端功能地图', icon: 'target' },
-        { id: 'crm-hub', label: '客户总览', icon: 'users' },
-        { id: 'crm-360', label: '客户 360', icon: 'user' },
-        { id: 'v-dashboard', label: '减重营概览', icon: 'activity' }
+      { group: '经营洞察', items: [
+        { id: 'hub-command-insight', label: '经营洞察', icon: 'chart' }
       ] }
     ],
     growth: [
-      { group: '品牌站', items: [
-        { id: 'b-home', label: '首页内容', icon: 'layout' },
-        { id: 'content-banners', label: '轮播与开屏', icon: 'image' },
-        { id: 'b-hospitals', label: '分院网络', icon: 'hospital' },
-        { id: 'b-departments', label: '学科与科室', icon: 'layers' },
-        { id: 'b-team', label: '师资团队', icon: 'stethoscope' },
-        { id: 'b-camp', label: '健康营展示页', icon: 'spark' },
-        { id: 'b-about', label: '品牌页', icon: 'file' }
-      ] },
-      { group: '职工端', items: [
-        { id: 'e-site', label: '站点设置', icon: 'sliders' },
-        { id: 'e-modules', label: '模块与分类', icon: 'grid' },
-        { id: 'e-content', label: '内容与科普', icon: 'video' },
-        { id: 'e-qa', label: '深度问答', icon: 'message' },
-        { id: 'b-site', label: '站点设置', icon: 'settings' }
-      ] },
-      { group: '内容资产', items: [
-        { id: 'g-content', label: '内容中心', icon: 'file' },
-        { id: 'media-lib', label: '图片素材库', icon: 'image' },
-        { id: 'g-brand', label: '品牌与主体', icon: 'spark' },
-        { id: 'g-theme', label: '主题与入口', icon: 'sliders' }
+      { group: '内容工作台', items: [
+        { id: 'hub-content-brand', label: '品牌站', icon: 'layout' },
+        { id: 'hub-content-employee', label: '职工端', icon: 'stethoscope' },
+        { id: 'hub-content-assets', label: '内容与素材', icon: 'image' }
       ] }
     ],
     catalog: [
-      { group: '服务商品', items: [
-        { id: 'svc-catalog', label: '服务目录', icon: 'package' },
-        { id: 'svc-360', label: '服务 360', icon: 'stethoscope' },
-        { id: 'svc-goods', label: '实物商品', icon: 'gift' },
-        { id: 'trd-stock', label: '库存与预留', icon: 'layers' }
-      ] },
-      { group: '价格与组合', items: [
-        { id: 'svc-pricing', label: '价格与政策', icon: 'target' },
-        { id: 'svc-bundles', label: '服务包与组合', icon: 'layers' }
-      ] },
-      { group: '履约能力', items: [
-        { id: 'e-services', label: '职工端服务', icon: 'stethoscope' },
-        { id: 'g-orgs', label: '服务机构', icon: 'hospital' },
-        { id: 'e-booking', label: '预约设置', icon: 'calendar' }
+      { group: '商品工作台', items: [
+        { id: 'hub-catalog', label: '服务与商品', icon: 'package' },
+        { id: 'hub-catalog-fulfill', label: '价格与履约', icon: 'target' }
       ] }
     ],
     customer: [
-      { group: '客户管理', items: [
-        { id: 'crm-hub', label: '客户总览', icon: 'users' },
-        { id: 'crm-customer', label: '全渠道客户', icon: 'user' },
-        { id: 'crm-360', label: '客户 360', icon: 'activity' },
-        { id: 'e-orgs', label: '企业客户与权益', icon: 'building' },
-        { id: 'g-accounts', label: '客户账号', icon: 'lock' }
-      ] },
-      { group: '交易', items: [
-        { id: 'trd-orders', label: '订单中心', icon: 'file' },
-        { id: 'v-claims', label: '领奖订单', icon: 'gift' },
-        { id: 'v-exchanges', label: '积分兑换', icon: 'package' }
-      ] },
-      { group: '履约', items: [
-        { id: 'v-fulfill', label: '履约工作台', icon: 'truck' },
-        { id: 'e-bookings', label: '预约订单', icon: 'calendar' },
-        { id: 'trd-sla', label: '超时与升级', icon: 'clock' },
-        { id: 'trd-slots', label: '时段与占号', icon: 'calendar' },
-        { id: 'trd-capacity', label: '排班与产能', icon: 'users' }
-      ] },
-      { group: '结算', items: [
-        { id: 'trd-settle', label: '结算与对账', icon: 'chart' },
-        { id: 'trd-diff', label: '结算差异', icon: 'x' },
-        { id: 'trd-refund', label: '退款与冲销', icon: 'undo' },
-        { id: 'trd-invoice', label: '开票与回款', icon: 'file' }
+      { group: '客户工作台', items: [
+        { id: 'hub-customer', label: '客户中心', icon: 'users' },
+        { id: 'hub-customer-trade', label: '交易与履约', icon: 'file' },
+        { id: 'hub-customer-settle', label: '结算中心', icon: 'chart' }
       ] }
     ],
     health: [
-      { group: '总览', items: [
-        { id: 'h-overview', label: '健康管理总览', icon: 'grid' }
-      ] },
-      { group: '服务履约', items: [
-        { id: 'h-service-flow', label: '服务履约台', icon: 'stethoscope' }
-      ] },
-      { group: '健康管理', items: [
-        { id: 'h-profiles', label: '健康档案', icon: 'user' },
-        { id: 'h-risk', label: '风险与缺口', icon: 'shield' },
-        { id: 'h-plans', label: '管理计划', icon: 'target' },
-        { id: 'h-followups', label: '随访工作台', icon: 'clock' },
-        { id: 'h-programs', label: '干预项目', icon: 'layers' },
-        { id: 'h-outcomes', label: '结果评估', icon: 'chart' }
-      ] },
-      { group: '企业报告', items: [
+      { group: '健管工作台', items: [
+        { id: 'h-overview', label: '健康管理总览', icon: 'grid' },
+        { id: 'h-service-flow', label: '服务履约台', icon: 'stethoscope' },
+        { id: 'hub-health', label: '健康管理', icon: 'user' },
         { id: 'h-enterprise', label: '企业健康报告', icon: 'building' }
       ] }
     ],
     program: [
-      { group: '五好生活', items: [
-        { id: 'fg-overview', label: '五好总览', icon: 'spark' },
-        { id: 'fg-eat', label: '吃好 · 食谱', icon: 'package' },
-        { id: 'fg-sleep', label: '睡好 · 睡眠', icon: 'moon' },
-        { id: 'fg-move', label: '动好 · 运动', icon: 'run' },
-        { id: 'fg-mind', label: '心好 · 心理', icon: 'heart' },
-        { id: 'fg-check', label: '查好 · 体检', icon: 'stethoscope' },
-        { id: 'fg-config', label: '评分与权重', icon: 'sliders' },
-        { id: 'fg-reco', label: '推荐规则', icon: 'target' },
-        { id: 'fg-meal', label: '餐次配置', icon: 'clock' }
-      ] },
-      { group: '五好 · 内容', items: [
-        { id: 'fg-version', label: '食谱版本', icon: 'layers' },
-        { id: 'fg-convert', label: '食谱转化', icon: 'chart' },
-        { id: 'fg-ab', label: 'A/B 实验', icon: 'activity' },
-        { id: 'fg-survey', label: '评估问卷', icon: 'file' },
-        { id: 'fg-report', label: '月度报告', icon: 'send' }
-      ] },
-      { group: '五好 · 运营', items: [
-        { id: 'fg-members', label: '会员运营', icon: 'users' },
-        { id: 'fg-tasks', label: '任务与发布', icon: 'check' },
-        { id: 'fg-coach', label: '打卡审核', icon: 'message' },
-        { id: 'fg-escalation', label: '信号与升级', icon: 'activity' },
-        { id: 'fg-loop', label: '运营闭环', icon: 'refresh' },
-        { id: 'fg-privacy', label: '授权与隐私', icon: 'lock' }
-      ] },
-      { group: '减重营 · 营期', items: [
-        { id: 'v-dashboard', label: '运营概览', icon: 'grid' },
-        { id: 'v-camps', label: '营期管理', icon: 'calendar' },
-        { id: 'v-students', label: '学员管理', icon: 'users' },
-        { id: 'v-records', label: '打卡记录', icon: 'check' },
-        { id: 'v-annotations', label: '批注工作台', icon: 'message' },
-        { id: 'v-attendance', label: '出勤看板', icon: 'layout' },
-        { id: 'v-content', label: '活动与课程', icon: 'video' },
-        { id: 'v-messages', label: '消息与公告', icon: 'bell' }
-      ] },
-      { group: '减重营 · 规则', items: [
-        { id: 'v-rules', label: '打卡规则', icon: 'sliders' },
-        { id: 'v-points-rules', label: '积分规则', icon: 'target' },
-        { id: 'v-metrics', label: '健康指标库', icon: 'activity' },
-        { id: 'v-questionnaire', label: '入营问卷', icon: 'file' },
-        { id: 'v-accounts', label: '账号管理', icon: 'users' },
-        { id: 'v-activities', label: '活动与入口', icon: 'spark' },
-        { id: 'v-tiers', label: '连续打卡奖励', icon: 'gift' },
-        { id: 'v-products', label: '积分商城', icon: 'package' },
-        { id: 'v-badges', label: '徽章体系', icon: 'medal' },
-        { id: 'v-ranking', label: '排行榜', icon: 'star' }
-      ] },
-      { group: '减重营 · 报告', items: [
-        { id: 'v-stats', label: '营期统计', icon: 'chart' },
-        { id: 'v-report', label: '结营报告', icon: 'file' },
-        { id: 'v-enterprise', label: '企业健康报告', icon: 'building' },
-        { id: 'v-supervisor', label: '督导总览', icon: 'eye' }
-      ] }
-    ],
-    shared: [
-      { group: '共享资产', items: [
-        { id: 'lib-assets', label: '资产库', icon: 'image' },
-        { id: 'lib-benefits', label: '权益与券', icon: 'gift' },
-        { id: 'lib-rules', label: '规则模板', icon: 'sliders' },
-        { id: 'lib-templates', label: '项目模板', icon: 'copy' }
-      ] },
-      { group: '关系治理', items: [
-        { id: 'g-graph', label: '关系图谱', icon: 'layers' },
-        { id: 'g-gaps', label: '关联缺口', icon: 'target' }
-      ] }
-    ],
-    insight: [
-      { group: '经营', items: [
-        { id: 'g-insights', label: '经营洞察', icon: 'chart' },
-        { id: 'g-depth', label: '模块复盘', icon: 'target' },
-        { id: 'g-coverage', label: '前端功能地图', icon: 'target' },
-        { id: 'rpt-report', label: '报表与口径', icon: 'file' }
-      ] },
-      { group: '渠道分析', items: [
-        { id: 'b-dashboard', label: '品牌站数据', icon: 'activity' },
-        { id: 'e-dashboard', label: '职工健康数据', icon: 'activity' },
-        { id: 'v-stats', label: '营期统计', icon: 'chart' }
-      ] },
-      { group: '结果报告', items: [
-        { id: 'v-report', label: '结营报告', icon: 'file' },
-        { id: 'v-enterprise', label: '企业健康报告', icon: 'building' },
-        { id: 'v-supervisor', label: '督导总览', icon: 'eye' }
+      { group: '项目工作台', items: [
+        { id: 'hub-fivegood', label: '五好生活', icon: 'spark' },
+        { id: 'hub-camp', label: '减重营', icon: 'activity' },
+        { id: 'hub-program-rules', label: '规则与激励', icon: 'sliders' },
+        { id: 'hub-program-report', label: '报告与复盘', icon: 'chart' }
       ] }
     ],
     platform: [
-      { group: '交付', items: [
+      { group: '发布与治理', items: [
         { id: 's-publish', label: '发布中心', icon: 'send' },
-        { id: 'g-impact', label: '变更影响', icon: 'activity' },
         { id: 's-logs', label: '操作日志', icon: 'clock' }
       ] },
-      { group: '治理', items: [
-        { id: 'g-roles', label: '角色与权限', icon: 'lock' },
-        { id: 'g-fields', label: '字段级权限', icon: 'eye' },
-        { id: 's-settings', label: '系统设置', icon: 'settings' }
+      { group: '公共资源', items: [
+        { id: 'hub-platform-commons', label: '公共模块', icon: 'link' }
+      ] },
+      { group: '权限与设置', items: [
+        { id: 'hub-platform-access', label: '权限与设置', icon: 'lock' }
       ] }
     ]
   };
@@ -269,9 +127,9 @@
   ROUTE_WB.workbench = 'command';
   ROUTE_WB['g-impact'] = 'command';
   ROUTE_WB['s-publish'] = 'command';
-  ROUTE_WB['s-logs'] = 'command';
-  ROUTE_WB['g-coverage'] = 'insight';
-  ROUTE_WB['g-insights'] = 'insight';
+  ROUTE_WB['s-logs'] = 'platform';
+  ROUTE_WB['g-coverage'] = 'command';
+  ROUTE_WB['g-insights'] = 'command';
   const wbOf = (route) => ROUTE_WB[route] || 'command';
   /* 这些是跨工作区的公共页：从哪儿点进来，就留在哪儿，不强行切换侧栏 */
   const GLOBAL_ROUTES = {
