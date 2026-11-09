@@ -19,6 +19,7 @@
   const nowTime = () => new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
   const pad = (n) => String(n).padStart(2, '0');
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  const addDays = (dateStr, n) => { const d = new Date(String(dateStr).slice(0, 10) + 'T00:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 
   /* ----------------------------------------------------------- 图标 */
   const IP = {
@@ -170,10 +171,11 @@
       { id: 'p4', title: '营销消息', desc: '接收服务推荐与活动提醒', on: false }
     ];
     e.fiveTiers = e.fiveTiers || [
-      { id: 'five-base', name: '基础版', price: 500, scope: '全员普惠', benefits: '五好主题任选 1 项 + 健康测评' },
-      { id: 'five-plus', name: '进阶版', price: 1000, scope: '高风险人群', benefits: '主题任选 3 项 + 健康管家 1 次' },
-      { id: 'five-pro', name: '尊享版', price: 2000, scope: '核心人才 / 高管', benefits: '五大主题全享 + 年度深度评估' }
+      { id: 'five-base', name: '基础版', price: 500, scope: '全员普惠', benefits: '五好主题任选 1 项 + 健康测评', themes: ['screen'], pids: ['annual-exam', 'risk-report'], status: 'active', imageUrl: '' },
+      { id: 'five-plus', name: '进阶版', price: 1000, scope: '高风险人群', benefits: '主题任选 3 项 + 健康管家 1 次', themes: ['screen', 'food', 'move'], pids: ['annual-exam', 'fivehigh', 'cpet'], status: 'active', imageUrl: '' },
+      { id: 'five-pro', name: '尊享版', price: 2000, scope: '核心人才 / 高管', benefits: '五大主题全享 + 年度深度评估', themes: ['screen', 'food', 'move', 'sleep', 'relax'], pids: ['vip', 'cpet', 'sleep', 'eap'], status: 'active', imageUrl: '' }
     ];
+    e.fiveTiers.forEach((t) => { t.themes = t.themes || ['screen']; t.pids = t.pids || ['annual-exam']; t.status = t.status || 'active'; t.imageUrl = t.imageUrl || ''; });
     e.messages = e.messages || [];
     e.products.forEach((p) => {
       p.active = p.active !== false;
@@ -193,6 +195,30 @@
       move: { enrolled: 74, served: 58, redeemed: 51, satisfaction: 97 },
       sleep: { enrolled: 93, served: 61, redeemed: 54, satisfaction: 95 },
       relax: { enrolled: 158, served: 132, redeemed: 118, satisfaction: 98 }
+    };
+    const planSeed = data.planning || {};
+    const planOwners = { screen: '企康筛查运营', chronic: '慢病运营', medical: '就医服务运营', special: 'EAP 运营', safety: '安全培训运营' };
+    const planTargets = { screen: '全员职工', chronic: '高风险 / 慢病人群', medical: '有就医需求职工', special: '有心理与特色服务需求职工', safety: '安全员 / 一线班组' };
+    const planGoals = { screen: '年度体检覆盖率 ≥ 60%', chronic: '在管人群随访完成率 ≥ 80%', medical: '号源协调成功率 ≥ 90%', special: 'EAP 使用率 ≥ 15%', safety: '重点岗位急救持证率 ≥ 70%' };
+    data.planning = {
+      packages: planSeed.packages || [
+        { id: 'pkg-basic', name: '职工年度基础体检', type: '体检套餐', audience: '全员职工', price: 680, payer: '职工福利费', orgId: e.orgDetails[0].id, services: ['annual-exam', 'risk-survey', 'risk-report'], quota: 2000, used: 1280, validity: '2026-01-01 至 2026-12-31', status: 'online', imageUrl: '', intro: '覆盖基础检查、影像与检后解读，适合全员年度体检。', includesText: '基础检查：内外科、血常规、肝肾功能\n胸部 CT、腹部 / 甲状腺超声、心电图\n肿瘤标志物组合\n体检报告 + 医生解读 + 复查建议', noticeText: '体检前 8 小时禁食\n携带身份证，女性避开经期\n长期服药者提前告知医生' },
+        { id: 'pkg-deep', name: '深度筛查套餐', type: '体检套餐', audience: '40 岁以上 / 高风险人群', price: 2680, payer: '职工福利费 + 企康', orgId: e.orgDetails[0].id, services: ['inpatient', 'gastro', 'cancer', 'risk-report'], quota: 200, used: 86, validity: '2026-03-01 至 2026-12-31', status: 'online', imageUrl: '', intro: '面向高风险人群的深度筛查，含住院体检、胃肠镜与重疾筛查。', includesText: '住院体检 2 天 1 晚\n无痛胃肠镜\n10 种高发恶性肿瘤筛查\n检后深度报告解读', noticeText: '需提前 1—2 天预约\n内镜项目需完成麻醉评估\n携带既往检查报告' },
+        { id: 'pkg-exec', name: '企业家尊享体检', type: '体检套餐', audience: '高管 / 核心人才', price: 6680, payer: '企业自费 / 商保', orgId: e.orgDetails[0].id, services: ['vip', 'cpet', 'heart', 'second', 'cloud'], quota: 80, used: 32, validity: '2026-01-01 至 2026-12-31', status: 'online', imageUrl: '', intro: '专属空间、深度心肺评估与专家二次诊疗，面向高管与核心人才。', includesText: 'VIP 单人病房与专属陪检\n心肺运动 CPET 评估\n心脑血管专项筛查\n专家二次诊疗与云门诊', noticeText: '建议提前 7 天预约\n需提供既往病史与用药清单\n可协调家属同行体检' }
+      ],
+      schedules: planSeed.schedules || [
+        { id: 'sch-annual', orgId: e.orgDetails[0].id, serviceId: 'annual-exam', days: [1, 2, 3, 4, 5], start: '08:00', end: '11:30', slotMinutes: 30, capacity: 8, cutoffHours: 24, enabled: true, note: '工作日早间体检' },
+        { id: 'sch-gastro', orgId: e.orgDetails[0].id, serviceId: 'gastro', days: [1, 3, 5], start: '08:00', end: '12:00', slotMinutes: 20, capacity: 4, cutoffHours: 48, enabled: true, note: '内镜中心，需提前评估' },
+        { id: 'sch-rehab', orgId: e.orgDetails[1].id, serviceId: 'rehab', days: [1, 2, 3, 4, 5, 6], start: '09:00', end: '17:00', slotMinutes: 45, capacity: 6, cutoffHours: 24, enabled: true, note: '康复治疗需连续到院' },
+        { id: 'sch-online', orgId: e.orgDetails[2].id, serviceId: 'second', days: [0, 1, 2, 3, 4, 5, 6], start: '09:00', end: '20:00', slotMinutes: 30, capacity: 12, cutoffHours: 4, enabled: true, note: '线上视频面诊' }
+      ],
+      overrides: planSeed.overrides || [
+        { id: 'ov-rest', orgId: e.orgDetails[0].id, serviceId: 'annual-exam', date: addDays(today(), 3), start: '08:00', end: '11:30', capacity: 6, status: 'open', note: '设备检修后恢复，号源减少' },
+        { id: 'ov-closed', orgId: e.orgDetails[0].id, serviceId: 'gastro', date: addDays(today(), 6), start: '08:00', end: '12:00', capacity: 0, status: 'closed', note: '内镜中心停诊' },
+        { id: 'ov-extra', orgId: e.orgDetails[2].id, serviceId: 'second', date: addDays(today(), 9), start: '18:00', end: '21:00', capacity: 18, status: 'open', note: '加开晚间视频号源' }
+      ],
+      services: planSeed.services || data.employee.products.map((p, i) => ({ id: 'sp-' + p.id, serviceId: p.id, owner: planOwners[p.mod] || '企康运营', launchDate: ['2026-11-01', '2026-11-05', '2026-11-08'][i % 3], target: planTargets[p.mod] || '有需求职工', goal: planGoals[p.mod] || '完成年度服务覆盖', status: p.active === false ? 'paused' : 'active', note: '' })),
+      goods: planSeed.goods || data.camp.pointProducts.map((p, i) => ({ id: 'gp-' + p.id, productId: p.id, supplier: i % 2 ? '企康采购' : '北大医疗文创', cost: Math.max(8, Math.round(p.pointsRequired * 0.4)), stockWarning: 8, restockDate: addDays(today(), 6 + i * 2), campaign: p.pointsRequired >= 120 ? '积分商城上新' : '连续打卡奖励', status: 'active', note: '' }))
     };
     e.bookingEnabled = Object.assign({ screen: true, chronic: true, medical: true, special: true, safety: true }, e.bookingEnabled || {});
     e.articles.forEach((a) => { a.html = a.html || (a.body || []).map((x) => '<p>' + esc(x) + '</p>').join(''); });
@@ -255,6 +281,7 @@
     employee: { label: '职工健康', accent: '#ff6a13', app: 'employee', h5: SEED.h5Pages[2] },
     crm: { label: '客户中心', accent: '#a66a12', app: 'all' },
     shared: { label: '共享资产', accent: '#0c7c78', app: 'all' },
+    plan: { label: '运营规划', accent: '#6b5bd2', app: 'all' },
     platform: { label: '发布与平台', accent: '#425a73', app: 'all' }
   };
   function domainMeta(route) {
@@ -263,6 +290,7 @@
     if (route.indexOf('e-') === 0) return DOMAIN.employee;
     if (route.indexOf('crm') === 0) return DOMAIN.crm;
     if (route.indexOf('shared') === 0 || route === 'assets' || route === 'templates') return DOMAIN.shared;
+    if (route.indexOf('plan') === 0) return DOMAIN.plan;
     if (route.indexOf('s-') === 0 || route === 'publish' || route === 'map' || route === 'settings' || route === 'capability') return DOMAIN.platform;
     return DOMAIN.home;
   }
@@ -300,6 +328,10 @@
     'e-orgs': { label: '服务机构', group: '职工健康', desc: '预约可选医院、院区与线上视频面诊' },
     'e-fivegood': { label: '五好生活', group: '职工健康', desc: '好好早筛 / 吃饭 / 运动 / 睡觉 / 放松' },
     'e-messages': { label: '消息中心', group: '职工健康', desc: '5 条真实消息与未读状态' },
+    'plan': { label: '规划总览', group: '运营规划', desc: '服务、商品、体检套餐与预约排期的统一计划盘' },
+    'plan-services': { label: '服务与商品', group: '运营规划', desc: '28 项服务与 6 件积分商品的运营计划' },
+    'plan-exams': { label: '体检套餐', group: '运营规划', desc: '套餐组合、价格、名额与有效期' },
+    'plan-schedule': { label: '预约排期', group: '运营规划', desc: '机构每周模板、日期例外与未来容量' },
     'crm': { label: '客户总览', group: '客户中心', desc: '跨渠道客户池与 360 服务痕迹' },
     'crm-detail': { label: '客户 360', group: '客户中心', desc: '个人资料、服务、打卡、权益、奖励和触达记录' },
     'assets': { label: '素材库', group: '共享资产', desc: '轮播图、商品图、活动图与品牌图片' },
@@ -371,6 +403,9 @@
       return '<div class="field"><label>' + esc(label) + '</label><select class="select" data-bind="' + esc(path) + '" data-app="' + esc(domainMeta(state.route).label) + '">' + options + '</select>' + hint + '</div>';
     }
     return '<div class="field"><label>' + esc(label) + (opts.optional ? ' <em>选填</em>' : '') + '</label><input class="input" type="' + (opts.num ? 'number' : 'text') + '" data-bind="' + esc(path) + '" data-app="' + esc(domainMeta(state.route).label) + '" value="' + esc(value == null ? '' : value) + '" placeholder="' + esc(opts.ph || '') + '">' + hint + '</div>';
+  }
+  function orderStatusLabel(k) {
+    return { pending: '待确认', confirmed: '已确认', in_service: '服务中', completed: '已完成', cancelled: '已取消' }[k] || (k || '待确认');
   }
   function switchRow(title, sub, path, value) {
     return '<div class="switch-row"><div class="tx"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div><button class="switch-btn ' + (value ? 'on' : '') + '" data-switch="' + esc(path) + '" aria-label="' + esc(title) + '"></button></div>';
@@ -493,6 +528,8 @@
         '<div class="nav-caption">跨产品</div>' +
         '<button class="nav-single ' + (state.route.indexOf('crm') === 0 ? 'on' : '') + '" data-go="crm">' + ic('users') + '<span>客户中心</span><span class="badge">' + data.customers.length + '</span></button>' +
         '<button class="nav-single ' + (['assets','templates'].indexOf(state.route) >= 0 ? 'on' : '') + '" data-go="assets">' + ic('layers') + '<span>共享资产</span></button>' +
+        '<div class="nav-caption">运营规划</div>' +
+        [['plan','规划总览','calendar'],['plan-services','服务与商品','package'],['plan-exams','体检套餐','pulse'],['plan-schedule','预约排期','clock']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
         '<div class="nav-caption">平台</div>' +
         '<button class="nav-single ' + (state.route === 'publish' ? 'on' : '') + '" data-go="publish">' + ic('send') + '<span>发布中心</span>' + (state.dirty ? '<span class="badge">' + state.dirty + '</span>' : '') + '</button>' +
         '<button class="nav-single ' + (state.route === 'map' ? 'on' : '') + '" data-go="map">' + ic('map') + '<span>H5 页面对照</span></button>' +
@@ -526,9 +563,10 @@
   function drawerHtml() {
     const d = state.drawer;
     const body = typeof d.body === 'function' ? d.body() : d.body;
+    const extra = typeof d.extra === 'function' ? d.extra() : (d.extra || '');
     return '<div class="drawer-head"><div class="dh"><h2>' + esc(d.title) + '</h2>' + (d.sub ? '<p>' + esc(d.sub) + '</p>' : '') + '</div><button class="close" data-act="closeDrawer">' + ic('x') + '</button></div>' +
       '<div class="drawer-body">' + body + '</div>' +
-      '<div class="drawer-foot">' + (d.extra || '') + '<button class="btn" data-act="closeDrawer">关闭</button>' + (d.save ? '<button class="btn primary" data-act="commitDrawer" data-label="' + esc(d.saveLabel || '改动') + '">' + ic('check') + '<span>保存</span></button>' : '') + '</div>';
+      '<div class="drawer-foot">' + extra + '<button class="btn" data-act="closeDrawer">关闭</button>' + (d.save ? '<button class="btn primary" data-act="commitDrawer" data-label="' + esc(d.saveLabel || '改动') + '">' + ic('check') + '<span>保存</span></button>' : '') + '</div>';
   }
 
   /* ----------------------------------------------------------- 渲染 */
@@ -1044,13 +1082,15 @@
   PAGES['e-orders'] = function () {
     const tab = state.ui.eOrderTab || 'all';
     const q = (state.ui.eOrderQ || '').trim();
-    const rows = data.employee.bookings.filter((b) => (tab === 'all' || b.statusKey === tab) && (!q || (b.person + b.service + b.org).indexOf(q) >= 0));
-    const counts = { all: data.employee.bookings.length, pending: data.employee.bookings.filter((b) => b.statusKey === 'pending').length, completed: data.employee.bookings.filter((b) => b.statusKey === 'completed').length, cancelled: data.employee.bookings.filter((b) => b.statusKey === 'cancelled').length };
-    return '<div class="page wide">' + pageHead('预约记录', '职工端真实预约：五高一重季度随访、无痛胃肠镜、职场急救培训。支持改约、取消、完成随访与额度退回。', '<button class="btn" data-act="exportOrders">' + ic('download') + '<span>导出预约</span></button>', 'PKU-EMPLOYEE-HEALTH / 预约记录') +
+    const date = (state.ui.eOrderDate || '').trim();
+    const rows = data.employee.bookings.filter((b) => (tab === 'all' || b.statusKey === tab) && (!q || (b.person + b.service + b.org).indexOf(q) >= 0) && (!date || String(b.date || '').indexOf(date) >= 0));
+    const counts = { all: data.employee.bookings.length, pending: data.employee.bookings.filter((b) => b.statusKey === 'pending').length, confirmed: data.employee.bookings.filter((b) => b.statusKey === 'confirmed').length, in_service: data.employee.bookings.filter((b) => b.statusKey === 'in_service').length, completed: data.employee.bookings.filter((b) => b.statusKey === 'completed').length, cancelled: data.employee.bookings.filter((b) => b.statusKey === 'cancelled').length };
+    const tone = (k) => k === 'pending' ? 'amber' : k === 'confirmed' ? 'blue' : k === 'in_service' ? 'orange' : k === 'completed' ? 'green' : '';
+    return '<div class="page wide">' + pageHead('预约记录', '职工服务预约的查询与流转：待确认 → 已确认 → 服务中 → 已完成；支持代客下单、改约、取消与额度退回。', '<button class="btn" data-act="exportOrders">' + ic('download') + '<span>导出预约</span></button><button class="btn primary" data-act="newOrder">' + ic('plus') + '<span>代客下单</span></button>', 'PKU-EMPLOYEE-HEALTH / 预约记录') +
       purpose('跟踪每一单预约从提交到履约，避免已预约无人跟进。', 'H5 我的预约状态、权益次数与取消后额度退回。', '健康管家 / 企康运营') +
-      '<div class="kpi-grid">' + kpi('全部预约', counts.all, '单', '3 条真实记录', 'calendar', ['#fff1e7','#e5540b']) + kpi('待服务', counts.pending, '单', '需健康管家跟进', 'clock', ['#fff6e0','#a86a06']) + kpi('已完成', counts.completed, '单', '含线下履约', 'check', ['#e9f7f1','#0c7c59']) + kpi('已取消', counts.cancelled, '单', '额度已退回', 'x', ['#edf3ff','#1f4fd1']) + '</div>' +
-      panel('预约清单', '点击整行查看详情与操作', '<div class="toolbar" style="padding:10px 0 5px">' + seg([{id:'all',label:'全部 '+counts.all},{id:'pending',label:'待服务 '+counts.pending},{id:'completed',label:'已完成 '+counts.completed},{id:'cancelled',label:'已取消 '+counts.cancelled}], tab, 'eOrderTab') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="eOrderQ" placeholder="职工 / 服务 / 机构" value="' + esc(q) + '"></div></div>' +
-        '<div class="table-wrap"><table class="table"><thead><tr><th>职工</th><th>服务</th><th>机构</th><th>预约时间</th><th>状态</th><th>渠道</th><th>操作</th></tr></thead><tbody>' + (rows.length ? rows.map((b) => '<tr class="click" data-act="editOrder" data-id="' + esc(b.id) + '"><td><div class="row-main">' + avatar(b.person) + '<div><div class="name">' + esc(b.person) + '</div><div class="sub">' + esc(b.dept || '') + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(b.service || '') + '</b><div class="sub">' + esc(productById(b.pid) ? productById(b.pid).name : b.pid) + '</div></td><td>' + esc(b.org || '') + '</td><td>' + esc(b.date || '') + ' ' + esc(b.time || '') + '</td><td>' + pill(b.status, b.statusKey === 'pending' ? 'amber' : b.statusKey === 'completed' ? 'green' : '') + '</td><td class="muted">' + esc(b.channel || '') + '</td><td class="actions"><button class="btn sm">处理</button></td></tr>').join('') : '<tr><td colspan="7">' + empty('当前筛选没有预约') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 单</span>', true) + '</div>';
+      '<div class="kpi-grid">' + kpi('全部预约', counts.all, '单', '含后台代下单', 'calendar', ['#fff1e7','#e5540b']) + kpi('待确认', counts.pending, '单', '需健康管家确认', 'clock', ['#fff6e0','#a86a06']) + kpi('服务中', counts.confirmed + counts.in_service, '单', '已确认 / 履约中', 'activity', ['#f1efff','#5b4bc4']) + kpi('已完成', counts.completed, '单', '含线下履约', 'check', ['#e9f7f1','#0c7c59']) + '</div>' +
+      panel('预约清单', '点击整行查看详情与流转', '<div class="toolbar" style="padding:10px 0 5px">' + seg([{id:'all',label:'全部 '+counts.all},{id:'pending',label:'待确认 '+counts.pending},{id:'confirmed',label:'已确认 '+counts.confirmed},{id:'in_service',label:'服务中 '+counts.in_service},{id:'completed',label:'已完成 '+counts.completed},{id:'cancelled',label:'已取消 '+counts.cancelled}], tab, 'eOrderTab') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="eOrderQ" placeholder="职工 / 服务 / 机构" value="' + esc(q) + '"><input class="input" data-ui-input="eOrderDate" placeholder="日期，如 10-24" value="' + esc(date) + '" style="width:120px;margin-left:6px"></div></div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>职工</th><th>服务</th><th>机构</th><th>预约时间</th><th>状态</th><th>渠道</th><th>操作</th></tr></thead><tbody>' + (rows.length ? rows.map((b) => '<tr class="click" data-act="editOrder" data-id="' + esc(b.id) + '"><td><div class="row-main">' + avatar(b.person) + '<div><div class="name">' + esc(b.person) + '</div><div class="sub">' + esc(b.dept || '') + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(b.service || '') + '</b><div class="sub">' + esc(productById(b.pid) ? productById(b.pid).name : b.pid) + '</div></td><td>' + esc(b.org || '') + '</td><td>' + esc(b.date || '') + ' ' + esc(b.time || '') + '</td><td>' + pill(orderStatusLabel(b.statusKey), tone(b.statusKey)) + '</td><td class="muted">' + esc(b.channel || '') + '</td><td class="actions"><button class="btn sm">处理</button></td></tr>').join('') : '<tr><td colspan="7">' + empty('当前筛选没有预约') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 单</span>', true) + '</div>';
   };
 
   PAGES['e-benefits'] = function () {
@@ -1098,15 +1138,34 @@
   };
 
   PAGES['e-fivegood'] = function () {
-    return '<div class="page wide">' + pageHead('五好生活', '好好早筛 / 好好吃饭 / 好好运动 / 好好睡觉 / 好好放松。每个主题都有真实服务、权益额度与运营数据。', saveBtn('五好配置'), 'PKU-EMPLOYEE-HEALTH / 五好生活') +
+    const tab = state.ui.fiveTab || 'themes';
+    const usage = data.employee.fiveUsage || {};
+    const themes = data.employee.five || [];
+    const totalEnrolled = Object.keys(usage).reduce((n, k) => n + (usage[k].enrolled || 0), 0);
+    const totalServed = Object.keys(usage).reduce((n, k) => n + (usage[k].served || 0), 0);
+    const totalRedeemed = Object.keys(usage).reduce((n, k) => n + (usage[k].redeemed || 0), 0);
+    const avgSat = Math.round(Object.keys(usage).reduce((n, k) => n + (usage[k].satisfaction || 0), 0) / Math.max(1, themes.length));
+    const themeName = (k) => (themes.find((f) => f.k === k) || {}).name || k;
+    const fiveBookings = data.employee.bookings.filter((b) => themes.some((f) => (f.pids || []).indexOf(b.pid) >= 0));
+    const tabs = [{ id: 'themes', label: '主题与权益' }, { id: 'tiers', label: '产品档位' }, { id: 'records', label: '履约与核销' }];
+    const themeCards = themes.map((f) => {
+      const u = usage[f.k] || { enrolled: 0, served: 0, redeemed: 0, satisfaction: 0 };
+      const svcs = (f.pids || []).map(productById).filter(Boolean);
+      return '<div class="panel" style="cursor:pointer" data-act="editFive" data-id="' + esc(f.k) + '"><div class="panel-head"><div class="ph"><div class="row-flex"><span class="avatar square" style="width:34px;height:34px;background:#fff1e7;color:#e5540b">' + ic(f.icon || 'star') + '</span><div><h2>' + esc(f.name) + '</h2><p>' + esc(f.sub) + '</p></div></div></div><div class="actions">' + pill('剩余 ' + f.left + ' 次', f.left ? 'green' : 'red') + '</div></div><div class="panel-body"><div class="grid main-side" style="gap:22px"><div><div class="tiny muted">权益额度</div><b style="display:block;margin-top:5px;font-size:13px">' + esc(f.quota) + '</b><div class="chips" style="margin-top:12px">' + svcs.map((p) => pill(p.name, 'outline')).join('') + '</div></div><div class="stat-strip" style="grid-template-columns:repeat(4,1fr);box-shadow:none"><div><b>' + u.enrolled + '</b><span>参与</span></div><div><b>' + u.served + '</b><span>履约</span></div><div><b>' + u.redeemed + '</b><span>核销</span></div><div><b>' + u.satisfaction + '%</b><span>满意</span></div></div></div><div style="margin-top:14px"><button class="btn sm" data-act="editFive" data-id="' + esc(f.k) + '">编辑主题、服务与核销规则</button><button class="btn sm" data-go="e-services" style="margin-left:6px">查看关联服务</button></div></div></div>';
+    }).join('');
+    const tierCards = data.employee.fiveTiers.map((t) => '<div class="panel pkg-card" style="box-shadow:none" data-act="editFiveTier" data-id="' + esc(t.id) + '"><div class="pkg-cover" style="height:112px;background:linear-gradient(135deg,#5b4bc4,#8c7ae8)">' + (t.imageUrl ? '<img src="' + esc(t.imageUrl) + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" alt="">' : '') + '<div style="position:relative"><div class="tag">五好生活 · 企业档位</div><b>' + esc(t.name) + '</b><span>' + esc(t.scope) + '</span></div><div style="position:absolute;right:14px;top:14px">' + planStatePill(t.status) + '</div></div><div class="panel-body"><div class="row-flex"><b style="font-size:18px;color:#5b4bc4">¥' + t.price + '</b><span class="right-auto tiny muted">覆盖 ' + (t.themes || []).length + ' 个主题</span></div><div style="margin-top:12px;font-size:11px;line-height:1.7">' + esc(t.benefits) + '</div><div class="chips" style="margin-top:11px">' + (t.themes || []).map((k) => pill(themeName(k), 'outline')).join('') + '</div><div class="split-line"></div><div class="tiny muted">关联 ' + (t.pids || []).length + ' 项服务</div><button class="btn sm w-full" style="margin-top:11px">编辑档位</button></div></div>').join('');
+    const tierTable = '<div class="table-wrap"><table class="table"><thead><tr><th>档位</th><th>覆盖主题</th><th>关联服务</th><th>价格</th><th>状态</th></tr></thead><tbody>' + data.employee.fiveTiers.map((t) => '<tr class="click" data-act="editFiveTier" data-id="' + esc(t.id) + '"><td><b style="font-size:11.5px">' + esc(t.name) + '</b></td><td>' + (t.themes || []).map((k) => pill(themeName(k), 'outline')).join(' ') + '</td><td>' + (t.pids || []).map((id) => pill(planServiceName(id), 'outline')).join(' ') + '</td><td>¥' + t.price + '</td><td>' + planStatePill(t.status) + '</td></tr>').join('') + '</tbody></table></div>';
+    const usageTable = '<div class="table-wrap"><table class="table"><thead><tr><th>主题</th><th>参与</th><th>履约</th><th>核销</th><th>核销率</th><th>满意度</th></tr></thead><tbody>' + themes.map((f) => { const u = usage[f.k] || { enrolled: 0, served: 0, redeemed: 0, satisfaction: 0 }; return '<tr class="click" data-act="editFive" data-id="' + esc(f.k) + '"><td><b style="font-size:11.5px">' + esc(f.name) + '</b></td><td>' + u.enrolled + '</td><td>' + u.served + '</td><td>' + u.redeemed + '</td><td>' + Math.round(u.redeemed / Math.max(1, u.served) * 100) + '%</td><td><b style="color:var(--green)">' + u.satisfaction + '%</b></td></tr>'; }).join('') + '</tbody></table></div>';
+    const bookingTable = '<div class="table-wrap"><table class="table"><thead><tr><th>职工</th><th>五好主题</th><th>服务</th><th>机构</th><th>时间</th><th>状态</th></tr></thead><tbody>' + (fiveBookings.length ? fiveBookings.map((b) => { const f = themes.find((x) => (x.pids || []).indexOf(b.pid) >= 0) || {}; return '<tr class="click" data-act="editOrder" data-id="' + esc(b.id) + '"><td><div class="row-main">' + avatar(b.person) + '<div><div class="name">' + esc(b.person) + '</div><div class="sub">' + esc(b.dept || '') + '</div></div></div></td><td>' + pill(f.name || '五好服务', 'outline') + '</td><td>' + esc(b.service) + '</td><td>' + esc(b.org) + '</td><td>' + esc(b.date + ' ' + b.time) + '</td><td>' + pill(orderStatusLabel(b.statusKey), b.statusKey === 'pending' ? 'amber' : 'green') + '</td></tr>'; }).join('') : '<tr><td colspan="6">' + empty('暂无五好履约订单') + '</td></tr>') + '</tbody></table></div>';
+    return '<div class="page wide">' + pageHead('五好生活', '五好生活是未来的主推产品：主题权益、企业档位、服务组合、履约核销都集中在这里运营。', saveBtn('五好配置'), 'PKU-EMPLOYEE-HEALTH / 五好生活') +
       purpose('把五个健康主题做成可售卖、可履约、可核销的企业福利产品，而不是五个空标签。', '职工端五好生活专区、主题服务入口与 500 / 1000 / 2000 元三档权益。', '企康产品运营') +
-      '<div class="kpi-grid">' + kpi('五大主题', data.employee.five.length, '个', '早筛到放松', 'star', ['#fff1e7','#e5540b']) + kpi('累计参与', Object.keys(data.employee.fiveUsage).reduce((n, k) => n + (data.employee.fiveUsage[k].enrolled || 0), 0), '人', '企业职工', 'users', ['#e9f7f1','#0c7c59']) + kpi('已履约', Object.keys(data.employee.fiveUsage).reduce((n, k) => n + (data.employee.fiveUsage[k].served || 0), 0), '人次', '含线上与到院', 'check', ['#edf3ff','#1f4fd1']) + kpi('平均满意度', Math.round(Object.keys(data.employee.fiveUsage).reduce((n, k) => n + (data.employee.fiveUsage[k].satisfaction || 0), 0) / data.employee.five.length), '%', '运营回访口径', 'heart', ['#fff6e0','#a86a06']) + '</div>' +
-      '<div class="stack section-space">' + data.employee.five.map((f) => {
-        const u = data.employee.fiveUsage[f.k] || { enrolled: 0, served: 0, redeemed: 0, satisfaction: 0 };
-        const svcs = (f.pids || []).map(productById).filter(Boolean);
-        return '<div class="panel" style="cursor:pointer" data-act="editFive" data-id="' + esc(f.k) + '"><div class="panel-head"><div class="ph"><div class="row-flex"><span class="avatar square" style="width:34px;height:34px;background:#fff1e7;color:#e5540b">' + ic(f.icon || 'star') + '</span><div><h2>' + esc(f.name) + '</h2><p>' + esc(f.sub) + '</p></div></div></div><div class="actions">' + pill('剩余 ' + f.left + ' 次', f.left ? 'green' : 'red') + '</div></div><div class="panel-body"><div class="grid main-side" style="gap:22px"><div><div class="tiny muted">权益额度</div><b style="display:block;margin-top:5px;font-size:13px">' + esc(f.quota) + '</b><div class="chips" style="margin-top:12px">' + svcs.map((p) => pill(p.name, 'outline')).join('') + '</div></div><div class="stat-strip" style="grid-template-columns:repeat(4,1fr);box-shadow:none"><div><b>' + u.enrolled + '</b><span>参与</span></div><div><b>' + u.served + '</b><span>履约</span></div><div><b>' + u.redeemed + '</b><span>核销</span></div><div><b>' + u.satisfaction + '%</b><span>满意</span></div></div></div><div style="margin-top:14px"><button class="btn sm" data-act="editFive" data-id="' + esc(f.k) + '">编辑主题、服务与核销规则</button><button class="btn sm" data-go="e-services" style="margin-left:6px">查看关联服务</button></div></div></div>';
-      }).join('') + '</div>' +
-      panel('三档权益产品', '基础 / 进阶 / 尊享', '<div class="grid three">' + data.employee.fiveTiers.map((t, i) => '<div class="panel" style="box-shadow:none" data-act="editFiveTier" data-id="' + esc(t.id) + '"><div class="panel-body"><div class="row-flex"><b style="font-size:14px">' + esc(t.name) + '</b><span class="pill orange right-auto">¥' + t.price + '</span></div><div class="tiny muted" style="margin-top:6px">' + esc(t.scope) + '</div><div style="margin-top:12px;font-size:11px;line-height:1.7">' + esc(t.benefits) + '</div><button class="btn sm w-full" style="margin-top:12px">编辑档位</button></div></div>').join('') + '</div>', '<span class="pill">真实三档</span>', false) + '</div>';
+      '<div class="kpi-grid">' + kpi('五大主题', themes.length, '个', '早筛到放松', 'star', ['#f1efff','#5b4bc4']) + kpi('累计参与', totalEnrolled, '人', '企业职工', 'users', ['#e9f7f1','#0c7c59']) + kpi('已履约', totalServed, '人次', '含线上与到院', 'check', ['#edf3ff','#1f4fd1']) + kpi('核销率', Math.round(totalRedeemed / Math.max(1, totalServed) * 100), '%', '履约后核销', 'activity', ['#fff6e0','#a86a06']) + '</div>' +
+      panel('五好生活工作台', '主题、档位与履约 · 点击操作', '<div class="toolbar" style="padding:8px 0 12px">' + seg(tabs, tab, 'fiveTab') + '<span class="right tiny muted">平均满意度 ' + avgSat + '%</span></div>' +
+        (tab === 'themes' ? '<div class="stack">' + themeCards + '</div>' :
+          tab === 'tiers' ? '<div class="grid three">' + tierCards + '</div><div class="section-space">' + panel('档位覆盖对比', '主题与服务组合', tierTable, '', true) + '</div><div class="notice warm" style="margin-top:12px">' + ic('info') + '<span>档位是后台运营配置；H5 目前展示五好主题与单项服务，不会自动生成购买页或支付流程。</span></div>' :
+          '<div class="stack"><div class="section-space">' + panel('按主题看履约', '参与 → 履约 → 核销', usageTable, '', true) + '</div><div class="section-space">' + panel('五好相关预约', '与职工服务预约联动', bookingTable, '', true) + '</div><div class="notice warm">' + ic('phone') + '<span>核销需要人工确认；取消或改约按职工权益规则退回次数，不会自动发短信。</span></div></div>') +
+      '<span class="pill">主推产品</span>') +
+      '<div class="grid two section-space">' + panel('五好运营建议', '按当前数据自动汇总', '<div class="stack tight">' + ['好好运动参与 ' + ((usage.move || {}).enrolled || 0) + ' 人，建议增加企业内训练营', '好好睡觉履约 ' + ((usage.sleep || {}).served || 0) + ' 人次，睡眠服务仍有提升空间', '尊享版覆盖全部 5 个主题，适合核心人才与企业高管'].map((x) => '<div style="padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:11px">' + esc(x) + '</div>').join('') + '</div>') + panel('配置入口', '从主题到档位再到履约', '<div class="stack tight">' + [['e-fivegood','主题与权益','star'],['e-services','关联服务目录','package'],['e-benefits','权益次数','shield'],['e-orders','预约与履约','calendar']].map((x) => '<div class="rowlink" data-go="' + x[0] + '"><span class="avatar square" style="width:28px;height:28px">' + ic(x[2]) + '</span><div class="main-tx"><b>' + x[1] + '</b></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>') + '</div></div>';
   };
 
   PAGES['e-messages'] = function () {
@@ -1116,6 +1175,120 @@
       '<div class="kpi-grid">' + kpi('全部消息', data.employee.messages.length, '条', '来自 H5 真实数据', 'bell', ['#fff1e7','#e5540b']) + kpi('未读', unread, '条', '职工端角标', 'inbox', ['#fff6e0','#a86a06']) + kpi('报告类', data.employee.messages.filter((m) => (m.go || '').indexOf('档案') >= 0).length, '条', '跳转健康档案', 'doc', ['#edf3ff','#1f4fd1']) + kpi('电话待办', data.followups.filter((f) => f.status === 'open').length, '条', '人工跟进', 'phone', ['#e9f7f1','#0c7c59']) + '</div>' +
       panel('消息列表', '点击整行编辑标题、说明与跳转', '<div class="stack tight" style="margin:-4px -20px -20px">' + data.employee.messages.map((m) => '<div class="rowlink" data-act="editMessage" data-id="' + esc(m.id) + '"><span class="avatar square" style="width:34px;height:34px;background:' + (m.read ? '#f1f5f8' : '#fff1e7') + ';color:' + (m.read ? '#708196' : '#e5540b') + '">' + ic(m.icon || 'bell') + '</span><div class="main-tx"><b>' + esc(m.title) + (m.read ? '' : ' · 未读') + '</b><span>' + esc(m.desc) + ' · ' + esc(m.go || '') + '</span></div><div class="tail"><span class="tiny muted">' + esc(m.time) + '</span><span class="chev">' + ic('chevron') + '</span></div></div>').join('') + '</div>', '<span class="pill">' + unread + ' 条未读</span>', true) +
       '<div class="grid two section-space">' + panel('能力边界', '不要假装消息已推送', '<div class="notice warm">' + ic('info') + '<span>没有企业微信、短信或服务端推送。新增消息只作为 H5 本地展示；需要触达职工时，请生成「电话人工跟进」待办并记录结果。</span></div>') + panel('相关电话待办', '人工触达闭环', '<div class="stack tight">' + data.followups.filter((f) => f.status === 'open').map((f) => '<div class="rowlink" data-go="templates"><span class="avatar square" style="width:27px;height:27px">' + ic('phone') + '</span><div class="main-tx"><b>' + esc(f.customer) + ' · ' + esc(f.reason) + '</b><span>' + esc(f.owner) + ' · ' + esc(f.due) + '</span></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>', '<button class="btn sm" data-go="templates">全部待办</button>', true) + '</div></div>';
+  };
+
+  /* ----------------------------------------------------------- 运营规划 */
+  function planOrgName(id) { const o = data.employee.orgDetails.find((x) => x.id === id); return o ? o.name : id; }
+  function planServiceName(id) { const p = productById(id); return p ? p.name : id; }
+  function planProductName(id) { const p = data.camp.pointProducts.find((x) => x.id === id); return p ? p.name : id; }
+  function planServiceFor(serviceId) { return data.planning.services.find((x) => x.serviceId === serviceId); }
+  function planGoodsFor(productId) { return data.planning.goods.find((x) => x.productId === productId); }
+  function weekdayText(days) {
+    const arr = (days || []).slice().sort((a, b) => a - b);
+    if (arr.length === 7) return '每天';
+    if (arr.join(',') === '1,2,3,4,5') return '周一至周五';
+    return arr.map((d) => '周' + '日一二三四五六'[d]).join('、');
+  }
+  function planStatePill(status) {
+    const map = { online: ['在售', 'green'], active: ['进行中', 'green'], draft: ['草稿', 'amber'], paused: ['暂停', 'red'], closed: ['停诊', 'red'], open: ['加开', 'amber'] };
+    const x = map[status] || ['未设置', ''];
+    return pill(x[0], x[1]);
+  }
+  function planDayInfo(date) {
+    const overrides = data.planning.overrides.filter((o) => o.date === date);
+    const openOv = overrides.filter((o) => o.status !== 'closed');
+    if (overrides.length && !openOv.length) return { slots: 0, closed: true, override: true };
+    if (overrides.length) return { slots: openOv.reduce((n, o) => n + (Number(o.capacity) || 0), 0), closed: false, override: true };
+    const dow = new Date(date + 'T00:00:00').getDay();
+    const slots = data.planning.schedules.filter((s) => s.enabled && (s.days || []).indexOf(dow) >= 0).reduce((n, s) => n + (Number(s.capacity) || 0), 0);
+    return { slots, closed: false, override: false };
+  }
+  function planCalendar(n) {
+    return Array.from({ length: n }, (_, k) => {
+      const date = addDays(today(), k);
+      const dow = new Date(date + 'T00:00:00').getDay();
+      return Object.assign({ date, day: Number(date.slice(8, 10)), weekday: '周' + '日一二三四五六'[dow] }, planDayInfo(date));
+    });
+  }
+  function planCalendarHTML(cal) {
+    const max = Math.max(1, ...cal.map((x) => x.slots));
+    return '<div class="plan-calendar">' + cal.map((x) => '<div class="plan-day ' + (x.closed ? 'closed' : x.override ? 'override' : '') + '" data-act="newOverride" data-date="' + esc(x.date) + '"><div class="pd-top"><b>' + x.day + '</b><span>' + x.weekday + '</span></div><div class="pd-bar"><i style="width:' + Math.round(x.slots / max * 100) + '%"></i></div><small>' + x.slots + ' 个号源</small>' + (x.override ? '<em>例外</em>' : '') + '</div>').join('') + '</div>';
+  }
+
+  PAGES['plan'] = function () {
+    const cal = planCalendar(14);
+    const low = data.camp.pointProducts.filter((p) => { const g = planGoodsFor(p.id); return g && Number(p.stock) <= Number(g.stockWarning); });
+    const noImage = data.employee.products.filter((p) => !p.imageUrl).length;
+    const pkgNoImage = data.planning.packages.filter((p) => !p.imageUrl).length;
+    const next7 = cal.slice(0, 7).reduce((n, x) => n + x.slots, 0);
+    const events = [];
+    data.planning.services.slice(0, 8).forEach((s) => events.push({ date: s.launchDate, type: '服务上线', title: planServiceName(s.serviceId), owner: s.owner, route: 'plan-services' }));
+    data.planning.goods.forEach((g) => events.push({ date: g.restockDate, type: '商品补货', title: planProductName(g.productId), owner: g.supplier, route: 'plan-services' }));
+    data.planning.overrides.forEach((o) => events.push({ date: o.date, type: '排期调整', title: planOrgName(o.orgId), owner: '预约运营', route: 'plan-schedule' }));
+    events.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    return '<div class="page wide">' + pageHead('运营规划', '把服务、商品、体检套餐和预约排期放进同一张运营计划盘。先定负责人、上线时间与容量，再进入具体配置。', '<button class="btn" data-act="newOverride">' + ic('calendar') + '<span>新增日期例外</span></button><button class="btn primary" data-act="newPackage">' + ic('plus') + '<span>新增体检套餐</span></button>', '运营规划 / 计划总览') +
+      purpose('回答“下个月要上什么、谁负责、能不能约得到”。', '后台计划台账、容量预警与上线日历；不会自动改写 H5 的服务与排期。', '企康运营 / 履约运营') +
+      '<div class="kpi-grid">' + kpi('服务计划', data.planning.services.length, '项', '覆盖 5 大模块', 'package', ['#f1efff', '#5b4bc4']) + kpi('商品计划', data.planning.goods.length, '件', '积分商城与奖励', 'gift', ['#fff1e7', '#e5540b']) + kpi('未来 7 天号源', next7, '个', '按每周模板与例外计算', 'calendar', ['#e9f7f1', '#0c7c59']) + kpi('库存预警', low.length, '件', '低于补货线', 'truck', ['#fff6e0', '#a86a06']) + '</div>' +
+      panel('未来 14 天可预约容量', '点击日期直接新增例外 · 数字为后台计划口径', planCalendarHTML(cal) + '<div class="plan-legend"><span><i style="background:#6b5bd2"></i>每周模板</span><span><i style="background:#d39a2f"></i>日期例外</span><span><i style="background:#d4433b"></i>停诊 / 关闭</span></div>', '<span class="pill">' + data.planning.schedules.filter((s) => s.enabled).length + ' 个模板</span>') +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('上线与补货日历', '按日期排序 · 点击进入对应计划', '<div class="stack tight">' + events.slice(0, 9).map((e) => '<div class="rowlink" data-go="' + e.route + '"><span class="avatar square" style="width:31px;height:31px;background:' + (e.type === '商品补货' ? '#fff1e7' : e.type === '排期调整' ? '#f1efff' : '#e9f7f1') + ';color:' + (e.type === '商品补货' ? '#e5540b' : e.type === '排期调整' ? '#5b4bc4' : '#0c7c59') + '">' + ic(e.type === '商品补货' ? 'truck' : e.type === '排期调整' ? 'calendar' : 'package') + '</span><div class="main-tx"><b>' + esc(e.type + ' · ' + e.title) + '</b><span>' + esc(e.owner) + '</span></div><div class="tail"><span class="tiny muted">' + esc(e.date.slice(5)) + '</span><span class="chev">' + ic('chevron') + '</span></div></div>').join('') + '</div>', '<button class="btn sm" data-go="plan-services">全部计划</button>', true) +
+        panel('套餐名额使用', '体检套餐的年度名额与消耗', '<div class="stack">' + data.planning.packages.map((p) => '<div style="padding:10px 0;border-bottom:1px solid var(--line-soft)"><div class="row-flex"><b style="font-size:11.5px">' + esc(p.name) + '</b><span class="right-auto tiny muted">' + p.used + ' / ' + p.quota + '</span></div>' + progress(Math.round(p.used / Math.max(1, p.quota) * 100), '#6b5bd2') + '<div class="tiny muted" style="margin-top:5px">' + esc(p.audience + ' · ¥' + p.price + ' · ' + planOrgName(p.orgId)) + '</div></div>').join('') + '</div>', '<button class="btn sm" data-go="plan-exams">管理套餐</button>') +
+      '</div><div class="stack">' +
+        panel('规划缺口', '先补会影响预约与转化的项', '<div class="stack tight">' +
+          (noImage ? '<div class="rowlink" data-go="e-services"><span class="avatar square" style="width:28px;height:28px;background:#fff6e0;color:#a86a06">' + ic('image') + '</span><div class="main-tx"><b>' + noImage + ' 项服务尚无主图</b><span>服务卡与详情页视觉不完整</span></div><span class="chev">' + ic('chevron') + '</span></div>' : '') +
+          (low.length ? '<div class="rowlink" data-go="plan-services"><span class="avatar square" style="width:28px;height:28px;background:#fdeef4;color:#be2a5e">' + ic('truck') + '</span><div class="main-tx"><b>' + low.length + ' 件商品低于补货线</b><span>' + low.map((p) => p.name).join('、') + '</span></div><span class="chev">' + ic('chevron') + '</span></div>' : '') +
+          (pkgNoImage ? '<div class="rowlink" data-go="plan-exams"><span class="avatar square" style="width:28px;height:28px;background:#f1efff;color:#5b4bc4">' + ic('image') + '</span><div class="main-tx"><b>' + pkgNoImage + ' 个体检套餐尚无封面</b><span>套餐卡目前使用默认渐变封面</span></div><span class="chev">' + ic('chevron') + '</span></div>' : '') +
+          (data.planning.schedules.filter((s) => !s.enabled).length ? '<div class="rowlink" data-go="plan-schedule"><span class="avatar square" style="width:28px;height:28px;background:#fff6e0;color:#a86a06">' + ic('clock') + '</span><div class="main-tx"><b>' + data.planning.schedules.filter((s) => !s.enabled).length + ' 个排期模板已停用</b><span>确认是否仍有可预约号源</span></div><span class="chev">' + ic('chevron') + '</span></div>' : '') +
+          '</div>', '<button class="btn sm" data-go="capability">看边界</button>') +
+        panel('本周建议', '按当前计划自动汇总', '<div class="stack tight">' + [
+          ['先确认体检套餐名额', '基础套餐已用 ' + Math.round(data.planning.packages[0].used / Math.max(1, data.planning.packages[0].quota) * 100) + '%，接近年度预算上限'],
+          ['补齐商品补货日期', low.length ? low.map((p) => p.name).join('、') + ' 需要安排补货' : '当前商品库存健康'],
+          ['锁定下周停诊日', data.planning.overrides.filter((o) => o.status === 'closed').length + ' 个日期已标记停诊，需同步客服话术']
+        ].map((x) => '<div style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><b style="font-size:11px">' + esc(x[0]) + '</b><div class="tiny muted" style="margin-top:3px">' + esc(x[1]) + '</div></div>').join('') + '</div>') +
+      '</div></div></div>';
+  };
+
+  PAGES['plan-services'] = function () {
+    const tab = state.ui.planTab || 'service';
+    const q = (state.ui.planQ || '').trim();
+    const services = data.planning.services.map((s) => ({ s, p: productById(s.serviceId) })).filter((x) => x.p && (!q || (x.p.name + x.s.owner + x.s.target + x.s.goal).indexOf(q) >= 0));
+    const goods = data.planning.goods.map((g) => ({ g, p: data.camp.pointProducts.find((x) => x.id === g.productId) })).filter((x) => x.p && (!q || (x.p.name + x.g.supplier + x.g.campaign).indexOf(q) >= 0));
+    return '<div class="page wide">' + pageHead('服务与商品规划', '28 项职工服务与 6 件积分商品放在同一张运营计划里：负责人、上线时间、目标、补货节奏一目了然。', '', '运营规划 / 服务与商品') +
+      purpose('先做运营计划，再进入服务 / 商品详情做内容配置。', '后台计划台账；不会自动改写 H5 的服务目录、商品卡或库存。', '企康运营 / 履约运营') +
+      '<div class="kpi-grid">' + kpi('服务计划', services.length, '项', '5 大模块', 'package', ['#f1efff', '#5b4bc4']) + kpi('商品计划', goods.length, '件', '积分商城实物', 'gift', ['#fff1e7', '#e5540b']) + kpi('本月上线', data.planning.services.filter((s) => String(s.launchDate).slice(0, 7) === today().slice(0, 7)).length, '项', '按上线日期', 'calendar', ['#e9f7f1', '#0c7c59']) + kpi('库存预警', goods.filter((x) => Number(x.p.stock) <= Number(x.g.stockWarning)).length, '件', '低于补货线', 'truck', ['#fff6e0', '#a86a06']) + '</div>' +
+      panel('计划清单', '点击整行 / 整卡进入计划编辑', '<div class="toolbar" style="padding:10px 0 7px">' + seg([{ id: 'service', label: '服务计划' }, { id: 'goods', label: '商品计划' }], tab, 'planTab') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="planQ" placeholder="名称 / 负责人 / 目标 / 供应商" value="' + esc(q) + '"></div></div>' +
+        (tab === 'service' ? '<div class="table-wrap"><table class="table"><thead><tr><th>服务</th><th>模块</th><th>负责人</th><th>上线日期</th><th>目标</th><th>状态</th><th>操作</th></tr></thead><tbody>' + (services.length ? services.map(({ s, p }) => { const m = moduleMeta(p.mod); return '<tr class="click" data-act="editServicePlan" data-id="' + esc(s.id) + '"><td><div class="row-main">' + '<span class="avatar square" style="width:32px;height:32px;background:' + m.tint + ';color:' + m.ink + '">' + ic(m.icon) + '</span><div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(p.en || '') + '</div></div></div></td><td>' + esc(m.name) + '</td><td>' + esc(s.owner) + '</td><td class="muted">' + esc(s.launchDate) + '</td><td style="max-width:260px">' + esc(s.goal) + '</td><td>' + planStatePill(s.status) + '</td><td class="actions"><button class="btn sm">编辑计划</button></td></tr>'; }).join('') : '<tr><td colspan="7">' + empty('没有匹配的服务计划') + '</td></tr>') + '</tbody></table></div>' :
+          '<div class="grid three">' + (goods.length ? goods.map(({ g, p }) => '<div class="panel pkg-card" style="box-shadow:none" data-act="editGoodsPlan" data-id="' + esc(g.id) + '"><div style="height:126px;background:#f4f7f9;position:relative;overflow:hidden">' + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" alt="">' : empty('暂无商品图', 'image')) + '<span style="position:absolute;left:10px;top:10px">' + planStatePill(g.status) + '</span></div><div class="panel-body"><div class="row-flex"><b style="font-size:12px">' + esc(p.name) + '</b><span class="right-auto tiny muted">库存 ' + p.stock + '</span></div><div class="tiny muted" style="margin-top:4px">' + esc(g.supplier) + ' · 成本 ¥' + g.cost + '</div><div class="pkg-meta"><div><b>' + p.stock + '</b><span>当前库存</span></div><div><b>' + g.stockWarning + '</b><span>补货线</span></div><div><b>' + esc(g.restockDate.slice(5)) + '</b><span>计划补货</span></div></div><div class="chips" style="margin-top:10px">' + pill(g.campaign, 'outline') + pill('积分 ' + p.pointsRequired, 'orange') + '</div><div style="margin-top:11px"><button class="btn sm w-full" data-act="editGoodsPlan" data-id="' + esc(g.id) + '">编辑商品计划</button></div></div></div>').join('') : empty('没有匹配的商品计划')) + '</div>') +
+      '', '<span class="pill">' + (tab === 'service' ? services.length + ' 项' : goods.length + ' 件') + '</span>') +
+      '<div class="notice section-space">' + ic('info') + '<span><b>规划与配置分开</b>：这里定负责人、时间、目标和补货节奏；具体服务介绍、商品图集、图文详情仍在「服务目录 / 积分商城」里配置。两者都保存后台，不会假装自动上线。</span></div></div>';
+  };
+
+  PAGES['plan-exams'] = function () {
+    const packages = data.planning.packages;
+    const totalQuota = packages.reduce((n, p) => n + Number(p.quota || 0), 0);
+    const totalUsed = packages.reduce((n, p) => n + Number(p.used || 0), 0);
+    return '<div class="page wide">' + pageHead('体检套餐', '把年度体检、深度筛查与尊享体检做成可管理的套餐：包含项目、价格、名额、有效期与履约机构。', '<button class="btn primary" data-act="newPackage">' + ic('plus') + '<span>新增套餐</span></button>', '运营规划 / 体检套餐') +
+      purpose('先设计套餐组合与名额，再回到服务目录维护单项服务的预约须知。', '后台套餐计划与名额台账；H5 目前按单项服务预约，不读取套餐组合。', '企康产品运营') +
+      '<div class="kpi-grid">' + kpi('体检套餐', packages.length, '个', '基础 / 深度 / 尊享', 'pulse', ['#f1efff', '#5b4bc4']) + kpi('总名额', totalQuota, '人', '年度套餐额度', 'users', ['#e9f7f1', '#0c7c59']) + kpi('已使用', totalUsed, '人', '按真实预约台账', 'check', ['#edf3ff', '#1f4fd1']) + kpi('剩余名额', totalQuota - totalUsed, '人', '可继续预约', 'gift', ['#fff6e0', '#a86a06']) + '</div>' +
+      '<div class="grid three">' + packages.map((p) => '<div class="panel pkg-card" data-act="editPackage" data-id="' + esc(p.id) + '"><div class="pkg-cover">' + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" alt="">' : '') + '<div style="position:relative"><div class="tag">' + esc(p.type || '体检套餐') + '</div><b>' + esc(p.name) + '</b><span>' + esc(p.audience) + '</span></div><div style="position:absolute;right:14px;top:14px">' + planStatePill(p.status) + '</div></div><div class="panel-body"><div class="tiny muted">' + esc(planOrgName(p.orgId)) + ' · 有效期 ' + esc(p.validity) + '</div><div class="pkg-meta"><div><b>¥' + p.price + '</b><span>套餐价</span></div><div><b>' + p.quota + '</b><span>总名额</span></div><div><b>' + p.used + '</b><span>已使用</span></div></div>' + progress(Math.round(p.used / Math.max(1, p.quota) * 100), '#6b5bd2') + '<div class="chips" style="margin-top:11px">' + (p.services || []).map((id) => pill(planServiceName(id), 'outline')).join('') + '</div><div style="margin-top:11px"><button class="btn sm w-full" data-act="editPackage" data-id="' + esc(p.id) + '">编辑套餐</button></div></div></div>').join('') + '</div>' +
+      panel('套餐与服务关系', '套餐只做组合，单项服务仍在服务目录维护', '<div class="table-wrap"><table class="table"><thead><tr><th>套餐</th><th>包含服务</th><th>履约机构</th><th>名额使用</th></tr></thead><tbody>' + packages.map((p) => '<tr class="click" data-act="editPackage" data-id="' + esc(p.id) + '"><td><b style="font-size:11.5px">' + esc(p.name) + '</b></td><td>' + (p.services || []).map((id) => pill(planServiceName(id), 'outline')).join(' ') + '</td><td>' + esc(planOrgName(p.orgId)) + '</td><td>' + progress(Math.round(p.used / Math.max(1, p.quota) * 100), '#6b5bd2') + '</td></tr>').join('') + '</tbody></table></div>', '', true) +
+      '<div class="notice warm section-space">' + ic('info') + '<span><b>能力边界</b>：套餐组合、价格和名额只保存在后台计划台账。H5 目前按单项服务预约，不会自动出现“套餐”入口；若要真实售卖套餐，需要 H5 增加套餐页与后端订单。</span></div></div>';
+  };
+
+  PAGES['plan-schedule'] = function () {
+    const cal = planCalendar(14);
+    const weekly = data.planning.schedules.reduce((n, s) => n + (s.enabled ? Number(s.capacity || 0) * (s.days || []).length : 0), 0);
+    const closed = data.planning.overrides.filter((o) => o.status === 'closed').length;
+    return '<div class="page wide">' + pageHead('预约排期', '按机构和每周模板配置可预约时段、单段容量、最晚预约时间；再用日期例外处理停诊、加开与临时缩容。', '<button class="btn" data-act="newSchedule">' + ic('plus') + '<span>新增模板</span></button><button class="btn primary" data-act="newOverride">' + ic('calendar') + '<span>新增例外</span></button>', '运营规划 / 预约排期') +
+      purpose('让运营知道未来两周哪些机构、哪些服务还能约。', '后台排期计划与容量预警；H5 预约表单目前仍读取机构号源总数，不读取具体时段。', '履约运营 / 机构对接') +
+      '<div class="kpi-grid">' + kpi('每周模板', data.planning.schedules.length, '个', '机构 + 服务', 'calendar', ['#f1efff', '#5b4bc4']) + kpi('每周最大号源', weekly, '个', '按模板容量计算', 'clock', ['#e9f7f1', '#0c7c59']) + kpi('日期例外', data.planning.overrides.length, '条', '停诊 / 加开 / 缩容', 'edit', ['#fff6e0', '#a86a06']) + kpi('停诊日', closed, '天', '需同步客服话术', 'info', ['#fdeef4', '#be2a5e']) + '</div>' +
+      panel('未来 14 天容量', '点击日期新增例外', planCalendarHTML(cal) + '<div class="plan-legend"><span><i style="background:#6b5bd2"></i>每周模板</span><span><i style="background:#d39a2f"></i>日期例外</span><span><i style="background:#d4433b"></i>停诊 / 关闭</span></div>', '<span class="pill">后台计划口径</span>') +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('每周模板', '点击整行编辑', '<div class="table-wrap"><table class="table"><thead><tr><th>机构</th><th>服务</th><th>星期</th><th>时段</th><th>单段容量</th><th>最晚预约</th><th>状态</th></tr></thead><tbody>' + (data.planning.schedules.length ? data.planning.schedules.map((s) => '<tr class="click" data-act="editSchedule" data-id="' + esc(s.id) + '"><td><b style="font-size:11.5px">' + esc(planOrgName(s.orgId)) + '</b></td><td>' + esc(planServiceName(s.serviceId)) + '</td><td>' + esc(weekdayText(s.days)) + '</td><td class="muted">' + esc(s.start + '—' + s.end) + '</td><td>' + s.capacity + ' 人 / ' + s.slotMinutes + ' 分钟</td><td class="muted">提前 ' + s.cutoffHours + ' 小时</td><td>' + (s.enabled ? pill('启用', 'green') : pill('停用', 'red')) + '</td></tr>').join('') : '<tr><td colspan="7">' + empty('还没有排期模板') + '</td></tr>') + '</tbody></table></div>', '', true) +
+      '</div><div class="stack">' +
+        panel('日期例外', '停诊、加开与临时缩容', '<div class="stack tight">' + (data.planning.overrides.length ? data.planning.overrides.slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).map((o) => '<div class="rowlink" data-act="editOverride" data-id="' + esc(o.id) + '"><span class="avatar square" style="width:30px;height:30px;background:' + (o.status === 'closed' ? '#fdeef4' : '#fff6e0') + ';color:' + (o.status === 'closed' ? '#be2a5e' : '#a86a06') + '">' + ic(o.status === 'closed' ? 'x' : 'calendar') + '</span><div class="main-tx"><b>' + esc(o.date.slice(5) + ' · ' + planOrgName(o.orgId)) + '</b><span>' + esc(planServiceName(o.serviceId) + ' · ' + (o.status === 'closed' ? '停诊' : o.capacity + ' 个号源') + ' · ' + o.note) + '</span></div><span class="tail">' + planStatePill(o.status) + '</span></div>').join('') : empty('没有日期例外')) + '</div>', '<button class="btn sm" data-act="newOverride">新增</button>', true) +
+        panel('排期口径', '避免前台显示可约、现场却没号', '<div class="notice warm">' + ic('info') + '<span>模板容量只用于后台计划与客服答复。真实占用号源需要医院排班接口；当前 H5 只展示机构号源总数，不会自动扣减。</span></div>') +
+      '</div></div></div>';
   };
 
   /* ----------------------------------------------------------- 客户中心 */
@@ -1376,6 +1549,17 @@
       if (p.noticeText != null) { p.notice = String(p.noticeText).split('\n').map((x) => x.trim()).filter(Boolean); delete p.noticeText; }
       if (p.flowText != null) { p.flow = String(p.flowText).split('\n').map((x) => x.trim()).filter(Boolean); delete p.flowText; }
     });
+    (data.planning.packages || []).forEach((p) => {
+      if (p.servicesText != null) { p.services = splitList(p.servicesText); delete p.servicesText; }
+      p.services = p.services || [];
+    });
+    (data.planning.schedules || []).forEach((s) => {
+      if (s.daysText != null) {
+        s.days = String(s.daysText).split(/[^0-6]+/).map((x) => Number(x)).filter((x) => x >= 0 && x <= 6);
+        delete s.daysText;
+      }
+      if (!Array.isArray(s.days) || !s.days.length) s.days = [1, 2, 3, 4, 5];
+    });
     data.customers.forEach((c) => {
       if (c.sourcesText != null) { c.sources = splitList(c.sourcesText); delete c.sourcesText; }
       if (c.tagsText != null) { c.tags = splitList(c.tagsText); delete c.tagsText; }
@@ -1385,6 +1569,10 @@
     });
     data.employee.five.forEach((f) => {
       if (f.pidsText != null) { f.pids = splitList(f.pidsText); delete f.pidsText; }
+    });
+    data.employee.fiveTiers.forEach((t) => {
+      if (t.themesText != null) { t.themes = splitList(t.themesText); delete t.themesText; }
+      if (t.pidsText != null) { t.pids = splitList(t.pidsText); delete t.pidsText; }
     });
     data.brand.camp.roster.forEach((r) => {
       if (r.tagsText != null) { r.tags = splitList(r.tagsText); delete r.tagsText; }
@@ -1569,11 +1757,42 @@
     const b = data.employee.bookings.find((x) => x.id === id);
     if (!b) return;
     const i = data.employee.bookings.indexOf(b);
-    openDrawer({ title: '预约 · ' + b.service, sub: b.person + ' / ' + b.channel, save: true, saveLabel: '预约信息', extra: '<button class="btn" data-act="completeOrder" data-id="' + esc(b.id) + '">' + ic('check') + '完成</button><button class="btn danger" data-act="cancelOrder" data-id="' + esc(b.id) + '">' + ic('x') + '取消预约</button>', body: function () {
-      return '<div class="stack">' + panel('预约详情', '', '<div class="form-grid two">' + field('职工', b.person, 'employee.bookings.' + i + '.person') + field('企业 / 部门', b.dept || '', 'employee.bookings.' + i + '.dept') + field('服务', b.service || '', 'employee.bookings.' + i + '.service') + field('服务机构', b.org || '', 'employee.bookings.' + i + '.org') + field('日期', b.date || '', 'employee.bookings.' + i + '.date') + field('时间', b.time || '', 'employee.bookings.' + i + '.time') + field('状态', b.status, 'employee.bookings.' + i + '.status') + field('状态键', b.statusKey, 'employee.bookings.' + i + '.statusKey', { select: [{v:'pending',l:'待服务'},{v:'completed',l:'已完成'},{v:'cancelled',l:'已取消'}] }) + '</div>') +
+    const steps = [['pending', '提交预约'], ['confirmed', '已确认'], ['in_service', '服务中'], ['completed', '已完成']];
+    function orderExtra() {
+      let extra = '';
+      if (b.statusKey === 'pending') extra += '<button class="btn" data-act="confirmOrder" data-id="' + esc(b.id) + '">' + ic('check') + '确认预约</button>';
+      if (b.statusKey === 'confirmed') extra += '<button class="btn" data-act="startOrder" data-id="' + esc(b.id) + '">' + ic('activity') + '开始服务</button>';
+      if (b.statusKey === 'confirmed' || b.statusKey === 'in_service') extra += '<button class="btn" data-act="completeOrder" data-id="' + esc(b.id) + '">' + ic('check') + '完成服务</button>';
+      if (['pending', 'confirmed', 'in_service'].indexOf(b.statusKey) >= 0) extra += '<button class="btn danger" data-act="cancelOrder" data-id="' + esc(b.id) + '">' + ic('x') + '取消</button>';
+      extra += '<button class="btn" data-act="newTask" data-customer="' + esc((customerByName(b.person) || {}).id || '') + '">' + ic('phone') + '电话跟进</button>';
+      return extra;
+    }
+    openDrawer({ title: '预约 · ' + b.service, sub: b.person + ' / ' + b.channel, save: true, saveLabel: '预约信息', extra: orderExtra, body: function () {
+      const stepIndex = Math.max(0, steps.findIndex((x) => x[0] === b.statusKey));
+      return '<div class="stack">' + panel('流转状态', '待确认 → 已确认 → 服务中 → 已完成', '<div class="order-flow">' + steps.map((x, k) => '<div class="of-step ' + (k <= stepIndex ? 'done' : '') + (k === stepIndex ? ' on' : '') + '"><span>' + (k <= stepIndex ? '✓' : (k + 1)) + '</span><b>' + x[1] + '</b><i></i></div>').join('') + '</div>') +
+        panel('预约详情', '', '<div class="form-grid two">' + field('职工', b.person, 'employee.bookings.' + i + '.person') + field('企业 / 部门', b.dept || '', 'employee.bookings.' + i + '.dept') + field('服务', b.service || '', 'employee.bookings.' + i + '.service') + field('服务机构', b.org || '', 'employee.bookings.' + i + '.org') + field('日期', b.date || '', 'employee.bookings.' + i + '.date') + field('时间', b.time || '', 'employee.bookings.' + i + '.time') + field('流程状态', b.statusKey, 'employee.bookings.' + i + '.statusKey', { select: [{v:'pending',l:'待确认'},{v:'confirmed',l:'已确认'},{v:'in_service',l:'服务中'},{v:'completed',l:'已完成'},{v:'cancelled',l:'已取消'}] }) + field('H5 状态文案', b.status, 'employee.bookings.' + i + '.status', { hint: '仅作 H5 展示备注；后台流转以「流程状态」为准。' }) + field('渠道', b.channel || '', 'employee.bookings.' + i + '.channel') + field('负责人', b.owner || '健康管家', 'employee.bookings.' + i + '.owner') + '</div>' + field('预约备注 / 履约记录', b.note || '', 'employee.bookings.' + i + '.note', { area: true, rows: 3 })) +
         (productById(b.pid) ? panel('服务内容', '', '<div class="tiny muted" style="line-height:1.7">' + esc(productById(b.pid).intro) + '</div><div class="chips" style="margin-top:9px">' + (productById(b.pid).tags || []).map((t) => pill(t, 'outline')).join('') + '</div>') : '') +
         '<div class="notice warm">' + ic('phone') + '<span>取消预约会按规则退回权益次数；不会自动发短信通知职工，需电话确认。</span></div></div>';
     } });
+  }
+
+  function createNewOrder() {
+    data.employee.newOrder = { person: data.employee.user.name, dept: data.employee.site.company, pid: 'annual-exam', service: '职工年度体检', org: data.employee.orgDetails[0].name, date: addDays(today(), 2), time: '09:00', channel: '后台代下单', owner: '健康管家', note: '' };
+    openDrawer({ title: '代客下单', sub: '后台为职工创建服务预约', save: false, extra: '<button class="btn primary" data-act="saveNewOrder">' + ic('check') + '创建预约</button>', body: function () {
+      return '<div class="stack">' + panel('预约信息', '创建后进入待确认状态', '<div class="form-grid two">' + field('职工', data.employee.newOrder.person, 'employee.newOrder.person', { select: data.customers.map((c) => ({ v: c.name, l: c.name + ' · ' + c.phone })) }) + field('企业 / 部门', data.employee.newOrder.dept, 'employee.newOrder.dept') + field('服务', data.employee.newOrder.pid, 'employee.newOrder.pid', { select: data.employee.products.filter((p) => p.active).map((p) => ({ v: p.id, l: p.name })) }) + field('服务机构', data.employee.newOrder.org, 'employee.newOrder.org', { select: data.employee.orgDetails.map((o) => ({ v: o.name, l: o.name })) }) + field('日期', data.employee.newOrder.date, 'employee.newOrder.date') + field('时间', data.employee.newOrder.time, 'employee.newOrder.time') + field('渠道', data.employee.newOrder.channel, 'employee.newOrder.channel', { select: [{v:'后台代下单',l:'后台代下单'},{v:'电话预约',l:'电话预约'},{v:'现场登记',l:'现场登记'}] }) + field('负责人', data.employee.newOrder.owner, 'employee.newOrder.owner') + '</div>' + field('备注', data.employee.newOrder.note, 'employee.newOrder.note', { area: true, rows: 3 })) +
+        '<div class="notice">' + ic('info') + '<span>代客下单只写入后台预约台账并生成电话跟进；不会自动向职工发送确认消息，也不会占用真实医院号源。</span></div></div>';
+    } });
+  }
+  function saveNewOrder() {
+    const d = data.employee.newOrder;
+    if (!d) return;
+    const p = productById(d.pid);
+    const b = { id: uid('bk'), pid: d.pid, service: p ? p.name : (d.service || d.pid), person: d.person, dept: d.dept, date: d.date, time: d.time, org: d.org, status: '待确认', statusKey: 'pending', channel: d.channel || '后台代下单', owner: d.owner || '健康管家', note: d.note || '' };
+    data.employee.bookings.unshift(b);
+    delete data.employee.newOrder;
+    state.drawer = null;
+    commit('后台代客下单');
+    render(true);
   }
 
   function openBenefitDrawer(pid) {
@@ -1647,8 +1866,12 @@
     const t = data.employee.fiveTiers.find((x) => x.id === id);
     if (!t) return;
     const i = data.employee.fiveTiers.indexOf(t);
+    const prefix = 'employee.fiveTiers.' + i;
     openDrawer({ title: '权益档位 · ' + t.name, sub: '五好生活企业套餐', save: true, saveLabel: '档位', body: function () {
-      return '<div class="stack">' + panel('档位信息', '', '<div class="form-grid two">' + field('档位名称', t.name, 'employee.fiveTiers.' + i + '.name') + field('价格（元）', t.price, 'employee.fiveTiers.' + i + '.price', { num: true }) + field('适用人群', t.scope, 'employee.fiveTiers.' + i + '.scope') + '</div>' + field('包含权益', t.benefits, 'employee.fiveTiers.' + i + '.benefits', { area: true, rows: 4 })) + '</div>';
+      return '<div class="stack">' + panel('档位封面', '', uploadBox(prefix + '.imageUrl', t.imageUrl, false, 'cover')) +
+        panel('档位信息', '', '<div class="form-grid two">' + field('档位名称', t.name, prefix + '.name') + field('价格（元）', t.price, prefix + '.price', { num: true }) + field('适用人群', t.scope, prefix + '.scope') + field('状态', t.status || 'active', prefix + '.status', { select: [{v:'active',l:'在售'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'}] }) + '</div>' + field('包含权益', t.benefits, prefix + '.benefits', { area: true, rows: 4 })) +
+        panel('覆盖范围', '决定这个档位能选哪些五好主题与服务', field('覆盖主题（screen / food / move / sleep / relax）', (t.themes || []).join('、'), prefix + '.themesText', { hint: '用顿号或换行分隔' }) + field('关联服务 ID', (t.pids || []).join('、'), prefix + '.pidsText', { hint: '从职工服务目录选择真实 ID' })) +
+        '<div class="notice">' + ic('info') + '<span>五好档位只保存在后台；H5 目前展示五好主题与单项服务，不会自动生成档位购买页。</span></div></div>';
     } });
   }
 
@@ -1819,6 +2042,85 @@
     toast('图片已保存到本机');
   }
 
+  function openPackageDrawer(id) {
+    const p = data.planning.packages.find((x) => x.id === id);
+    if (!p) return;
+    const i = data.planning.packages.indexOf(p);
+    const prefix = 'planning.packages.' + i;
+    const svcText = p.servicesText != null ? p.servicesText : (p.services || []).join('\n');
+    openDrawer({ title: '体检套餐 · ' + p.name, sub: '套餐组合 / 价格 / 名额 / 有效期', save: true, saveLabel: '套餐配置', body: function () {
+      return '<div class="stack">' +
+        panel('套餐封面与简介', '', '<div class="form-grid"><div>' + field('套餐封面', '', prefix + '.imageUrl', { optional: true }) + uploadBox(prefix + '.imageUrl', p.imageUrl, false, 'cover') + '</div><div>' + field('套餐简介', p.intro || '', prefix + '.intro', { area: true, rows: 4 }) + '</div></div>') +
+        panel('基础信息', '', '<div class="form-grid two">' + field('套餐名称', p.name, prefix + '.name') + field('套餐类型', p.type || '体检套餐', prefix + '.type', { select: [{v:'体检套餐',l:'体检套餐'},{v:'专项筛查',l:'专项筛查'},{v:'企业定制',l:'企业定制'}] }) + field('适用人群', p.audience || '', prefix + '.audience') + field('套餐价格（元）', p.price, prefix + '.price', { num: true }) + field('支付来源', p.payer || '', prefix + '.payer') + field('履约机构', p.orgId, prefix + '.orgId', { select: data.employee.orgDetails.map((o) => ({ v: o.id, l: o.name })) }) + field('总名额', p.quota, prefix + '.quota', { num: true }) + field('已使用', p.used, prefix + '.used', { num: true }) + field('有效期', p.validity || '', prefix + '.validity') + field('状态', p.status || 'draft', prefix + '.status', { select: [{v:'online',l:'在售'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'}] }) + '</div>') +
+        panel('套餐内容', '每行一条，编辑后保存', field('包含项目', p.includesText || '', prefix + '.includesText', { area: true, rows: 6, hint: '例如：基础检查 / 胸部 CT / 肿瘤标志物 / 报告解读' }) + field('预约须知', p.noticeText || '', prefix + '.noticeText', { area: true, rows: 4 }) + field('关联服务 ID（每行一个）', svcText, prefix + '.servicesText', { area: true, rows: 4, hint: '从服务目录复制真实 ID，例如 annual-exam、gastro、cancer。' })) +
+        panel('当前包含服务', (p.services || []).length + ' 项', '<div class="chips">' + (p.services || []).map((id) => pill(planServiceName(id), 'outline')).join('') + '</div>') +
+        '<div class="notice warm">' + ic('info') + '<span>套餐只保存后台计划。H5 目前按单项服务预约，不会自动出现套餐入口；真实售卖需要 H5 套餐页与后端订单。</span></div></div>';
+    } });
+  }
+
+  function openServicePlanDrawer(id) {
+    const s = data.planning.services.find((x) => x.id === id);
+    if (!s) return;
+    const i = data.planning.services.indexOf(s);
+    const p = productById(s.serviceId) || { name: s.serviceId, mod: 'screen' };
+    const prefix = 'planning.services.' + i;
+    openDrawer({ title: '服务计划 · ' + p.name, sub: '负责人 / 上线时间 / 目标 / 状态', save: true, saveLabel: '服务计划', extra: '<button class="btn" data-go="e-service" data-id="' + esc(s.serviceId) + '">' + ic('external') + '服务详情</button>', body: function () {
+      return '<div class="stack">' + panel('服务信息', '', '<div class="form-grid two"><div class="field"><label>服务名称</label><div class="input" style="background:#f8fafc;color:var(--muted)">' + esc(p.name) + '</div></div><div class="field"><label>所属模块</label><div class="input" style="background:#f8fafc;color:var(--muted)">' + esc(moduleName(p.mod)) + '</div></div>' + field('负责人', s.owner, prefix + '.owner') + field('上线日期', s.launchDate, prefix + '.launchDate') + field('目标人群', s.target, prefix + '.target') + field('状态', s.status, prefix + '.status', { select: [{v:'active',l:'进行中'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'}] }) + '</div>' + field('运营目标', s.goal, prefix + '.goal', { area: true, rows: 3 }) + field('备注', s.note || '', prefix + '.note', { area: true, rows: 3 })) +
+        '<div class="notice">' + ic('info') + '<span>服务计划用于内部排期与目标管理；服务介绍、图片、预约须知仍在服务详情页配置。</span></div></div>';
+    } });
+  }
+
+  function openGoodsPlanDrawer(id) {
+    const g = data.planning.goods.find((x) => x.id === id);
+    if (!g) return;
+    const i = data.planning.goods.indexOf(g);
+    const p = data.camp.pointProducts.find((x) => x.id === g.productId) || { name: g.productId, stock: 0, pointsRequired: 0 };
+    const prefix = 'planning.goods.' + i;
+    openDrawer({ title: '商品计划 · ' + p.name, sub: '供应商 / 成本 / 补货线 / 活动', save: true, saveLabel: '商品计划', extra: '<button class="btn" data-act="editProduct" data-id="' + esc(g.productId) + '">' + ic('package') + '商品图文</button>', body: function () {
+      return '<div class="stack">' + panel('商品信息', '', '<div style="display:flex;gap:14px;align-items:center"><div style="width:96px;height:96px;border-radius:12px;overflow:hidden;background:#f4f7f9;flex:none">' + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" alt="">' : '') + '</div><div><b style="font-size:14px">' + esc(p.name) + '</b><div class="tiny muted" style="margin-top:5px">当前库存 ' + p.stock + ' · 积分 ' + p.pointsRequired + ' · 预警线 ' + g.stockWarning + '</div><div class="chips" style="margin-top:9px">' + planStatePill(g.status) + (Number(p.stock) <= Number(g.stockWarning) ? pill('需补货', 'red') : pill('库存正常', 'green')) + '</div></div></div>') +
+        panel('采购与补货', '', '<div class="form-grid two">' + field('供应商', g.supplier, prefix + '.supplier') + field('采购成本（元）', g.cost, prefix + '.cost', { num: true }) + field('库存预警线', g.stockWarning, prefix + '.stockWarning', { num: true }) + field('计划补货日期', g.restockDate, prefix + '.restockDate') + field('关联活动', g.campaign, prefix + '.campaign') + field('状态', g.status, prefix + '.status', { select: [{v:'active',l:'进行中'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'}] }) + '</div>' + field('备注', g.note || '', prefix + '.note', { area: true, rows: 3 })) +
+        '<div class="notice">' + ic('info') + '<span>商品库存与图文在积分商城里维护；这里只做采购、补货和活动计划，不会自动扣减库存。</span></div></div>';
+    } });
+  }
+
+  function openScheduleDrawer(id) {
+    const s = data.planning.schedules.find((x) => x.id === id);
+    if (!s) return;
+    const i = data.planning.schedules.indexOf(s);
+    const prefix = 'planning.schedules.' + i;
+    openDrawer({ title: '排期模板 · ' + planServiceName(s.serviceId), sub: '机构 / 星期 / 时段 / 容量', save: true, saveLabel: '排期模板', body: function () {
+      return '<div class="stack">' + panel('模板信息', '', '<div class="form-grid two">' + field('机构', s.orgId, prefix + '.orgId', { select: data.employee.orgDetails.map((o) => ({ v: o.id, l: o.name })) }) + field('服务', s.serviceId, prefix + '.serviceId', { select: data.employee.products.map((p) => ({ v: p.id, l: p.name })) }) + field('星期（0=周日，6=周六）', (s.days || []).join(','), prefix + '.daysText', { hint: '例如 1,2,3,4,5 表示周一至周五' }) + field('开放状态', s.enabled ? '启用' : '停用', prefix + '.enabled', { select: [{v:'true',l:'启用'},{v:'false',l:'停用'}] }) + field('开始时间', s.start || '', prefix + '.start') + field('结束时间', s.end || '', prefix + '.end') + field('单段时长（分钟）', s.slotMinutes, prefix + '.slotMinutes', { num: true }) + field('每段容量（人）', s.capacity, prefix + '.capacity', { num: true }) + field('最晚提前预约（小时）', s.cutoffHours, prefix + '.cutoffHours', { num: true }) + '</div>' + field('备注', s.note || '', prefix + '.note', { area: true, rows: 3 })) +
+        '<div class="notice">' + ic('clock') + '<span>这是后台排期计划。H5 预约表单目前不读取具体时段，真实占用号源需要医院排班接口。</span></div></div>';
+    } });
+  }
+
+  function openOverrideDrawer(id) {
+    const o = data.planning.overrides.find((x) => x.id === id);
+    if (!o) return;
+    const i = data.planning.overrides.indexOf(o);
+    const prefix = 'planning.overrides.' + i;
+    openDrawer({ title: '日期例外 · ' + o.date, sub: '停诊 / 加开 / 临时缩容', save: true, saveLabel: '日期例外', extra: '<button class="btn danger" data-act="deleteOverride" data-id="' + esc(o.id) + '">' + ic('trash') + '删除例外</button>', body: function () {
+      return '<div class="stack">' + panel('例外信息', '', '<div class="form-grid two">' + field('机构', o.orgId, prefix + '.orgId', { select: data.employee.orgDetails.map((x) => ({ v: x.id, l: x.name })) }) + field('服务', o.serviceId, prefix + '.serviceId', { select: data.employee.products.map((p) => ({ v: p.id, l: p.name })) }) + field('日期', o.date, prefix + '.date') + field('开始时间', o.start || '', prefix + '.start') + field('结束时间', o.end || '', prefix + '.end') + field('可预约容量', o.capacity, prefix + '.capacity', { num: true }) + field('状态', o.status, prefix + '.status', { select: [{v:'open',l:'加开 / 调整'},{v:'closed',l:'停诊'}] }) + '</div>' + field('原因说明', o.note || '', prefix + '.note', { area: true, rows: 3 })) +
+        '<div class="notice warm">' + ic('phone') + '<span>停诊会影响后台容量计算，但不会自动通知已预约职工；请生成电话待办人工确认。</span></div></div>';
+    } });
+  }
+
+  function createNewPackage() {
+    const p = { id: uid('pkg'), name: '新体检套餐', type: '体检套餐', audience: '全员职工', price: 0, payer: '职工福利费', orgId: data.employee.orgDetails[0].id, services: ['annual-exam'], quota: 0, used: 0, validity: today() + ' 至 ' + addDays(today(), 365), status: 'draft', imageUrl: '', intro: '请填写套餐简介。', includesText: '', noticeText: '' };
+    data.planning.packages.unshift(p);
+    openPackageDrawer(p.id);
+  }
+  function createNewSchedule() {
+    const s = { id: uid('sch'), orgId: data.employee.orgDetails[0].id, serviceId: 'annual-exam', days: [1, 2, 3, 4, 5], start: '09:00', end: '17:00', slotMinutes: 30, capacity: 6, cutoffHours: 24, enabled: true, note: '' };
+    data.planning.schedules.push(s);
+    openScheduleDrawer(s.id);
+  }
+  function createNewOverride(date) {
+    const o = { id: uid('ov'), orgId: data.employee.orgDetails[0].id, serviceId: 'annual-exam', date: date || addDays(today(), 3), start: '08:00', end: '12:00', capacity: 0, status: 'closed', note: '停诊 / 调整原因' };
+    data.planning.overrides.unshift(o);
+    openOverrideDrawer(o.id);
+  }
+
   function createNewProduct() {
     const p = { id: uid('pp'), name: '新商品', imageUrl: '', gallery: [], description: '请填写商品描述', pointsRequired: 30, stock: 0, active: true, deliveryOptions: ['shipped'], maxExchange: 1, campId: data.camp.camps[0].id, detailHtml: '<p>请填写图文详情。</p>' };
     data.camp.pointProducts.unshift(p);
@@ -1908,6 +2210,15 @@
     if (act === 'openPublish') return openPublishDrawer();
     if (act === 'editProduct') return openProductDrawer(id);
     if (act === 'newProduct') return createNewProduct();
+    if (act === 'editPackage') return openPackageDrawer(id);
+    if (act === 'newPackage') return createNewPackage();
+    if (act === 'editServicePlan') return openServicePlanDrawer(id);
+    if (act === 'editGoodsPlan') return openGoodsPlanDrawer(id);
+    if (act === 'editSchedule') return openScheduleDrawer(id);
+    if (act === 'newSchedule') return createNewSchedule();
+    if (act === 'editOverride') return openOverrideDrawer(id);
+    if (act === 'newOverride') return createNewOverride(el.dataset.date);
+    if (act === 'deleteOverride') { const o = data.planning.overrides.find((x) => x.id === id); if (o && confirm('删除这条日期例外？')) { data.planning.overrides.splice(data.planning.overrides.indexOf(o), 1); state.drawer = null; commit('删除排期例外'); render(true); } return; }
     if (act === 'editTier') return openTierDrawer(id);
     if (act === 'newTier') return createNewTier();
     if (act === 'editBadge') return openBadgeDrawer(id);
@@ -1932,6 +2243,10 @@
     if (act === 'manageHot') return openHotDrawer();
     if (act === 'editBookingModule') return openBookingModuleDrawer(id);
     if (act === 'editOrder') return openOrderDrawer(id);
+    if (act === 'newOrder') return createNewOrder();
+    if (act === 'saveNewOrder') return saveNewOrder();
+    if (act === 'confirmOrder') { const b = data.employee.bookings.find((x) => x.id === id); if (b) { b.status = '已确认'; b.statusKey = 'confirmed'; commit('确认预约'); render(true); } return; }
+    if (act === 'startOrder') { const b = data.employee.bookings.find((x) => x.id === id); if (b) { b.status = '服务中'; b.statusKey = 'in_service'; commit('开始服务'); render(true); } return; }
     if (act === 'completeOrder') { const b = data.employee.bookings.find((x) => x.id === id); if (b) { b.status = '已完成'; b.statusKey = 'completed'; commit('完成预约'); render(true); } return; }
     if (act === 'cancelOrder') { const b = data.employee.bookings.find((x) => x.id === id); if (b && b.statusKey !== 'cancelled') { b.status = '已取消'; b.statusKey = 'cancelled'; if (data.employee.bookingRules.cancelRefund) { const r = data.employee.rights.find((x) => x.pid === b.pid); if (r) { r.left += 1; r.used = Math.max(0, r.used - 1); } } commit('取消预约并退回额度'); render(true); } return; }
     if (act === 'editBenefit') return openBenefitDrawer(id);
@@ -2043,7 +2358,12 @@
     if (t.matches('[data-bind]')) {
       const path = t.dataset.bind;
       if (!path) return;
-      setPath(path, parseValue(t));
+      const value = parseValue(t);
+      setPath(path, value);
+      if (/employee\.bookings\.\d+\.statusKey$/.test(path)) {
+        const b = data.employee.bookings[Number(path.split('.')[2])];
+        if (b) b.status = orderStatusLabel(value);
+      }
       state.dirty += 1;
       state.savedAt = nowTime();
       saveStore();
