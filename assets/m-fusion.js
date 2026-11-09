@@ -55,7 +55,7 @@
           page('up-companies', '业务公司（甲方）'),
           page('up-providers', '服务商（乙方）'),
           page('e-orgs', '企业与权益'),
-          page('g-accounts', '客户账号')
+          page('g-contracts', '合同台账'), page('g-accounts', '客户账号')
         ] }
       ]
     },

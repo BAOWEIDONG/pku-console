@@ -116,13 +116,15 @@
   S.settle = {
     partners: [
       { id: 'p1', name: '示例科技有限公司', type: '企业客户', plan: '按人次结算', credit: 60, used: 428600, limit: 900000, cycle: '月结 30 天' },
-      { id: 'p2', name: '北京某银行工会', type: '工会采购', plan: '打包年费', credit: 45, used: 186000, limit: 300000, cycle: '季结 45 天' },
-      { id: 'p3', name: '某保险TPA', type: '渠道合作', plan: '按服务品类分润', credit: 30, used: 96200, limit: 500000, cycle: '月结 15 天' }
+      { id: 'p2', name: '南城银行', type: '企业客户', plan: '打包年费', credit: 45, used: 810000, limit: 2400000, cycle: '季结 45 天' },
+      { id: 'p3', name: '博远制造', type: '企业客户', plan: '按人次结算', credit: 30, used: 642000, limit: 1800000, cycle: '月结 45 天' }
     ],
     records: [
       { id: 'ST2026110001', partner: '示例科技有限公司', period: '2026-10', orders: 326, amount: 428600, settleAmount: 312400, margin: 27.1, status: 'pending', due: '2026-11-30' },
-      { id: 'ST2026100002', partner: '北京某银行工会', period: '2026-10', orders: 112, amount: 186000, settleAmount: 139400, margin: 25.1, status: 'invoiced', due: '2026-12-15' },
-      { id: 'ST2026090003', partner: '某保险TPA', period: '2026-09', orders: 84, amount: 96200, settleAmount: 71400, margin: 25.8, status: 'settled', due: '2026-10-15' }
+      { id: 'ST2026100002', partner: '南城银行', period: '2026-10', orders: 112, amount: 186000, settleAmount: 139400, margin: 25.1, status: 'invoiced', due: '2026-12-15' },
+      { id: 'ST2026090003', partner: '博远制造', period: '2026-09', orders: 84, amount: 96200, settleAmount: 71400, margin: 25.8, status: 'settled', due: '2026-10-15' },
+      { id: 'ST2026100004', partner: '海辰医疗', period: '2026-10', orders: 96, amount: 152400, settleAmount: 112800, margin: 26.0, status: 'pending', due: '2026-12-10' },
+      { id: 'ST2026100005', partner: '亦庄科技', period: '2026-10', orders: 71, amount: 98600, settleAmount: 73200, margin: 25.7, status: 'pending', due: '2026-11-30' }
     ]
   };
 

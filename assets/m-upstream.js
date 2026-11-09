@@ -494,3 +494,176 @@
     }
   };
 })();
+
+/* ============================================================================
+   合同台账（g-contracts）：甲方应收合同 × 乙方履约合同统一台账
+   到期提醒 / 状态推进 / 编辑写回 / 跳转对方详情 —— 作为客户管理平台的合同主线
+   ========================================================================== */
+(function () {
+  'use strict';
+  const E = UI.esc, I = UI.icon;
+  const P = window.PAGES = window.PAGES || {};
+  const nf = (n) => Number(n || 0).toLocaleString('zh-CN');
+  const money = (n) => '¥' + nf(Math.round(Number(n) || 0));
+  const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const daysTo = (d) => { if (!d) return null; const t = new Date(String(d).slice(0, 10) + 'T00:00:00') - new Date(today() + 'T00:00:00'); return Math.round(t / 86400000); };
+
+  const CT = () => { if (!Store.db.contracts) Store.db.contracts = []; return Store.db.contracts; };
+  // 0=在执行 1=即将到期(≤90天) 2=已到期
+  const ctStatus = (c) => { const d = daysTo(c.end); return d == null ? 0 : d < 0 ? 2 : d <= 90 ? 1 : 0; };
+  const CT_ST = { 0: ['在执行', 'green'], 1: ['即将到期', 'amber'], 2: ['已到期', 'red'] };
+
+  // 从甲方企业 + 乙方服务商同步合同台账（每次渲染前同步一次，编辑在合同台账与详情页双向可见）
+  function ensureContracts() {
+    const list = CT();
+    const side = (arr, kind) => (arr || []).forEach((o) => {
+      const ct = o.contract || {};
+      const key = ct.no || (kind + '-' + o.id);
+      let row = list.find((x) => x.no === key && x.kind === kind);
+      if (!row) {
+        row = { id: kind + '-' + (ct.no || o.id), no: key, kind, partyId: o.id, party: o.name || '', short: o.short || '', createdAt: today() };
+        list.push(row);
+      }
+      ['name', 'start', 'end', 'amount', 'settlement', 'renewal', 'bank', 'taxNo'].forEach((k) => { if (ct[k] != null) row[k] = ct[k]; });
+      row.party = o.name || row.party; row.short = o.short || row.short; row.partyId = o.id;
+    });
+    side(Store.db.upstream.companies, 'client');
+    side(Store.db.upstream.providers, 'provider');
+    // 同步编辑回源（在台账里改的合同，写回企业/服务商对象）
+    list.forEach((row) => {
+      const src = (row.kind === 'client' ? Store.db.upstream.companies : Store.db.upstream.providers).find((o) => o.id === row.partyId);
+      if (src && src.contract && src.contract.no === row.no) {
+        ['name', 'start', 'end', 'amount', 'settlement', 'renewal', 'bank', 'taxNo'].forEach((k) => { if (row[k] != null) src.contract[k] = row[k]; });
+      }
+    });
+  }
+
+  const partyOf = (row) => row.kind === 'client'
+    ? (Store.db.upstream.companies.find((c) => c.id === row.partyId) || {})
+    : (Store.db.upstream.providers.find((p) => p.id === row.partyId) || {});
+
+  P['g-contracts'] = {
+    app: 'all', grp: 'v.ops', papp: 'employee',
+    title: '合同台账', sub: '甲方签约合同与乙方履约合同统一台账：到期提醒、续约、结算方式与金额一目了然',
+    state: { filter: 'all', kind: 'all' },
+    render() {
+      ensureContracts();
+      const st = P['g-contracts'].state;
+      let all = CT().slice();
+      if (st.kind !== 'all') all = all.filter((x) => x.kind === st.kind);
+      if (st.filter === 'expiring') all = all.filter((x) => ctStatus(x) === 1);
+      else if (st.filter === 'expired') all = all.filter((x) => ctStatus(x) === 2);
+      const total = CT().reduce((n, x) => n + (Number(x.amount) || 0), 0);
+      const expiring = CT().filter((x) => ctStatus(x) === 1);
+      const expired = CT().filter((x) => ctStatus(x) === 2);
+      const head = K.head('合同台账', CT().length + ' 份合同 · 年度总金额 ' + money(total) + ' · 到期 90 天内 ' + expiring.length + ' 份需要关注',
+        K.btn('新增合同', 'newContract', { icon: 'plus', cls: 'primary' }), 'CONTRACTS / LEDGER');
+      const kpis = K.kpis([
+        { k: '合同总数', v: CT().length, unit: '份', d: '甲方 ' + CT().filter((x) => x.kind === 'client').length + ' · 乙方 ' + CT().filter((x) => x.kind === 'provider').length, icon: 'file' },
+        { k: '年度总金额', v: (total / 10000).toFixed(0), unit: '万', d: '全部在册合同', icon: 'coins' },
+        { k: '90 天内到期', v: expiring.length, unit: '份', d: '建议启动续约', tone: expiring.length ? 'down' : 'up', icon: 'clock' },
+        { k: '已到期', v: expired.length, unit: '份', d: expired.length ? '需立即处理' : '无', tone: expired.length ? 'down' : 'up', icon: 'bell' }
+      ]);
+      const table = K.panel({ flush: true, body: UI.table([
+        { label: '合同编号', render: (x) => '<span class="tnum small strong">' + E(x.no) + '</span>' },
+        { label: '对方', render: (x) => '<div class="cellflex"><span class="up-ava sm">' + E((x.short || x.party || '?').slice(0, 1)) + '</span><div><div class="strong">' + E(x.short || x.party) + '</div><div class="small muted">' + E(x.kind === 'client' ? '甲方 · 业务公司' : '乙方 · 服务商') + '</div></div></div>' },
+        { label: '合同名称', render: (x) => '<span class="small">' + E(x.name || '—') + '</span>' },
+        { label: '金额', align: 'right', render: (x) => '<b class="tnum">' + money(x.amount) + '</b>' },
+        { label: '有效期', render: (x) => '<span class="small tnum">' + E(x.start || '—') + ' → ' + E(x.end || '—') + '</span>' },
+        { label: '结算方式', render: (x) => '<span class="small">' + E(x.settlement || '—') + '</span>' },
+        { label: '状态', render: (x) => {
+            const s = ctStatus(x), d = daysTo(x.end);
+            return UI.pill(CT_ST[s][0], CT_ST[s][1]) + (s === 1 ? '<span class="small mut" style="margin-left:5px">剩 ' + d + ' 天</span>' : '');
+          } },
+        { label: '', align: 'right', render: (x) => '<div class="rowact">' +
+            '<button data-act="viewContract" data-id="' + x.id + '" title="详情">' + I('eye', 14) + '</button>' +
+            '<button data-act="editContract" data-id="' + x.id + '" title="编辑">' + I('edit', 14) + '</button>' +
+            (x.kind === 'client' ? '<button data-act="toCompany" data-id="' + x.partyId + '" title="查看企业">' + I('building', 14) + '</button>'
+              : '<button data-act="toProvider" data-id="' + x.partyId + '" title="查看服务商">' + I('link', 14) + '</button>') + '</div>' }
+      ], all.map((x) => Object.assign({ _id: x.id }, x))) });
+      return head + kpis +
+        K.toolbar(
+          K.seg([{ id: 'all', label: '全部' }, { id: 'client', label: '甲方合同' }, { id: 'provider', label: '乙方合同' }], st.kind, 'kindFilter') +
+          K.seg([{ id: 'all', label: '全部状态' }, { id: 'expiring', label: '90 天内到期' }, { id: 'expired', label: '已到期' }], st.filter, 'statusFilter'),
+          '<span class="small mut">合同在台账与企业/服务商详情双向同步；结算方式与金额是结算对账的口径来源</span>') +
+        table +
+        '<div class="note" style="margin-top:12px">合同台账是应收应付的上游：甲方合同驱动「结算与对账」的应收口径（金额/结算周期），乙方合同驱动「服务商应付」。到期前 90 天自动进入续约提醒。</div>';
+    },
+    actions: {
+      kindFilter(d) { P['g-contracts'].state.kind = d.id; App.refresh(); },
+      statusFilter(d) { P['g-contracts'].state.filter = d.id; App.refresh(); },
+      toCompany(d) { App.go('up-companies', { id: d.id }); },
+      toProvider(d) { App.go('up-providers', { id: d.id }); },
+      viewContract(d) {
+        const x = CT().find((v) => v.id === d.id); if (!x) return;
+        const src = partyOf(x);
+        UI.modal({ title: '合同 · ' + x.no, desc: (x.kind === 'client' ? '甲方' : '乙方') + ' · ' + (x.short || x.party),
+          body: '<dl class="kv">' +
+            '<dt>合同名称</dt><dd>' + E(x.name || '—') + '</dd><dt>金额</dt><dd class="tnum">' + money(x.amount) + '</dd>' +
+            '<dt>有效期</dt><dd>' + E(x.start || '—') + ' → ' + E(x.end || '—') + '</dd><dt>结算方式</dt><dd>' + E(x.settlement || '—') + '</dd>' +
+            (x.bank ? '<dt>开户行</dt><dd>' + E(x.bank) + '</dd>' : '') + (x.taxNo ? '<dt>税号</dt><dd>' + E(x.taxNo) + '</dd>' : '') +
+            (src.contact ? '<dt>对方联系人</dt><dd>' + E(src.contact) + ' ' + E(src.phone || '') + '</dd>' : '') +
+            '</dl>' + '<div class="note" style="margin-top:12px">' + (x.kind === 'client'
+              ? '该合同的结算方式驱动对账单生成周期；已确认应收见「结算与对账」。'
+              : '该合同约定按履约与服务商结算；应付明细见「服务商应付」。') + '</div>',
+          okText: '关闭', cancelText: false });
+      },
+      editContract(d) { openForm(CT().find((v) => v.id === d.id)); },
+      newContract() { openForm(null); },
+      renewContract(d) {
+        const x = CT().find((v) => v.id === d.id); if (!x) return;
+        openForm(x, true);
+      }
+    }
+  };
+
+  function openForm(row, renew) {
+    const isNew = !row;
+    row = row || {};
+    const isClient = row.kind !== 'provider';
+    const comOpts = (Store.db.upstream.companies || []).map((c) => ({ v: c.id, l: c.name }));
+    const proOpts = (Store.db.upstream.providers || []).map((p) => ({ v: p.id, l: p.name }));
+    UI.formDrawer({
+      title: isNew ? '新增合同' : renew ? '续约 · ' + (row.no || '') : '编辑合同 · ' + (row.no || ''),
+      sub: '甲方合同挂业务公司，乙方合同挂服务商；保存后同步到对方详情页',
+      fields: [
+        { key: 'kind', label: '合同类型', type: 'select', value: isClient ? 'client' : 'provider', options: [{ v: 'client', l: '甲方 · 业务公司' }, { v: 'provider', l: '乙方 · 服务商' }] },
+        { key: 'partyId', label: '对方', type: 'select', value: row.partyId || (Store.db.upstream.companies[0] || {}).id, options: comOpts },
+        { key: 'providerId', label: '服务商（乙方合同时选）', type: 'select', value: row.partyId || (Store.db.upstream.providers[0] || {}).id, options: proOpts },
+        { key: 'no', label: '合同编号', value: row.no || (isNew ? 'HT-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 900) + 100) : row.no), ph: '如 HT-2026-056' },
+        { key: 'name', label: '合同名称', value: row.name || '', ph: '如 2026 员工健康福利' },
+        { key: 'amount', label: '合同金额（元）', type: 'num', value: row.amount || 0 },
+        { key: 'start', label: '生效日期', value: row.start || today(), ph: 'YYYY-MM-DD' },
+        { key: 'end', label: '到期日期', value: row.end || '', ph: 'YYYY-MM-DD' },
+        { key: 'settlement', label: '结算方式', value: row.settlement || '月结 30 天', ph: '如 月结 30 天 / 季结 45 天' },
+        { key: 'renewal', label: '续约启动日', value: row.renewal || '', ph: 'YYYY-MM-DD' }
+      ],
+      hint: '保存后：① 进入合同台账；② 同步到企业/服务商详情；③ 甲方合同的结算方式作为对账单周期口径。',
+      okText: isNew ? '创建合同' : '保存',
+      onOk(v) {
+        if (!v.no || !v.name) { UI.toast('合同编号与名称必填', 'warn'); return false; }
+        const kind = v.kind;
+        const partyId = kind === 'client' ? v.partyId : v.providerId;
+        const list = CT();
+        let target = list.find((x) => x.id === (row.id || ''));
+        if (!target) {
+          target = { id: kind + '-' + v.no + '-' + String(Date.now()).slice(-4), kind, partyId, createdAt: today() };
+          list.unshift(target);
+        }
+        Object.assign(target, { no: v.no, name: v.name, amount: Number(v.amount) || 0, start: v.start, end: v.end, settlement: v.settlement, renewal: v.renewal, kind, partyId });
+        // 写回源对象
+        const srcList = kind === 'client' ? Store.db.upstream.companies : Store.db.upstream.providers;
+        const src = srcList.find((o) => o.id === partyId);
+        if (src) {
+          src.contract = src.contract || {};
+          ['no', 'name', 'start', 'end', 'amount', 'settlement', 'renewal'].forEach((k) => { src.contract[k] = target[k]; });
+        }
+        Store.mark('upstream', renew ? '续约合同 ' + v.no : isNew ? '新增合同 ' + v.no : '编辑合同 ' + v.no);
+        Store.persist();
+        UI.toast(renew ? '已按新周期续约' : isNew ? '合同已创建' : '合同已保存');
+        App.refresh(true);
+      }
+    });
+  }
+
+})();
