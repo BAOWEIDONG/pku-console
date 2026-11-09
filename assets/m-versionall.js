@@ -229,8 +229,8 @@
             UI.fSwitch({ label: '督导权限', value: false, path: 'tmp.supervisor', hint: '可查看全营学员、营养师与教练批注情况' }) +
             UI.fSwitch({ label: '启用账户', value: true, path: 'tmp.active' }) +
             '</div>',
-          okText: '创建并发送短信',
-          onOk() { UI.toast('账户已创建，邀请短信已发送'); App.refresh(); }
+          okText: '创建账户',
+          onOk() { UI.toast('账户已创建；未接短信，请人工告知登录方式'); App.refresh(); }
         });
       },
       editAcc(d) {
@@ -248,7 +248,7 @@
             UI.fSwitch({ label: '启用账户', value: a.active, path: 'versionall.accounts.' + i + '.active' }) +
             '</div><div class="note warn">停用后该手机号将立即无法登录，已产生的数据保留。</div>',
           extra: '<button class="btn danger" data-reset>重置密码</button>',
-          mount(n) { n.querySelector('[data-reset]').addEventListener('click', () => UI.toast('重置链接已发送至该手机号')); },
+          mount(n) { n.querySelector('[data-reset]').addEventListener('click', () => UI.toast('未接短信；请人工核验身份后重置')); },
           onOk() { UI.toast('账户已更新'); App.refresh(); }
         });
       },
@@ -844,7 +844,7 @@
             UI.fInput({ label: '快递单号', value: '', ph: '扫码或手动输入' }) + '</div>' +
             '<div class="note">发货后学员端状态变为「已发货」，不可再修改收货地址。</div>',
           okText: '确认发货', extra: '<button class="btn" data-print>打印面单</button>',
-          mount(n) { n.querySelector('[data-print]').addEventListener('click', () => UI.toast('面单已发送至打印机')); },
+          mount(n) { n.querySelector('[data-print]').addEventListener('click', () => UI.toast('未接打印服务；这是演示面单预览')); },
           onOk() {
             const i = UI.ix(V().claims, c);
             Store.saveItem('versionall.claims', { id: c.id, status: 'shipped', tracking: 'SF' + Date.now().toString().slice(-10), shipDate: '2026-11-06 10:00' }, 'id', '领奖发货');
@@ -994,36 +994,37 @@
 
   /* --------------------------------------------------------- 20 消息公告 */
   P['v-messages'] = {
-    app: 'versionall', title: '消息与公告', sub: '公告推送、未打卡提醒与阅读率',
+    app: 'versionall', title: '消息与公告（演示）', sub: '当前没有推送与回执，只保存公告内容',
     preview: 'student-home',
     render() {
       const list = V().messages;
-      return K.head('消息与公告', '已发送 ' + list.filter((m) => m.status === 'sent').length + ' 条 · 草稿 ' + list.filter((m) => m.status === 'draft').length,
+      return K.head('消息与公告（演示）', '已发布示例 ' + list.filter((m) => m.status === 'sent').length + ' 条 · 草稿 ' + list.filter((m) => m.status === 'draft').length + ' 条 · 未接推送通道',
         K.btn('新建公告', 'newMsg', { icon: 'plus', cls: 'primary' })) +
+        '<div class="crm-foot-note" style="margin:0 0 10px">' + I('shield', 14) + ' 当前没有站内消息服务端与推送通道。保存为「已发布示例」不会出现在 H5，也不会产生真实阅读率。</div>' +
         K.panel({ flush: true, body: UI.table([
           { label: '类型', render: (m) => UI.pill(m.type, m.type === '公告' ? 'blue' : 'amber') },
           { label: '标题', render: (m) => '<div class="strong">' + E(m.title) + '</div><div class="small muted">' + E(m.body).slice(0, 34) + '…</div>' },
           { label: '对象', render: (m) => E(m.target === 'all' ? '全营' : m.target === 'inactive3' ? '3 天未打卡' : CAMP(m.campId)) },
           { label: '发送时间', render: (m) => '<span class="small tnum muted">' + E(m.sentAt || '未发送') + '</span>' },
-          { label: '阅读率', w: '120px', render: (m) => m.status === 'sent' ? '<div class="row" style="gap:8px"><div style="flex:1">' + K.progress(m.readRate) + '</div><span class="small tnum">' + m.readRate + '%</span></div>' : '<span class="muted">—</span>' },
-          { label: '状态', render: (m) => UI.statusPill(m.status === 'sent' ? 'published' : 'draft') },
+          { label: '阅读回执', w: '110px', render: () => '<span class="muted">无回执</span>' },
+          { label: '状态', render: (m) => m.status === 'sent' ? UI.pill('已发布示例', 'amber') : UI.pill('草稿', 'grey') },
           { label: '', align: 'right', render: (m) => '<div class="rowact"><button data-act="editMsg" data-id="' + m.id + '">' + I('edit', 14) + '</button></div>' }
         ], list.map((m) => Object.assign({ _id: m.id }, m))) });
     },
     actions: {
       newMsg() {
         UI.formDrawer({
-          title: '新建公告', sub: '发布后进入学员端消息中心', icon: 'bell', section: '内容',
+          title: '新建公告', sub: '只保存内容，不会推送到学员端', icon: 'bell', section: '内容',
           fields: [
             { key: 'title', label: '标题', ph: '如 第 4 周体测安排' },
             { key: 'body', label: '正文', type: 'area', rows: 4 },
             { key: 'type', label: '类型', type: 'select', options: ['公告', '提醒'] },
             { key: 'target', label: '推送对象', type: 'select', options: [{ v: 'all', l: '全营学员' }, { v: 'inactive3', l: '3 天未打卡学员' }] },
-            { key: 'send', label: '立即发送', type: 'bool', value: false }
+            { key: 'send', label: '保存为已发布示例（仍不发送）', type: 'bool', value: false }
           ],
           onSave(v) {
-            Store.pushItem('versionall.messages', { id: 'msg' + Date.now(), campId: 'camp1', type: v.type, title: v.title || '未命名公告', body: v.body, target: v.target, sentAt: v.send ? '2026-11-06 10:00' : '', readRate: 0, status: v.send ? 'sent' : 'draft' }, '新建公告');
-            UI.toast(v.send ? '公告已发送' : '已保存为草稿'); App.refresh();
+            Store.pushItem('versionall.messages', { id: 'msg' + Date.now(), campId: 'camp1', type: v.type, title: v.title || '未命名公告', body: v.body, target: v.target, sentAt: '', readRate: 0, status: v.send ? 'sent' : 'draft' }, '新建公告');
+            UI.toast(v.send ? '已保存为发布示例，未推送' : '已保存为草稿'); App.refresh();
           }
         });
       },
@@ -1033,9 +1034,9 @@
           body: '<div class="formsec"><h4>内容</h4>' + UI.fInput({ label: '标题', value: m.title }) +
             UI.fArea({ label: '正文', value: m.body, rows: 4 }) +
             UI.fSelect({ label: '推送对象', value: m.target, options: [{ v: 'all', l: '全营学员' }, { v: 'inactive3', l: '3 天未打卡学员' }, { v: 'camp2', l: '第八期学员' }] }) +
-            '</div><div class="note">公告会同时出现在学员端消息中心与首页横幅（可关闭）。</div>',
-          okText: '保存草稿', extra: '<button class="btn primary" data-send>立即发送</button>',
-          mount(n) { n.querySelector('[data-send]').addEventListener('click', () => { UI.closeOverlay(); UI.toast('已发送至 48 名学员'); }); },
+            '</div><div class="note">当前未接学员端消息中心；保存不会推送，也不会产生阅读回执。</div>',
+          okText: '保存草稿', extra: '<button class="btn primary" data-send>标记为发布示例</button>',
+          mount(n) { n.querySelector('[data-send]').addEventListener('click', () => { UI.closeOverlay(); UI.toast('已标记为发布示例，未推送'); }); },
           onOk() { UI.toast('已保存草稿'); } });
       }
     }

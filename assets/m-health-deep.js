@@ -54,9 +54,9 @@
   function touch(name, channel, title, status) {
     Store.pushItem('shared.touches', {
       id: 'tc' + Date.now() + Math.floor(Math.random() * 90), holder: name,
-      channel: channel || '企业微信', tpl: title || '健管提醒', title: title || '健管提醒',
-      at: '2026-11-08 09:30', status: status || '已送达'
-    }, '健康触达');
+      channel: channel || '电话人工跟进', tpl: title || '健管提醒', title: title || '健管提醒',
+      at: '2026-11-08 09:30', status: status || '待人工执行'
+    }, '人工跟进待办');
   }
   function log(action, name, desc) {
     Store.pushItem('shared.touches', {
@@ -877,13 +877,13 @@
     actions: {
       batchNudge() {
         const fg = FG();
-        fg.memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '企业微信', '五好召回', '已送达'));
-        UI.toast('已向低活跃会员发送召回提醒'); App.refresh();
+        fg.memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好召回', '待人工执行'));
+        UI.toast('已生成低活跃会员电话跟进待办'); App.refresh();
       },
       nudgeMember(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
-        touch(m.name, '企业微信', '五好任务提醒', '已送达');
-        UI.toast('已提醒 ' + m.name + ' 完成本周任务'); App.refresh();
+        touch(m.name, '电话人工跟进', '五好任务提醒', '待人工执行');
+        UI.toast('已为 ' + m.name + ' 生成电话跟进待办'); App.refresh();
       },
       openMember(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
@@ -967,11 +967,11 @@
             const exists = fg.memberTasks.some((x) => x.memberId === m.id && x.week === 5 && x.title === t.title);
             if (!exists) Store.pushItem('fivegood.memberTasks', { id: 'mt' + Date.now() + Math.floor(Math.random() * 99), memberId: m.id, dim: t.dim, week: 5, title: t.title, type: t.type, points: t.points, due: '2026-11-15', status: 'due', evidence: '', reviewed: false }, '发布会员任务');
           });
-          if (m.stage === '低活跃') touch(m.name, '企业微信', '五好第 5 周任务已发布', '已送达');
+          if (m.stage === '低活跃') touch(m.name, '电话人工跟进', '五好第 5 周任务已发布', '待人工执行');
         });
         Store.set('fivegood.ops.lastRelease', '2026-11-08', '任务发布周期');
         Store.set('fivegood.ops.nextRelease', '2026-11-15', '任务发布周期');
-        UI.toast('第 5 周任务已发布并触达低活跃会员'); App.refresh();
+        UI.toast('第 5 周任务已发布，并生成低活跃会员电话跟进待办'); App.refresh();
       },
       newTask() {
         UI.formDrawer({ title: '新增任务模板', sub: '会员每周会收到该维度的任务', icon: 'check',
@@ -997,8 +997,8 @@
       },
       nudgeTask(d) {
         const t = FG().memberTasks.find((x) => x.id === d.id), m = FG().memberProfiles.find((x) => x.id === t.memberId);
-        touch(m.name, '企业微信', '任务提醒 · ' + t.title, '已送达');
-        UI.toast('已提醒 ' + m.name); App.refresh();
+        touch(m.name, '电话人工跟进', '任务提醒 · ' + t.title, '待人工执行');
+        UI.toast('已生成 ' + m.name + ' 的电话跟进待办'); App.refresh();
       },
       reviewTask(d) {
         const t = FG().memberTasks.find((x) => x.id === d.id);
@@ -1032,7 +1032,7 @@
         Store.saveItem('fivegood.checkins', { id: c.id, status: 'approved', note: '审核通过，已计入积分。' }, 'id', '打卡审核');
         const task = FG().memberTasks.find((x) => x.id === c.taskId) || FG().memberTasks.find((x) => x.memberId === c.memberId && x.title === c.title);
         if (task) Store.saveItem('fivegood.memberTasks', { id: task.id, status: 'done', reviewed: true, evidence: c.evidence }, 'id', '任务完成');
-        touch(c.name, '企业微信', '打卡已通过 · ' + c.title, '已送达');
+        touch(c.name, '电话人工跟进', '打卡已通过 · ' + c.title, '待人工执行');
         UI.toast(c.name + ' 打卡已通过'); App.refresh();
       },
       rejectCheckin(d) {
@@ -1043,8 +1043,8 @@
             Store.saveItem('fivegood.checkins', { id: c.id, status: 'rejected', note: v.note }, 'id', '打卡驳回');
             const task = FG().memberTasks.find((x) => x.id === c.taskId) || FG().memberTasks.find((x) => x.memberId === c.memberId && x.title === c.title);
             if (task) Store.saveItem('fivegood.memberTasks', { id: task.id, status: 'due', reviewed: false }, 'id', '任务退回');
-            touch(c.name, '企业微信', '打卡需补充 · ' + c.title, '已送达');
-            UI.toast('已驳回并通知会员'); App.refresh();
+            touch(c.name, '电话人工跟进', '打卡需补充 · ' + c.title, '待人工执行');
+            UI.toast('已驳回，并生成电话告知待办'); App.refresh();
           } });
       },
       batchApprove() {
@@ -1055,8 +1055,8 @@
       },
       coachNudge(d) {
         const c = FG().checkins.find((x) => x.id === d.id);
-        touch(c.name, '企业微信', '教练提醒 · ' + c.title, '已送达');
-        UI.toast('教练提醒已发送'); App.refresh();
+        touch(c.name, '电话人工跟进', '教练提醒 · ' + c.title, '待人工执行');
+        UI.toast('已生成教练电话提醒待办'); App.refresh();
       }
     }
   };
@@ -1190,8 +1190,8 @@
           { k: '季度续约', v: '31', unit: '%', d: '意向 82%' }
         ]) +
         '<div class="grid g-2">' +
-          K.panel({ title: '自动旅程', sub: '触发 → 触达 → 结果', flush: true, body: '<div style="padding:4px 18px 12px">' +
-            [['低活跃召回', '连续 7 天无任务', '企业微信 + 短信', low.length + ' 人'], ['任务截止提醒', '截止前 24 小时', '企业微信', '12 人'], ['月度报告', '每月 1 日', '站内信', '6 人'], ['风险升级', '五维或量表命中', 'EAP / 健管师', '5 条'], ['续约提醒', '到期前 30 天', '客户成功', '2 人']].map((x) =>
+          K.panel({ title: '触达方案（演示）', sub: '只生成人工待办，不会自动发送', flush: true, body: '<div style="padding:4px 18px 12px">' +
+            [['低活跃召回', '连续 7 天无任务', '电话人工跟进', low.length + ' 人'], ['任务截止提醒', '截止前 24 小时', '电话人工跟进', '12 人'], ['月度报告', '每月 1 日', '人工发送（未接）', '6 人'], ['风险升级', '五维或量表命中', 'EAP / 健管师', '5 条'], ['续约提醒', '到期前 30 天', '客户成功', '2 人']].map((x) =>
               '<div class="hn-journey"><span>' + I('send', 15) + '</span><div><b>' + x[0] + '</b><em>' + x[1] + ' · ' + x[2] + '</em></div><strong>' + x[3] + '</strong></div>').join('') + '</div>' }) +
           K.panel({ title: '低活跃名单', sub: '先拉回，再谈升级', flush: true,
             actions: K.btn('全部提醒', 'nudgeLow', { cls: 'ghost sm' }),
@@ -1200,17 +1200,17 @@
     },
     actions: {
       runLoop() {
-        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '企业微信', '五好召回旅程', '已送达'));
-        UI.toast('召回旅程已运行，已触达低活跃会员'); App.refresh();
+        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好召回旅程', '待人工执行'));
+        UI.toast('已生成低活跃会员召回待办，不会自动发送'); App.refresh();
       },
       nudgeLow() {
-        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '企业微信', '五好任务提醒', '已送达'));
-        UI.toast('已批量提醒'); App.refresh();
+        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好任务提醒', '待人工执行'));
+        UI.toast('已批量生成电话跟进待办'); App.refresh();
       },
       nudgeOne(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
-        touch(m.name, '企业微信', '五好召回提醒', '已送达');
-        UI.toast('已提醒 ' + m.name); App.refresh();
+        touch(m.name, '电话人工跟进', '五好召回提醒', '待人工执行');
+        UI.toast('已为 ' + m.name + ' 生成电话跟进待办'); App.refresh();
       }
     }
   };

@@ -330,7 +330,10 @@
       if (st.owner) list = list.filter((c) => c.owner === st.owner);
       const channelCounts = SOURCES.map((s) => ({ s, n: all.filter((c) => (c.channels || [c.source]).indexOf(s.id) >= 0).length }));
       return K.head('全渠道客户', all.length + ' 位客户 · ' + SOURCES.length + ' 个来源渠道 · 每个人只有一份档案',
-        K.btn('新建客户', 'crmNew', { icon: 'plus' }) + K.btn('导出当前视图', 'crmExport', { icon: 'download' }), 'CUSTOMER / ALL CHANNELS') +
+        K.btn('新建客户', 'crmNew', { icon: 'plus' }) +
+        K.btn('导出电话名单', 'crmExportPhones', { icon: 'download' }) +
+        K.btn('导出当前视图', 'crmExport', { icon: 'download' }), 'CUSTOMER / ALL CHANNELS') +
+        '<div class="crm-foot-note" style="margin:0 0 10px">' + I('shield', 14) + ' 当前为演示客户池：新增、发权益、建计划、随访与跟进只写入本机台账，没有接真实账号、服务端与消息通道。触达方式仅支持导出手机号后人工电话联系。</div>' +
         '<div class="crm-filterbar">' +
           '<div class="crm-source-tabs"><button class="' + (!st.source ? 'on' : '') + '" data-act="crmChannel" data-id="">全部 ' + all.length + '</button>' +
             channelCounts.map((x) => '<button class="' + (st.source === x.s.id ? 'on' : '') + '" data-act="crmChannel" data-id="' + x.s.id + '">' +
@@ -358,7 +361,7 @@
           '</button>';
         }).join('') + '</div>' +
         (list.length ? '' : K.empty('当前筛选下没有客户', '切换渠道、生命周期或负责人再试')) +
-        '<div class="crm-foot-note">' + I('link', 14) + ' 客户档案会自动关联职工端预约、体检报告、健康管理计划、五好打卡、权益核销、订单与触达记录；新增记录会在客户 360 时间线即时出现。</div>';
+        '<div class="crm-foot-note">' + I('link', 14) + ' 客户 360 会把演示台账里的预约、权益、健康计划、五好打卡、订单与跟进行动聚合到一条时间线；这些记录与线上 H5 暂不互通。</div>';
     },
     actions: {
       crmChannel(d) { P['crm-customer'].state.source = d.id; App.refresh(); },
@@ -396,6 +399,18 @@
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
         a.download = 'pku-customers.csv'; a.click(); UI.toast('客户清单已导出');
+      },
+      crmExportPhones() {
+        const st = P['crm-customer'].state;
+        const list = ensure().customers.filter((c) => (!st.source || (c.channels || [c.source]).indexOf(st.source) >= 0) && (!st.life || c.lifecycle === st.life) && (!st.owner || c.owner === st.owner));
+        const rows = [['姓名', '手机号', '企业', '部门', '负责人', '来源', '最近活跃', '建议动作']].concat(
+          list.map((c) => [c.name, c.phone, c.company, c.dept, c.owner, c.sourceLabel || c.source, c.lastAt,
+            c.risk === 'high' ? '优先电话回访' : c.lifecycle === 'prospect' ? '电话确认需求' : '电话服务回访']));
+        const csv = rows.map((r) => r.map((x) => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
+        a.download = 'pku-phone-list.csv'; a.click();
+        UI.toast('已导出 ' + list.length + ' 条电话名单');
       }
     }
   };
@@ -433,7 +448,7 @@
               '<p>' + E(sel.company || '—') + ' · ' + E(sel.dept || '—') + ' · ' + E(sel.phone) + ' · 负责人 ' + E(sel.owner) + ' · 最近活跃 ' + E(sel.lastAt) + '</p>' +
               '<div class="crm360-tags">' + (sel.tags.length ? sel.tags.map((t) => '<span>' + E(t) + '</span>').join('') : '<span>暂无标签</span>') + '</div></div>' +
             '<div class="crm360-actions">' +
-              '<button class="vbtn ghost" data-act="crmTouch">' + I('send', 13) + '触达</button>' +
+              '<button class="vbtn ghost" data-act="crmTouch">' + I('message', 13) + '电话跟进</button>' +
               '<button class="vbtn ghost" data-act="crmGrant">' + I('gift', 13) + '发权益</button>' +
               '<button class="vbtn primary" data-act="crmPlan">' + I('target', 13) + '建管理计划</button>' +
             '</div></header>' +
@@ -544,7 +559,7 @@
       return '<div class="crm-2col">' +
         block('触达记录', touches.length ? touches.map((t) =>
           '<div class="crm-row"><span class="vdot violet"></span><div><b>' + E(t.title) + '</b><span>' + E(t.channel + ' · ' + t.tpl) + '</span></div><em>' + E(t.status) + '</em></div>').join('') : '<div class="vempty-sm">暂无触达</div>',
-          '', '<button class="vmini" data-act="crmTouch">+ 发送</button>') +
+          '', '<button class="vmini" data-act="crmTouch">+ 记录跟进</button>') +
         block('内容互动', ints.length ? ints.map((x) =>
           '<div class="crm-row"><span class="vdot teal"></span><div><b>' + E(x.title) + '</b><span>' + E(x.detail) + '</span></div><em>' + E(x.at) + '</em></div>').join('') : '<div class="vempty-sm">暂无内容互动</div>') +
         block('五好生活', member ? '<dl class="vkv"><dt>会员版本</dt><dd>' + E(member.tier) + '</dd><dt>当前阶段</dt><dd>' + E(member.stage) + '</dd><dt>任务完成</dt><dd>' + member.tasksDone + ' / ' + member.tasksDue + '</dd><dt>连续打卡</dt><dd>' + member.streak + ' 天</dd><dt>责任教练</dt><dd>' + E(member.coach) + '</dd></dl>' : '<div class="vempty-sm">未加入五好生活</div>') + '</div>';
@@ -556,13 +571,13 @@
     }
 
     const nexts = [];
-    if (sel.lifecycle === 'prospect') nexts.push(['线索待转化', '48 小时内完成首次有效触达，确认企业与需求', 'crmTouch', '立即触达']);
+    if (sel.lifecycle === 'prospect') nexts.push(['线索待转化', '48 小时内完成首次电话沟通，确认企业与需求', 'crmTouch', '立即电话跟进']);
     if (p && (p.exam.abnormal || []).length && !plans.length) nexts.push(['体检异常未管理', '建立 12 周管理计划并安排首次随访', 'crmPlan', '建计划']);
     if (plans.length) nexts.push(['计划进行中', '完成第 ' + (plans[0].week || 1) + ' 周复盘，确认下一阶段任务', 'crmFollow', '安排复盘']);
     if (plans.length && fus.some((f) => f.status === 'overdue')) nexts.push(['随访已逾期', '优先处理逾期随访，避免管理断档', 'crmFollow', '去随访']);
-    if (grants.some((g) => g.status === 'active' && g.remaining > 0)) nexts.push(['权益未使用', '提醒客户使用即将到期的权益', 'crmTouch', '提醒使用']);
-    if (!touches.length) nexts.push(['近期未触达', '建立一次有效触达，确认近期健康与服务需求', 'crmTouch', '发起触达']);
-    if (!nexts.length) nexts.push(['关系维护中', '保持服务节奏，下一次触达安排在 7 天内', 'crmTouch', '安排触达']);
+    if (grants.some((g) => g.status === 'active' && g.remaining > 0)) nexts.push(['权益未使用', '电话提醒客户使用即将到期的权益', 'crmTouch', '电话提醒']);
+    if (!touches.length) nexts.push(['近期未跟进', '完成一次电话沟通，确认近期健康与服务需求', 'crmTouch', '记录电话跟进']);
+    if (!nexts.length) nexts.push(['关系维护中', '保持服务节奏，下一次电话跟进安排在 7 天内', 'crmTouch', '安排电话跟进']);
     return '<div class="crm-overview-grid">' +
       block('客户摘要', '<dl class="vkv">' +
         [['来源', src(sel.source).label], ['企业 / 部门', sel.company + ' / ' + sel.dept], ['负责人', sel.owner], ['生命周期', life(sel.lifecycle).label], ['健康风险', p ? ({ high: '高', medium: '中', low: '低' }[p.risk] || '—') : '未建档'], ['最近体检', p && p.exam ? p.exam.date : '—'], ['有效权益', stt.grants.length + ' 项'], ['互动痕迹', traces.length + ' 条']].map((r) =>
@@ -620,19 +635,20 @@
 
   function touchTo(c) {
     UI.formDrawer({
-      title: '触达客户', sub: c.name + ' · 企业微信 / 短信 / 站内信', icon: 'send',
+      title: '记录人工跟进', sub: c.name + ' · 当前仅支持电话人工跟进，未接短信 / 企微', icon: 'message', okText: '登记跟进',
       fields: [
-        { key: 'channel', label: '渠道', type: 'select', options: ['企业微信', '短信', '站内信', '电话'] },
-        { key: 'title', label: '主题', value: '健康服务提醒' },
-        { key: 'tpl', label: '模板 / 内容', type: 'area', rows: 3, value: '您好，针对您近期的健康与权益情况，建议安排一次服务跟进。' }
+        { key: 'channel', label: '跟进方式', type: 'select', options: ['电话人工跟进'] },
+        { key: 'title', label: '跟进主题', value: '健康服务电话回访' },
+        { key: 'tpl', label: '通话要点', type: 'area', rows: 3, value: '您好，针对您近期的健康与权益情况，建议安排一次服务跟进。' }
       ],
+      hint: '当前没有短信服务商与企业微信接口。保存只会生成人工待办，不会发送任何消息。',
       onSave(v) {
         Store.pushItem('shared.touches', {
-          id: 'tc' + Date.now(), holder: c.name, channel: v.channel || '企业微信',
-          tpl: v.tpl || '人工触达', title: v.title || '健康服务提醒', at: '2026-11-09 10:00', status: '已送达'
-        }, '触达 · ' + c.name);
+          id: 'tc' + Date.now(), holder: c.name, channel: '电话人工跟进',
+          tpl: v.tpl || '人工电话回访', title: v.title || '健康服务电话回访', at: '2026-11-09 10:00', status: '待电话跟进'
+        }, '人工跟进 · ' + c.name);
         c.lastAt = '2026-11-09';
-        Store.persist(); UI.toast('触达记录已保存'); App.refresh();
+        Store.persist(); UI.toast('已登记人工跟进，请按手机号电话联系'); App.refresh();
       }
     });
   }
@@ -659,7 +675,7 @@
         }, '建立管理计划 · ' + c.name);
         Store.pushItem('health.followups', {
           id: 'fu' + Date.now(), profileId: p.id, planId, type: '计划首次随访',
-          due: '2026-11-12', time: '10:00', channel: '企业微信', owner: v.owner || c.owner,
+          due: '2026-11-12', time: '10:00', channel: '电话人工跟进', owner: v.owner || c.owner,
           status: 'upcoming', priority: 'normal', note: '确认计划目标与首次任务。'
         }, '安排首次随访 · ' + c.name);
         c.lifecycle = c.lifecycle === 'prospect' ? 'new' : c.lifecycle;
@@ -683,7 +699,7 @@
       onSave(v) {
         Store.pushItem('health.followups', {
           id: 'fu' + Date.now(), profileId: p.id, planId: '', type: v.type || '健康回访',
-          due: v.due || '2026-11-12', time: '10:00', channel: '企业微信', owner: v.owner || c.owner,
+          due: v.due || '2026-11-12', time: '10:00', channel: '电话人工跟进', owner: v.owner || c.owner,
           status: 'upcoming', priority: 'normal', note: v.note || ''
         }, '安排随访 · ' + c.name);
         c.lastAt = '2026-11-09';

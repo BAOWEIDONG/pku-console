@@ -108,21 +108,21 @@
 
   /* ------------------------------------------------------- 发布中心 */
   P['s-publish'] = {
-    app: 'all', title: '发布中心', sub: '配置改动从本地进入线上，可对比、可回滚',
+    app: 'all', title: '发布中心', sub: '把配置提交到 config.json；不是部署代码，也不是全量业务发布',
     preview: 'pku-home',
     render() {
       const dirty = Store.dirty;
       const byApp = {};
       dirty.forEach((d) => { (byApp[d.app] = byApp[d.app] || []).push(d); });
-      return K.head('发布中心', '当前有 ' + dirty.length + ' 项未发布变更 · 发布后线上 H5 拉取新配置',
+      return K.head('发布中心', '当前有 ' + dirty.length + ' 项未提交变更 · 只有 H5 读取的字段会真正生效',
         '<button class="btn" data-act="configFile">' + I('file', 15) + '生成配置文件</button>' +
         (dirty.length ? '<button class="btn" data-act="discard" style="color:var(--coral)">丢弃全部变更</button>' : '') +
         '<button class="btn primary" data-act="publish"' + (dirty.length ? '' : ' disabled') + '>' + I('send', 15) + '发布 ' + dirty.length + ' 项</button>') +
         K.kpis([
           { k: '未发布变更', v: dirty.length, unit: '项', d: dirty.length ? '涉及 ' + Object.keys(byApp).length + ' 个应用' : '全部已同步', tone: dirty.length ? 'down' : 'up' },
-          { k: '上次发布', v: Store.db.meta.publishedAt.slice(5, 10), d: '共 4 项 · 孙敏', unit: '' },
-          { k: '回滚点', v: 24, unit: '个', d: '保留最近 24 次快照' },
-          { k: '线上环境', v: '生产', d: 'GitHub Pages · 3 个仓库' }
+          { k: '上次记录', v: Store.db.meta.publishedAt.slice(5, 10), d: '本机发布记录', unit: '' },
+          { k: '真实生效字段', v: 7, unit: '类', d: '见「能力边界」第一组' },
+          { k: '提交目标', v: 'config', d: 'GitHub Pages · 单文件' }
         ]) +
         '<div class="grid g-2-1">' +
           '<div class="stack">' +
@@ -138,11 +138,11 @@
             K.panel({ title: '发布选项', body: '<div class="stack" style="gap:12px">' +
               UI.fSwitch({ label: '发布前自动校验', value: true, path: 'meta.settings.validate' }) +
               UI.fSwitch({ label: '推送到 GitHub 仓库', value: false, path: 'meta.settings.pushGithub', hint: '需要仓库写入权限的 Token' }) +
-              UI.fSwitch({ label: '通知相关运营人员', value: true, path: 'meta.settings.notify' }) +
+              UI.fSwitch({ label: '发布后通知运营人员（未接）', value: false, path: 'meta.settings.notify' }) +
               '</div>' }) +
             K.panel({ title: '发布须知', body: '<div class="small mut" style="line-height:1.8">' +
-              '① 发布为整包发布，三端各自读取自己的配置文件。<br>② 已领取奖励、历史订单以快照为准，不受配置变更影响。<br>③ 发布后 1 分钟内 CDN 生效，可强制刷新。' +
-              '</div><div class="note teal" style="margin-top:12px">支持回滚：每次发布会保存完整配置快照，可一键回到任意历史版本。</div>' }) +
+              '① 发布 = 生成 config.json 并提交到 GitHub，不会部署 H5 代码。<br>② 只有主题、联系方式、站点标题、职工端模块与服务上下架、入口显隐会被读取。<br>③ 未连接 GitHub Token 时只写入本机记录，线上不会变化。' +
+              '</div><div class="note teal" style="margin-top:12px">回滚只对本机配置记录生效，不等于线上业务数据回滚。</div>' }) +
           '</div>' +
         '</div>' + '<div style="height:16px"></div>' +
         K.panel({ title: '发布历史', flush: true, body: UI.table([
@@ -151,7 +151,7 @@
           { label: '说明', render: (p) => E(p.title) },
           { label: '变更', align: 'right', render: (p) => '<span class="tnum">' + p.items + ' 项</span>' },
           { label: '操作人', render: (p) => E(p.by) },
-          { label: '状态', render: (p) => UI.pill('已上线', 'green') },
+          { label: '状态', render: (p) => UI.pill('本机记录', 'grey') },
           { label: '', align: 'right', render: (p) => '<div class="rowact"><button data-act="rollback" data-id="' + p.id + '">' + I('undo', 14) + '</button></div>' }
         ], Store.db.publishes.map((p) => Object.assign({ _id: p.id }, p))) });
     },

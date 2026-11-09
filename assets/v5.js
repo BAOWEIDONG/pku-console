@@ -768,7 +768,7 @@
     },
     actions: {
       pickCustomer() { UI.toast('已切换客户（演示数据仅展示首位完整档案）'); },
-      touchCustomer() { UI.toast('已打开触达编辑器，可选择短信 / 企微 / 站内信'); },
+      touchCustomer() { UI.toast('当前只能记录电话人工跟进；未接短信 / 企微 / 站内信'); },
       grantCustomer() { UI.toast('已打开权益发放，支持体检、EAP、商城券'); },
       exportCustomers() { UI.toast('客户清单已导出（脱敏）'); }
     }
@@ -786,23 +786,24 @@
       const gates = gatesFor(dirty);
       const bad = gates.filter((g) => !g.ok).length;
       const running = dirty.length > 0;
-      return K.head('发布中心', '从工作区到线上：先看影响，再过闸门，最后按端发布',
+      return K.head('发布中心', '只提交 config.json：不部署 H5 代码、不发消息；未连 GitHub 时线上不会变化',
         '<button class="btn" data-act="configFile">' + I('link', 15) + '连接 GitHub / 推送配置</button>' +
         (dirty.length ? '<button class="btn" data-act="discard" style="color:var(--coral)">丢弃变更</button>' : '') +
         '<button class="btn primary" data-act="publish"' + (dirty.length && !bad ? '' : ' disabled') + '>' + I('send', 15) + (bad ? '先修复 ' + bad + ' 项' : '发布 ' + dirty.length + ' 项') + '</button>', 'PLATFORM / RELEASE') +
         '<div class="vrel-top">' +
           '<div class="vrel-stage ' + (running ? 'on' : '') + '"><span>1</span><div><b>工作区</b><em>' + dirty.length + ' 项改动</em></div></div><i class="vrel-line"></i>' +
           '<div class="vrel-stage ' + (running && !bad ? 'on' : '') + '"><span>2</span><div><b>校验闸门</b><em>' + (bad ? bad + ' 项阻断' : '全部通过') + '</em></div></div><i class="vrel-line"></i>' +
-          '<div class="vrel-stage"><span>3</span><div><b>发布</b><em>三端配置</em></div></div><i class="vrel-line"></i>' +
-          '<div class="vrel-stage"><span>4</span><div><b>生效</b><em>1 分钟内</em></div></div>' +
+          '<div class="vrel-stage"><span>3</span><div><b>提交配置</b><em>config.json</em></div></div><i class="vrel-line"></i>' +
+          '<div class="vrel-stage"><span>4</span><div><b>H5 读取</b><em>仅部分字段生效</em></div></div>' +
         '</div>' +
+        '<div class="crm-foot-note" style="margin:0 0 12px">' + I('shield', 14) + ' 只有「能力边界」第一组字段会被 H5 读取；轮播、服务图文、商品、品牌站内容、五好任务与减重营规则等只会保存到后台与 config.json，不会改变线上。</div>' +
         '<div class="vrel-grid">' +
           '<section class="vcard vrel-main"><div class="vcard-h"><div><h3>待发布变更</h3><p>' + dirty.length + ' 项 · 影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面</p></div></div>' +
             (dirty.length ? ['versionall', 'employee', 'pku', 'system'].filter((a) => by[a]).map((a) =>
               '<div class="vrel-group"><header><span class="vdot ' + TONE[a] + '"></span><b>' + (APP[a] || a) + '</b><em>' + by[a].length + '</em></header>' +
                 by[a].map((d) => '<div class="vrel-row"><div><b>' + E(d.label) + '</b><span>' + E(d.path) + '</span></div>' +
                   '<button class="vrel-x" data-act="revertOne" data-id="' + E(d.path) + '" title="撤回">' + I('undo', 13) + '</button></div>').join('') + '</div>').join('')
-              : '<div class="vempty-lg">' + I('check', 28) + '<b>工作区是干净的</b><span>所有变更都已发布到线上</span></div>') +
+              : '<div class="vempty-lg">' + I('check', 28) + '<b>工作区是干净的</b><span>所有变更都已记录；线上是否更新取决于是否推送 config.json</span></div>') +
           '</section>' +
           '<aside class="vstack">' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布闸门</h3><p>阻断项必须先修复</p></div></div>' +
@@ -810,7 +811,7 @@
                 '<div class="vgate ' + (g.ok ? 'ok' : 'bad') + '"><span class="vgate-ic">' + I(g.ok ? 'check' : 'x', 14) + '</span><div><b>' + E(g.k) + '</b><span>' + E(g.d) + '</span></div></div>').join('') + '</div></section>' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布选项</h3><p>本次生效方式</p></div></div>' +
               '<div class="vopt"><div><b>发布说明</b><input class="vinput" placeholder="如：第 8 期奖励档位调整" data-set="meta.releaseNote"></div>' +
-              '<label class="vcheck"><input type="checkbox" checked disabled><span>发布后通知相关运营</span></label>' +
+              '<label class="vcheck"><input type="checkbox" disabled><span>发布后通知相关运营（未接）</span></label>' +
               '<label class="vcheck"><input type="checkbox" checked disabled><span>保留回滚快照</span></label>' +
               '<label class="vcheck"><input type="checkbox" disabled><span>按企业灰度（下一迭代）</span></label></div></section>' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布历史</h3><p>最近 3 次</p></div></div>' +

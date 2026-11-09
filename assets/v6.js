@@ -49,12 +49,12 @@
       { id: 'jr4', name: '权益到期召回', audience: '权益 30 天内到期', trigger: '到期前 30 天', status: 'draft', entered: 0, conversion: 0, steps: [{ day: -30, channel: '企业微信', tpl: 'mt6', name: '首次提醒' }, { day: -7, channel: '短信', tpl: 'mt6', name: '最后提醒' }] }
     ],
     touches: [
-      { id: 'tc1', holder: '林悦', channel: '企业微信', tpl: '体检前 48 小时提醒', title: '体检提醒', at: '2026-11-05 09:10', status: '已送达' },
-      { id: 'tc2', holder: '陈嘉禾', channel: '企业微信', tpl: '报告解读邀请', title: '报告已生成', at: '2026-11-04 15:22', status: '已打开' },
-      { id: 'tc3', holder: '徐一鸣', channel: '短信', tpl: '五高复检召回', title: '复检提醒', at: '2026-11-03 11:05', status: '已送达' },
-      { id: 'tc4', holder: '周雯', channel: '站内信', tpl: '连续打卡奖励到账', title: '奖励到账', at: '2026-11-02 18:40', status: '已点击' },
-      { id: 'tc5', holder: '赵启明', channel: '企业微信', tpl: '权益即将到期', title: '权益到期', at: '2026-11-01 10:30', status: '已送达' },
-      { id: 'tc6', holder: '吴倩', channel: '站内信', tpl: '体检前 48 小时提醒', title: '体检提醒', at: '2026-10-31 08:50', status: '已送达' }
+      { id: 'tc1', holder: '林悦', channel: '电话人工跟进', tpl: '体检前 48 小时提醒', title: '体检提醒', at: '2026-11-05 09:10', status: '待人工执行' },
+      { id: 'tc2', holder: '陈嘉禾', channel: '电话人工跟进', tpl: '报告解读邀请', title: '报告已生成', at: '2026-11-04 15:22', status: '待人工执行' },
+      { id: 'tc3', holder: '徐一鸣', channel: '电话人工跟进', tpl: '五高复检召回', title: '复检提醒', at: '2026-11-03 11:05', status: '待人工执行' },
+      { id: 'tc4', holder: '周雯', channel: '电话人工跟进', tpl: '连续打卡奖励到账', title: '奖励到账', at: '2026-11-02 18:40', status: '待人工执行' },
+      { id: 'tc5', holder: '赵启明', channel: '电话人工跟进', tpl: '权益即将到期', title: '权益到期', at: '2026-11-01 10:30', status: '待人工执行' },
+      { id: 'tc6', holder: '吴倩', channel: '电话人工跟进', tpl: '体检前 48 小时提醒', title: '体检提醒', at: '2026-10-31 08:50', status: '待人工执行' }
     ],
     benefits: [
       { id: 'bf-exam', name: '年度体检', type: '体检', quota: 1, unit: '次/人/年', validity: 365, scope: '企业员工', stock: 2400, issued: 1780, used: 1102, owner: '健康管理中心', tone: 'blue', desc: '基础体检套餐，可按企业升级深度版并补差价。' },
@@ -241,41 +241,42 @@
 
   /* ============================================================== MESSAGES */
   P['lib-messages'] = {
-    app: 'all', title: '消息模板', sub: '短信、企微、站内信统一文案与变量',
+    app: 'all', title: '消息模板（演示）', sub: '只设计文案与变量，当前未接短信 / 企微 / 站内信通道',
     grp: 'shared.content', papp: 'employee', preview: 'emp-home',
     state: { id: 'mt1' },
     render() {
       ensure();
       const list = dbx().shared.msgTemplates;
       const sel = list.find((t) => t.id === P['lib-messages'].state.id) || list[0];
-      return K.head('消息模板', '先定模板再编排旅程，避免同一句话在四个渠道里各写一遍',
+      return K.head('消息模板（演示）', '先定模板再编排方案；保存不会发送任何消息',
         '<button class="btn" data-act="msgNew">' + I('plus', 15) + '新建模板</button>' +
-        '<button class="btn primary" data-act="go" data-id="lib-journeys">' + I('send', 15) + '编排旅程</button>', 'SHARED / MESSAGES') +
+        '<button class="btn primary" data-act="go" data-id="lib-journeys">' + I('send', 15) + '编排方案</button>', 'SHARED / MESSAGES') +
+        '<div class="crm-foot-note" style="margin:0 0 10px">' + I('shield', 14) + ' 当前没有短信服务商与企业微信接口。「测试」只会生成一封未发送的测试稿，进入客户时间线时状态为「测试稿 · 未发送」。</div>' +
         '<div class="vsummary">' +
           '<div class="vsum-card"><span>模板</span><b>' + list.length + '</b><em>覆盖 5 个场景</em></div>' +
           '<div class="vsum-card ok"><span>已审核</span><b>' + list.filter((t) => t.approved).length + '</b><em>未审核 ' + list.filter((t) => !t.approved).length + ' 条</em></div>' +
-          '<div class="vsum-card"><span>累计触达</span><b>' + nf(list.reduce((a, b) => a + b.use, 0)) + '</b><em>本月 3,020 人次</em></div>' +
+          '<div class="vsum-card"><span>历史演示引用</span><b>' + nf(list.reduce((a, b) => a + b.use, 0)) + '</b><em>不代表真实发送</em></div>' +
           '<div class="vsum-card"><span>变量规范</span><b>100%</b><em>全部模板可解析</em></div>' +
         '</div>' +
         '<div class="msg-layout">' +
           '<aside class="msg-list">' + list.map((t) =>
             '<button class="msg-item ' + (t.id === sel.id ? 'on' : '') + '" data-act="msgPick" data-id="' + t.id + '">' +
               '<span class="vdot ' + (t.channel === '企业微信' ? 'teal' : t.channel === '短信' ? 'amber' : 'blue') + '"></span>' +
-              '<div><b>' + E(t.name) + '</b><span>' + E(t.scene) + ' · ' + E(t.channel) + '</span></div>' +
+              '<div><b>' + E(t.name) + '</b><span>' + E(t.scene) + ' · ' + E(t.channel) + '（未接）</span></div>' +
               (t.approved ? '<em class="msg-ok">' + I('check', 11) + '</em>' : '<em class="msg-warn">待审</em>') +
             '</button>').join('') + '</aside>' +
           '<section class="msg-preview">' +
-            '<header><div><h3>' + E(sel.name) + '</h3><p>' + E(sel.scene) + ' · ' + E(sel.channel) + ' · 最近更新 ' + E(sel.updated) + '</p></div>' +
+            '<header><div><h3>' + E(sel.name) + '</h3><p>' + E(sel.scene) + ' · 目标渠道 ' + E(sel.channel) + '（未接） · 最近更新 ' + E(sel.updated) + '</p></div>' +
               '<div class="row" style="gap:6px"><button class="btn sm" data-act="msgEdit" data-id="' + sel.id + '">' + I('edit', 13) + '编辑</button>' +
-              '<button class="btn sm primary" data-act="msgTest" data-id="' + sel.id + '">' + I('send', 13) + '发送测试</button></div></header>' +
+              '<button class="btn sm primary" data-act="msgTest" data-id="' + sel.id + '">' + I('file', 13) + '生成测试稿</button></div></header>' +
             '<div class="msg-phone ' + (sel.channel === '企业微信' ? 'teal' : sel.channel === '短信' ? 'amber' : 'blue') + '">' +
-              '<div class="mp-top"><span>北大医疗</span><em>' + E(sel.channel) + '</em></div>' +
+              '<div class="mp-top"><span>北大医疗</span><em>' + E(sel.channel) + ' · 未接</em></div>' +
               '<div class="mp-title">' + E(sel.title) + '</div>' +
               '<div class="mp-body">' + E(sel.body).replace(/\{\{([^}]+)\}\}/g, '<mark>{{$1}}</mark>').replace(/\n/g, '<br>') + '</div>' +
               '<div class="mp-foot">' + (sel.channel === '短信' ? '回复 TD 退订 · 400-820-8866' : '点击查看详情 ›') + '</div>' +
             '</div>' +
             '<div class="msg-vars"><h4>可用变量</h4><div class="chips">' + sel.vars.map((v) => '<span class="chip">{{' + E(v) + '}}</span>').join('') + '</div>' +
-              '<div class="small mut">变量由业务对象在发送时自动填充；缺失变量会被拦截，不会发出。</div></div>' +
+              '<div class="small mut">变量由业务对象填充；当前没有发送引擎，缺失变量检查只用于文案校对。</div></div>' +
             '<div class="msg-usage"><h4>被这些旅程使用</h4>' + (dbx().shared.journeys.filter((j) => j.steps.some((s) => s.tpl === sel.id)).map((j) =>
               '<button class="asset-use" data-act="go" data-id="lib-journeys"><span class="vdot blue"></span><div><b>' + E(j.name) + '</b><span>' + E(j.audience) + '</span></div>' + I('chevron', 12) + '</button>').join('') || '<div class="vempty-sm">暂未被旅程引用</div>') + '</div>' +
           '</section>' +
@@ -288,8 +289,8 @@
       msgTest(d) {
         const t = dbx().shared.msgTemplates.find((x) => x.id === d.id);
         Store.snapshot();
-        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: '测试账号', channel: t.channel, tpl: t.name, title: '测试发送 · ' + t.title, at: '2026-11-08 10:00', status: '已送达' }, '测试发送');
-        UI.toast('测试消息已发送到运营账号');
+        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: '运营测试账号', channel: '未接通道', tpl: t.name, title: '测试稿 · ' + t.title, at: '2026-11-08 10:00', status: '测试稿 · 未发送' }, '生成测试稿');
+        UI.toast('未接触达通道，仅记录测试稿');
         App.refresh();
       }
     }
@@ -305,11 +306,16 @@
       body: '<div class="formsec"><h4>基本信息</h4>' +
         '<div class="frow">' + UI.fInput({ label: '模板名称', value: t ? t.name : '' }) +
         UI.fSelect({ label: '场景', value: t ? t.scene : '预约', options: ['预约', '体检', '检后', '召回', '激励', '权益'] }) + '</div>' +
-        UI.fSelect({ label: '渠道', value: t ? t.channel : '企业微信', options: ['企业微信', '短信', '站内信'] }) +
+        UI.fSelect({ label: '目标渠道', value: t ? t.channel : '电话人工跟进', options: [
+          { v: '电话人工跟进', l: '电话人工跟进（当前唯一可用）' },
+          { v: '企业微信', l: '企业微信（未接）' },
+          { v: '短信', l: '短信（未接）' },
+          { v: '站内信', l: '站内信（未接）' }
+        ] }) +
         UI.fInput({ label: '标题', value: t ? t.title : '', ph: '可使用 {{变量}}' }) +
         UI.fArea({ label: '正文', value: t ? t.body : '', rows: 5, hint: '变量格式 {{姓名}}，发送前会自动替换' }) +
         '</div><div class="formsec"><h4>审核</h4>' + UI.fSwitch({ label: '已通过合规审核', value: t ? t.approved : false }) + '</div>' +
-        '<div class="note">模板改动会影响所有引用它的旅程与活动。发布前会检查未解析变量。</div>',
+        '<div class="note">模板只是文案资产。当前没有发送引擎，保存或发布模板都不会发出消息。</div>',
       okText: t ? '保存模板' : '创建模板',
       onOk(n) {
         const inputs = n.querySelectorAll('.field .input');
@@ -332,33 +338,34 @@
 
   /* ============================================================== JOURNEYS */
   P['lib-journeys'] = {
-    app: 'all', title: '触达旅程', sub: '按人群与事件自动编排，多步触达不再手工群发',
+    app: 'all', title: '触达方案（演示）', sub: '只保存编排方案；没有触达引擎，不会自动发送',
     grp: 'shared.content', papp: 'employee', preview: 'emp-home',
     render() {
       ensure();
       const list = dbx().shared.journeys;
       const active = list.filter((j) => j.status === 'active');
-      return K.head('触达旅程', active.length + ' 条运行中 · 平均转化 41% · 本月进入 2,738 人',
-        '<button class="btn" data-act="jrNew">' + I('plus', 15) + '新建旅程</button>' +
+      return K.head('触达方案（演示）', list.length + ' 个方案 · ' + active.length + ' 个已启用 · 启用后也不会自动发送',
+        '<button class="btn" data-act="jrNew">' + I('plus', 15) + '新建方案</button>' +
         '<button class="btn primary" data-act="go" data-id="msg-center">' + I('send', 15) + '发送记录</button>', 'SHARED / JOURNEYS') +
+        '<div class="crm-foot-note" style="margin:0 0 10px">' + I('shield', 14) + ' 这里是「触达方案设计器」：可以编排人群、触发条件、步骤与文案，但没有定时器、没有通道、没有回执。启用只改变方案状态，不会触达任何人。</div>' +
         '<div class="vsummary">' +
-          '<div class="vsum-card"><span>旅程</span><b>' + list.length + '</b><em>' + active.length + ' 条运行中</em></div>' +
-          '<div class="vsum-card ok"><span>进入人数</span><b>' + nf(list.reduce((a, b) => a + b.entered, 0)) + '</b><em>近 30 天</em></div>' +
-          '<div class="vsum-card"><span>平均转化</span><b>41%</b><em>预约 / 打卡 / 领奖</em></div>' +
-          '<div class="vsum-card warn"><span>草稿</span><b>' + list.filter((j) => j.status === 'draft').length + '</b><em>待发布后生效</em></div>' +
+          '<div class="vsum-card"><span>方案</span><b>' + list.length + '</b><em>' + active.length + ' 个已启用方案</em></div>' +
+          '<div class="vsum-card ok"><span>方案内人数</span><b>' + nf(list.reduce((a, b) => a + b.entered, 0)) + '</b><em>演示口径，非真实触达</em></div>' +
+          '<div class="vsum-card"><span>演示转化</span><b>41%</b><em>仅用于展示分析样式</em></div>' +
+          '<div class="vsum-card warn"><span>草稿</span><b>' + list.filter((j) => j.status === 'draft').length + '</b><em>保存后仍是方案</em></div>' +
         '</div>' +
         '<div class="jr-grid">' + list.map((j) =>
           '<section class="jr-card ' + (j.status === 'draft' ? 'draft' : '') + '">' +
             '<header><div><span class="vdot ' + (j.status === 'active' ? 'teal' : 'amber') + '"></span><b>' + E(j.name) + '</b></div>' +
-              '<div class="row" style="gap:5px"><span class="pill ' + (j.status === 'active' ? 'green' : 'grey') + '">' + (j.status === 'active' ? '运行中' : '草稿') + '</span>' +
-              '<button class="vmini" data-act="jrToggle" data-id="' + j.id + '">' + (j.status === 'active' ? '暂停' : '启用') + '</button></div></header>' +
+              '<div class="row" style="gap:5px"><span class="pill ' + (j.status === 'active' ? 'green' : 'grey') + '">' + (j.status === 'active' ? '已启用方案' : '草稿方案') + '</span>' +
+              '<button class="vmini" data-act="jrToggle" data-id="' + j.id + '">' + (j.status === 'active' ? '停用方案' : '启用方案') + '</button></div></header>' +
             '<p>' + E(j.audience) + '<span class="mut"> · 触发：' + E(j.trigger) + '</span></p>' +
             '<div class="jr-steps">' + j.steps.map((s, k) =>
               '<div class="jr-step"><span class="jr-day">' + (s.day === 0 ? 'D0' : (s.day > 0 ? 'D+' : 'D') + s.day) + '</span>' +
                 '<div><b>' + E(s.name) + '</b><span>' + E(s.channel) + '</span></div>' +
               '</div>' + (k < j.steps.length - 1 ? '<i class="jr-line"></i>' : '')).join('') + '</div>' +
             '<footer><div><b class="tnum">' + nf(j.entered) + '</b><span>进入</span></div><div><b class="tnum">' + j.conversion + '%</b><span>转化</span></div>' +
-              '<div class="spacer"></div><button class="vmini" data-act="jrTest" data-id="' + j.id + '">' + I('send', 12) + '测试</button>' +
+              '<div class="spacer"></div><button class="vmini" data-act="jrTest" data-id="' + j.id + '">' + I('file', 12) + '存测试稿</button>' +
               '<button class="vmini" data-act="jrEdit" data-id="' + j.id + '">' + I('edit', 12) + '编排</button></footer>' +
           '</section>').join('') + '</div>';
     },
@@ -368,14 +375,14 @@
         Store.snapshot();
         j.status = j.status === 'active' ? 'draft' : 'active';
         Store.mark('shared.journeys', (j.status === 'active' ? '启用' : '暂停') + '旅程 · ' + j.name);
-        UI.toast(j.status === 'active' ? '旅程已启用' : '旅程已暂停');
+        UI.toast(j.status === 'active' ? '方案已启用；当前不会实际触达' : '方案已停用');
         App.refresh();
       },
       jrTest(d) {
         const j = dbx().shared.journeys.find((x) => x.id === d.id);
         Store.snapshot();
-        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: '测试账号', channel: j.steps[0].channel, tpl: j.steps[0].name, title: '旅程测试 · ' + j.name, at: '2026-11-08 10:00', status: '已送达' }, '旅程测试');
-        UI.toast('已用测试人群走完整条旅程');
+        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: '方案测试', channel: '未接通道', tpl: j.steps[0].name, title: '方案测试稿 · ' + j.name, at: '2026-11-08 10:00', status: '测试稿 · 未发送' }, '方案测试稿');
+        UI.toast('没有触达引擎，仅保存方案测试稿');
         App.refresh();
       },
       jrNew() { openJourney(null); },
@@ -388,13 +395,13 @@
     const list = dbx().shared.journeys;
     const j = id ? list.find((x) => x.id === id) : null;
     const tpls = dbx().shared.msgTemplates;
-    const stepHTML = (j ? j.steps : [{ day: 0, channel: '企业微信', tpl: 'mt1', name: '首条消息' }]).map((s, k) =>
+    const stepHTML = (j ? j.steps : [{ day: 0, channel: '电话人工跟进', tpl: 'mt1', name: '首条消息' }]).map((s, k) =>
       '<div class="journey-row" data-step="' + k + '"><span class="jr-day">D' + (s.day >= 0 ? '+' : '') + s.day + '</span>' +
-      '<select class="select jr-ch">' + ['企业微信', '短信', '站内信'].map((c) => '<option' + (c === s.channel ? ' selected' : '') + '>' + c + '</option>').join('') + '</select>' +
+      '<select class="select jr-ch">' + ['电话人工跟进', '企业微信', '短信', '站内信'].map((c) => '<option value="' + c + '"' + (c === s.channel ? ' selected' : '') + '>' + (c === '电话人工跟进' ? c : c + '（未接）') + '</option>').join('') + '</select>' +
       '<select class="select jr-tpl">' + tpls.map((t) => '<option value="' + t.id + '"' + (t.id === s.tpl ? ' selected' : '') + '>' + E(t.name) + '</option>').join('') + '</select>' +
       '<input class="input jr-dayin tnum" type="number" value="' + s.day + '" title="相对天数"></div>').join('');
     UI.drawer({
-      width: 640, title: j ? '编排旅程 · ' + j.name : '新建触达旅程', sub: '人群 → 触发 → 多步触达 → 转化',
+      width: 640, title: j ? '编排方案 · ' + j.name : '新建触达方案', sub: '人群 → 触发 → 多步文案；当前仅保存方案',
       icon: 'send', tone: 'blue',
       body: '<div class="formsec"><h4>基础</h4>' +
         UI.fInput({ label: '旅程名称', value: j ? j.name : '' }) +
@@ -402,14 +409,14 @@
         '<div class="formsec"><h4>步骤</h4><div class="journey-steps" id="jr-steps">' + stepHTML + '</div>' +
         '<button class="btn sm" data-add-step style="margin-top:8px">' + I('plus', 13) + '增加一步</button>' +
         '<div class="hint">D0 为触发当天，D+7 为触发后 7 天。每一步可换渠道与模板。</div></div>' +
-        '<div class="note teal">旅程启用后只影响新进入人群，已在途用户按进入时的版本继续执行。</div>',
-      okText: j ? '保存旅程' : '创建旅程',
+        '<div class="note teal">当前没有触达引擎：启用方案不会发送消息，也不会产生真实进入与转化数据。</div>',
+      okText: j ? '保存方案' : '创建方案',
       mount(n) {
         n.querySelector('[data-add-step]').addEventListener('click', () => {
           const box = n.querySelector('#jr-steps');
           const row = document.createElement('div');
           row.className = 'journey-row';
-          row.innerHTML = '<span class="jr-day">D+7</span><select class="select jr-ch"><option>企业微信</option><option>短信</option><option>站内信</option></select>' +
+          row.innerHTML = '<span class="jr-day">D+7</span><select class="select jr-ch"><option>电话人工跟进</option><option>企业微信</option><option>短信</option><option>站内信</option></select>' +
             '<select class="select jr-tpl">' + tpls.map((t) => '<option value="' + t.id + '">' + E(t.name) + '</option>').join('') + '</select><input class="input jr-dayin tnum" type="number" value="7">';
           box.appendChild(row);
         });
@@ -426,7 +433,7 @@
         });
         if (j) Store.saveItem('shared.journeys', { id: j.id, name: name, audience: audience, trigger: trigger, steps: steps, entered: j.entered, conversion: j.conversion }, 'id', '编排旅程');
         else Store.pushItem('shared.journeys', { id: 'jr' + Date.now(), name: name, audience: audience, trigger: trigger, steps: steps, status: 'draft', entered: 0, conversion: 0 }, '新建旅程');
-        UI.toast('旅程已保存');
+        UI.toast('方案已保存；不会自动发送');
         App.refresh();
       }
     });
@@ -986,8 +993,8 @@
     } else if (kind === 'journey-on') {
       const j = db.shared.journeys.find((x) => ('jr-' + x.id) === id);
       j.status = 'active';
-      Store.mark('shared.journeys', '启用旅程 · ' + j.name);
-      UI.toast('旅程已启用');
+      Store.mark('shared.journeys', '启用方案 · ' + j.name);
+      UI.toast('方案已启用；当前不会实际触达');
     } else if (kind === 'asset-attach') {
       const a = db.shared.assets.find((x) => ('orphan-' + x.id) === id);
       a.reuse = [{ t: 'content', id: 'c1', name: '年度体检预约开启' }];
@@ -1208,17 +1215,17 @@
   function touchTo(name) {
     const tpls = dbx().shared.msgTemplates;
     UI.formDrawer({
-      title: '触达 ' + name, sub: '选择一个模板，发送记录会进入客户时间轴', icon: 'send', okText: '发送',
+      title: '记录人工跟进 · ' + name, sub: '当前没有消息通道，只登记电话跟进待办', icon: 'message', okText: '登记跟进',
       fields: [
-        { key: 'tpl', label: '模板', type: 'select', value: tpls[0].name, options: tpls.map((t) => t.name) },
-        { key: 'note', label: '个性化补充', type: 'area', value: '请在本周内完成预约，如有疑问可直接回复。' }
+        { key: 'tpl', label: '参考话术', type: 'select', value: tpls[0].name, options: tpls.map((t) => t.name) },
+        { key: 'note', label: '通话要点', type: 'area', value: '请在本周内完成预约，如有疑问可直接回复。' }
       ],
-      hint: '发送前会检查该客户是否有可用权益与未完成预约，避免重复打扰。',
+      hint: '没有短信服务商与企业微信接口；保存不会发送消息。',
       onSave(v) {
         const t = tpls.find((x) => x.name === v.tpl);
         Store.snapshot();
-        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: name, channel: t.channel, tpl: t.name, title: t.title.replace(/\{\{[^}]+\}\}/g, ''), at: '2026-11-08 10:00', status: '已送达' }, '客户触达 · ' + name);
-        UI.toast('已通过' + t.channel + '发送给 ' + name);
+        Store.pushItem('shared.touches', { id: 'tc' + Date.now(), holder: name, channel: '电话人工跟进', tpl: t.name, title: t.title.replace(/\{\{[^}]+\}\}/g, ''), at: '2026-11-08 10:00', status: '待电话跟进' }, '人工跟进 · ' + name);
+        UI.toast('已登记电话跟进待办，不会自动发送');
         App.refresh();
       }
     });

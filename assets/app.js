@@ -25,7 +25,7 @@
     'e-services': 'e.services', 'e-modules': 'e.services', 'e-orgs': 'e.services', 'e-dashboard': 'e.services',
     'e-booking': 'e.booking', 'e-bookings': 'e.booking',
     'e-content': 'e.content', 'e-qa': 'e.content', 'e-site': 'shared.theme',
-    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops',
+    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', 's-capabilities': 'roles', workbench: 'v.ops',
     'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
     'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
     'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services',
@@ -265,6 +265,7 @@
         { id: 's-logs', label: '操作日志', icon: 'clock' }
       ] },
       { group: '治理', items: [
+        { id: 's-capabilities', label: '能力边界', icon: 'shield' },
         { id: 'g-roles', label: '角色与权限', icon: 'lock' },
         { id: 'g-fields', label: '字段级权限', icon: 'eye' },
         { id: 's-settings', label: '系统设置', icon: 'settings' }
@@ -348,7 +349,7 @@
         '<div class="side-global">' +
           '<button data-nav="g-impact" title="查看未发布改动会影响哪些页面">' + I('activity', 12) + '变更影响</button>' +
           '<button data-nav="s-publish" title="统一发布到三个 H5">' + I('send', 12) + '发布</button>' +
-          '<button data-nav="g-coverage" title="逐项查看前端功能对应的后台入口">' + I('target', 12) + '功能地图</button>' +
+          '<button data-nav="s-capabilities" title="查看哪些能力真实生效、哪些只是演示">' + I('shield', 12) + '能力边界</button>' +
         '</div>' +
         '<div class="subnav-sync"><span class="' + (Store.dirtyCount ? 'warn' : 'ok') + '"></span>' +
           '<div><b>' + (Store.dirtyCount ? Store.dirtyCount + ' 项待发布' : '全部已同步') + '</b><em>v' + Store.db.meta.version + ' · ' + Store.db.meta.publishedAt.slice(5) + '</em></div>' +
@@ -382,6 +383,7 @@
       (Store.role.perms === 'ALL' ? '' : '<span class="pill grey">' + E(Store.role.name) + '</span>') + '</div></div>' +
       '<div class="top-actions">' +
       '<button class="searchbtn" data-act="cmd"><span class="sb-ic">' + I('search', 15) + '</span><span>搜索页面、客户、服务、订单</span><kbd>⌘K</kbd></button>' +
+      '<button class="tb-cap" data-nav="s-capabilities" title="区分真实生效、后台保存与演示能力">' + I('shield', 13) + '<span>能力边界</span></button>' +
       '<span class="tb-live"><i></i>3 端在线</span>' +
       (dirty ? '<button class="tb-dirty" data-act="goPublish"><i></i>' + dirty + ' 项待发布</button>' : '') +
       (page.preview ? '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' : '') +
@@ -624,7 +626,7 @@
       UI.modal({
         wide: true,
         title: bad.length ? '发布前需修复 ' + bad.length + ' 项' : '发布 ' + dirty.length + ' 项变更',
-        desc: bad.length ? '阻断项未通过，发布按钮已锁定' : '影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面 · 发布后 1 分钟内生效',
+        desc: bad.length ? '阻断项未通过，发布按钮已锁定' : '影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面 · 仅提交 config.json',
         body: '<div class="stack" style="gap:14px">' +
           UI.fInput({ label: '发布说明', value: note || '', ph: '如 第 7 期奖励档位调整' }) +
           '<div class="pub-impact"><div class="pub-impact-h">' + I('activity', 14) + '影响面</div>' +
@@ -632,19 +634,20 @@
             imp.pages.map((p) => '<span class="pub-chip">' + E(p) + '</span>').join('') + '</div></div>' +
           list +
           '<div class="pub-gates">' + gates.map((g) => '<div class="' + (g.ok ? 'ok' : 'bad') + '">' + I(g.ok ? 'check' : 'x', 13) + '<span>' + E(g.k) + '</span><em>' + E(g.d) + '</em></div>').join('') + '</div>' +
-          '<div class="note warn">发布后三个 H5 会在 1 分钟内拉取新的渠道配置；已产生的订单与领取记录不受影响。</div></div>',
+          '<div class="note warn">发布只写回 config.json，不部署代码、不发消息。只有「能力边界」第一组字段会被 H5 读取；其余字段只留在后台与配置文件里。</div></div>',
         okText: bad.length ? '请先修复阻断项' : '确认发布',
         onOk(n) {
           if (bad.length) { UI.toast('存在阻断项，无法发布', 'warn'); return false; }
           const v = (n.querySelector('.input') || {}).value || note || '日常配置更新';
           const r = Store.publish(v);
-          UI.toast('已发布 ' + r.count + ' 项变更');
           const token = localStorage.getItem('pku-gh-token');
           if (token) {
-            UI.toast('正在把配置推送到三端…');
+            UI.toast('已记录 ' + r.count + ' 项变更，正在提交 config.json…');
             App.pushConfig(token)
-              .then(() => UI.toast('配置已推送，三个 H5 将在 1 分钟内生效'))
-              .catch((e) => UI.toast('本地已发布，推送失败：' + e.message, 'warn'));
+              .then(() => UI.toast('config.json 已提交；H5 刷新后读取生效'))
+              .catch((e) => UI.toast('已保存到本机，GitHub 提交失败：' + e.message, 'warn'));
+          } else {
+            UI.toast('已保存到本机发布记录；未连接 GitHub，线上不会变化', 'warn');
           }
           setTimeout(() => App.refresh(true), 60);
         }
@@ -951,8 +954,17 @@
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
   if (window.V8) V8.ensure();
-  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9.1) {
-    Store.db.meta.version = '9.1.0';
+  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9.2) {
+    try {
+      (Store.db.shared.touches || []).forEach((t) => {
+        if (['已送达', '已打开', '已点击'].indexOf(t.status) >= 0) t.status = '演示记录（未接通道）';
+        if (['企业微信', '短信', '站内信'].indexOf(t.channel) >= 0) t.channel = '未接 · ' + t.channel;
+      });
+      (Store.db.campaigns || []).forEach((c) => {
+        if (c.status === 'done') { c.status = 'todo'; c.sent = 0; c.open = 0; c.click = 0; }
+      });
+    } catch (e) {}
+    Store.db.meta.version = '9.2.0';
     Store.persist();
   }
   // 主题色注入

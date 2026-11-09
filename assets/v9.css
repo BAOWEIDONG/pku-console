@@ -420,3 +420,111 @@
   .crm-filter-right { width: 100%; margin-left: 0; flex-wrap: wrap; }
   .crm-filter-right .minisearch { flex: 1; }
 }
+
+/* ---------------------------------------------------------------- 能力边界 */
+.tb-cap {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px;
+  border: 1px solid #dbe6f4; border-radius: 9px; background: #fff;
+  color: var(--ink-2); font-size: 11px; white-space: nowrap;
+}
+.tb-cap:hover { color: var(--brand); border-color: #bfd5f3; background: #f8fbff; }
+.tb-cap svg { color: var(--teal); }
+
+.cap-hero {
+  display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr); gap: 22px;
+  padding: 24px 26px; border-radius: 18px; color: #fff; margin-bottom: 16px;
+  background:
+    radial-gradient(circle at 86% 12%, rgba(84, 200, 190, .28), transparent 34%),
+    radial-gradient(circle at 12% 110%, rgba(63, 140, 255, .34), transparent 42%),
+    linear-gradient(135deg, #071d3d 0%, #0a3264 55%, #0b4f87 100%);
+  box-shadow: 0 24px 48px -32px rgba(6, 32, 68, .7);
+}
+.cap-hero-main > span {
+  display: inline-flex; padding: 3px 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, .1); color: #9fd9d4; font-size: 9.5px; letter-spacing: .08em;
+}
+.cap-hero-main > b { display: block; font-size: 21px; line-height: 1.35; margin: 10px 0 8px; letter-spacing: -.02em; }
+.cap-hero-main > p { max-width: 720px; margin: 0; color: #bfd6ee; font-size: 11.5px; line-height: 1.8; }
+.cap-hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: center; }
+.cap-hero-side > div {
+  min-height: 74px; padding: 12px 13px; border-radius: 12px;
+  background: rgba(255, 255, 255, .065); border: 1px solid rgba(255, 255, 255, .11);
+}
+.cap-hero-side b { display: block; font-size: 23px; line-height: 1; font-weight: 600; color: #fff; }
+.cap-hero-side span { display: block; margin-top: 7px; color: #a9c7e4; font-size: 9.5px; line-height: 1.45; }
+
+.cap-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cap-group {
+  min-width: 0; overflow: hidden; background: rgba(255, 255, 255, .94);
+  border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-1);
+}
+.cap-group > header { display: flex; align-items: flex-start; gap: 10px; padding: 15px 16px 12px; border-bottom: 1px solid var(--line-2); }
+.cap-ic {
+  width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: none;
+  background: var(--brand-wash); color: var(--brand);
+}
+.cap-group.green .cap-ic { background: var(--teal-wash); color: var(--teal); }
+.cap-group.amber .cap-ic { background: var(--amber-wash); color: var(--amber); }
+.cap-group.red .cap-ic { background: var(--coral-wash); color: var(--coral); }
+.cap-group.blue .cap-ic { background: #eaf2ff; color: var(--brand); }
+.cap-group > header > div { flex: 1; min-width: 0; }
+.cap-group h3 { margin: 0; font-size: 13px; font-weight: 600; }
+.cap-group header p { margin: 3px 0 0; font-size: 9.5px; line-height: 1.55; color: var(--ink-3); }
+.cap-group header em {
+  flex: none; font-style: normal; font-size: 9px; color: var(--ink-3);
+  padding: 2px 7px; border-radius: 999px; background: #f4f7fc;
+}
+.cap-list { padding: 5px 8px 8px; }
+.cap-list > button {
+  width: 100%; display: flex; align-items: flex-start; gap: 9px; padding: 9px 8px;
+  border-radius: 9px; text-align: left; transition: background .15s, transform .15s;
+}
+.cap-list > button:hover { background: #f7fbff; transform: translateX(1px); }
+.cap-list > button > div { flex: 1; min-width: 0; }
+.cap-list b { display: block; font-size: 10.5px; font-weight: 500; color: var(--ink); }
+.cap-list span:not(.cap-dot) { display: block; margin-top: 2px; font-size: 9px; line-height: 1.5; color: var(--ink-3); }
+.cap-list > button > svg { margin-top: 3px; color: var(--ink-4); flex: none; }
+.cap-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex: none; background: var(--brand); box-shadow: 0 0 0 3px rgba(11, 99, 229, .09); }
+.cap-group.green .cap-dot { background: var(--teal); box-shadow: 0 0 0 3px rgba(10, 163, 154, .1); }
+.cap-group.amber .cap-dot { background: var(--amber); box-shadow: 0 0 0 3px rgba(200, 135, 26, .1); }
+.cap-group.red .cap-dot { background: var(--coral); box-shadow: 0 0 0 3px rgba(217, 80, 63, .1); }
+
+.cap-principles {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px;
+}
+.cap-principles > div {
+  padding: 13px 14px; border-radius: 12px; border: 1px solid #dfeaf7;
+  background: linear-gradient(180deg, #fbfdff, #f6faff);
+}
+.cap-principles b { display: block; font-size: 10.5px; color: var(--ink); }
+.cap-principles span { display: block; margin-top: 4px; font-size: 9.5px; line-height: 1.65; color: var(--ink-3); }
+
+@media (max-width: 1180px) {
+  .cap-hero { grid-template-columns: 1fr; }
+  .cap-groups { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .tb-cap span, .tb-live { display: none; }
+  .cap-hero { padding: 19px; }
+  .cap-hero-main > b { font-size: 18px; }
+  .cap-hero-side { grid-template-columns: 1fr 1fr; }
+  .cap-principles { grid-template-columns: 1fr; }
+
+  .topbar { padding: 0 10px; gap: 4px; }
+  .tb-left { gap: 2px; flex: 1; min-width: 0; }
+  .tb-home { padding: 0 5px; }
+  .tb-home span, .tb-restore, .crumb-space, .crumb .sep { display: none; }
+  .crumb { gap: 3px; min-width: 0; overflow: hidden; }
+  .crumb b { display: block; max-width: 86px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-actions { gap: 4px; flex: none; }
+  .searchbtn { min-width: 0; width: 32px; padding: 0; justify-content: center; border-color: transparent; background: transparent; }
+  .searchbtn span:nth-child(2), .searchbtn kbd { display: none; }
+  .tb-dirty { display: none; }
+  .tb-user { padding: 2px; border-color: transparent; background: transparent; }
+  .tb-user-t, .tb-user > svg { display: none; }
+  .tb-publish { padding: 0 9px; font-size: 10.5px; }
+  .page { padding: 18px 16px 48px; }
+  .page-head { flex-wrap: wrap; align-items: flex-start; gap: 11px; }
+  .page-head .h-actions { width: 100%; margin-left: 0; flex-wrap: wrap; }
+  .page-head .h-actions .btn { flex: 0 1 auto; }
+}
