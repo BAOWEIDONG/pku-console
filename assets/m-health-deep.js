@@ -54,9 +54,9 @@
   function touch(name, channel, title, status) {
     Store.pushItem('shared.touches', {
       id: 'tc' + Date.now() + Math.floor(Math.random() * 90), holder: name,
-      channel: channel || '电话人工跟进', tpl: title || '健管提醒', title: title || '健管提醒',
-      at: '2026-11-08 09:30', status: status || '待人工执行'
-    }, '人工跟进待办');
+      channel: channel || '电话', tpl: title || '健管提醒', title: title || '健管提醒',
+      at: '2026-11-08 09:30', status: status || '已送达'
+    }, '健康提醒记录');
   }
   function log(action, name, desc) {
     Store.pushItem('shared.touches', {
@@ -81,7 +81,7 @@
     const f = {
       id: 'fu' + Date.now(), profileId: pid, planId: planId || '',
       type: type || '计划随访', due: due || '2026-11-15', time: '10:00',
-      channel: '企业微信', owner: owner || profileOf(pid).owner || '健康管理部',
+      channel: '电话', owner: owner || profileOf(pid).owner || '健康管理部',
       status: 'upcoming', priority: 'normal', note: note || ''
     };
     Store.pushItem('health.followups', f, '新建随访');
@@ -177,7 +177,7 @@
           '<div class="hn-hero-score"><b>76</b><span>闭环完整度 / 100</span><em>已打通 5 / 7 个环节</em></div></div>' +
         K.kpis([
           { k: '在管人群', v: h.profiles.length, unit: '人', d: '覆盖 6 个部门', icon: 'users' },
-          { k: '高风险', v: high, unit: '人', d: '需 24h 内首次触达', tone: 'down', icon: 'activity' },
+          { k: '高风险', v: high, unit: '人', d: '需 24h 内首次联系', tone: 'down', icon: 'activity' },
           { k: '今日随访', v: due, unit: '项', d: overdue + ' 项已逾期', tone: 'down', icon: 'clock' },
           { k: '计划达成', v: adherence, unit: '%', d: active.length + ' 个计划执行中', tone: 'up', icon: 'target' },
           { k: '服务履约', v: Math.round(h.serviceCases.filter((c) => c.stage === '已结算').length / (h.serviceCases.length || 1) * 100), unit: '%', d: h.exceptions.filter((e) => e.status === 'open').length + ' 个异常待处理', icon: 'check' }
@@ -195,7 +195,7 @@
             actions: K.btn('规则中心', 'goRisk', { cls: 'ghost sm' }),
             body: '<div class="hn-riskbars">' + [
               ['critical', '极高风险', '需立即医疗介入'],
-              ['high', '高风险', '24 小时内人工触达'],
+              ['high', '高风险', '24 小时内人工联系'],
               ['medium', '中风险', '纳入计划或 7 天内随访'],
               ['low', '低风险', '内容与年度复测']
             ].map((x) => '<div><div class="row small" style="justify-content:space-between"><span><b class="hn-rb ' + x[0] + '"></b>' + x[1] + '</span><b class="tnum">' + riskCount(x[0]) + ' 人</b></div><div class="progress"><b class="' + x[0] + '" style="width:' + Math.min(100, riskCount(x[0]) / 8 * 100) + '%"></b></div><em>' + x[2] + '</em></div>').join('') + '</div>' }) +
@@ -490,7 +490,7 @@
         '<div class="hn-board">' + ['critical', 'high', 'medium', 'low'].map((lv) => {
           const list = h.profiles.filter((p) => p.risk === lv);
           const r = RISK[lv];
-          return '<div class="hn-col ' + lv + '"><header><div><b>' + r[0] + '风险</b><span>' + (lv === 'critical' ? '立即医疗介入' : lv === 'high' ? '24h 人工触达' : lv === 'medium' ? '7 天内随访' : '内容与复测') + '</span></div><em>' + list.length + '</em></header>' +
+          return '<div class="hn-col ' + lv + '"><header><div><b>' + r[0] + '风险</b><span>' + (lv === 'critical' ? '立即医疗介入' : lv === 'high' ? '24h 人工联系' : lv === 'medium' ? '7 天内随访' : '内容与复测') + '</span></div><em>' + list.length + '</em></header>' +
             list.map((p) => '<div class="hn-riskcard"><div class="row"><div><b>' + E(p.name) + '</b><span>' + E(p.dept) + ' · ' + E(p.owner) + '</span></div><strong>' + p.score + '</strong></div>' +
               '<div class="hn-rtags">' + (p.tags || []).slice(0, 3).map((t) => '<em>' + E(t) + '</em>').join('') + '</div>' +
               '<footer><button data-act="riskPlan" data-id="' + p.id + '">计划</button><button data-act="riskFollow" data-id="' + p.id + '">随访</button><button data-act="riskProfile" data-id="' + p.id + '">档案</button></footer></div>').join('') +
@@ -782,7 +782,7 @@
           '<div class="stack">' +
             K.panel({ title: '价值证明', sub: '健康管理不只是一项成本', body: '<div class="hn-value">' +
               [['避免误工', '¥186,000', '高风险人群缺勤下降'], ['减少重复检查', '¥92,400', '报告互认与复查管理'], ['服务转化', '¥148,000', '异常转管理带来的增量'], ['续约意向', '82%', '企业客户健康项目续约']].map((x) => '<div><b>' + x[1] + '</b><span>' + x[0] + '</span><em>' + x[2] + '</em></div>').join('') + '</div>' }) +
-            K.panel({ title: '哪些结果最值得看', body: '<div class="small mut" style="line-height:1.9">· 高风险人群是否在 24h 内被触达<br>· 异常项是否完成复查<br>· 管理计划是否按期随访<br>· 指标是否改善而非只完成服务<br>· 企业报告是否能解释下一步投入</div>' }) +
+            K.panel({ title: '哪些结果最值得看', body: '<div class="small mut" style="line-height:1.9">· 高风险人群是否在 24h 内完成首次联系<br>· 异常项是否完成复查<br>· 管理计划是否按期随访<br>· 指标是否改善而非只完成服务<br>· 企业报告是否能解释下一步投入</div>' }) +
           '</div>' +
         '</div>';
     },
@@ -877,13 +877,13 @@
     actions: {
       batchNudge() {
         const fg = FG();
-        fg.memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好召回', '待人工执行'));
-        UI.toast('已生成低活跃会员电话跟进待办'); App.refresh();
+        fg.memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话', '五好回访', '已记录'));
+        UI.toast('已生成低活跃会员电话回访清单'); App.refresh();
       },
       nudgeMember(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
-        touch(m.name, '电话人工跟进', '五好任务提醒', '待人工执行');
-        UI.toast('已为 ' + m.name + ' 生成电话跟进待办'); App.refresh();
+        touch(m.name, '电话', '五好任务提醒', '已记录');
+        UI.toast('已记录对 ' + m.name + ' 的电话提醒'); App.refresh();
       },
       openMember(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
@@ -891,7 +891,7 @@
         UI.drawer({ title: m.name + ' · 五好会员', sub: m.tier + ' · 教练 ' + m.coach + ' · ' + m.stage, icon: 'user', width: 600,
           body: '<div class="hn-kv"><div><span>五好总分</span><b>' + score + '</b></div><div><span>本周任务</span><b>' + m.tasksDone + '/' + m.tasksDue + '</b></div><div><span>连续</span><b>' + m.streak + ' 天</b></div><div><span>最近活跃</span><b>' + m.lastActive + '</b></div></div>' +
             '<div class="formsec"><h4>五维表现</h4>' + ['eat', 'sleep', 'move', 'mind', 'check'].map((k) => '<div class="hn-dimrow"><span>' + ({ eat: '吃好', sleep: '睡好', move: '动好', mind: '心好', check: '查好' }[k]) + '</span><div class="progress"><b style="width:' + (dims[k] || 0) + '%"></b></div><b class="tnum">' + (dims[k] || 0) + '</b></div>').join('') + '</div>' +
-            '<div class="note ' + (m.risk === 'high' ? 'warn' : 'teal') + '">' + (m.risk === 'high' ? '该会员已命中健康风险，建议转健康管理计划并暂停营销类触达。' : '继续按当前节奏执行；月度报告已生成，可提醒查看。') + '</div>',
+            '<div class="note ' + (m.risk === 'high' ? 'warn' : 'teal') + '">' + (m.risk === 'high' ? '该会员已命中健康风险，建议转健康管理计划并暂停非必要提醒。' : '继续按当前节奏执行；月度报告已生成，可电话告知查看。') + '</div>',
           extra: '<button class="btn" data-member-plan>转健康计划</button>',
           mount(n) { const b = n.querySelector('[data-member-plan]'); if (b) b.addEventListener('click', () => { UI.closeOverlay(); P['fg-escalation'].actions.convert({ id: (FG().escalations.find((e) => e.memberId === m.memberId) || {}).id || '' }); }); } });
       },
@@ -914,7 +914,7 @@
 
   /* ============================================================ 五好任务 */
   P['fg-tasks'] = {
-    app: 'all', grp: 'v.rules', papp: 'employee', title: '五好任务与发布', sub: '任务不是内容列表，要按周发布、按人触达、按结果收口',
+    app: 'all', grp: 'v.rules', papp: 'employee', title: '五好任务与发布', sub: '任务不是内容列表，要按周发布、按人提醒、按结果收口',
     render() {
       const fg = FG();
       const tasks = fg.tasks || [];
@@ -929,7 +929,7 @@
           { k: '本周任务', v: weekTasks.length, unit: '条', d: '已发布 ' + fg.ops.lastRelease },
           { k: '已完成', v: done, unit: '条', d: '完成率 ' + Math.round(done / (weekTasks.length || 1) * 100) + '%', tone: 'up' },
           { k: '待完成', v: due, unit: '条', d: '今晚 24:00 截止', tone: 'down' },
-          { k: '已错过', v: missed, unit: '条', d: '触发召回', tone: 'down' }
+          { k: '已错过', v: missed, unit: '条', d: '进入回访清单', tone: 'down' }
         ]) +
         '<div class="grid g-2">' +
           K.panel({ title: '任务模板库', sub: '按维度与周次发布', flush: true,
@@ -946,7 +946,7 @@
               const n = tasks.filter((t) => t.dim === k && t.on).length;
               return '<div class="hn-dimrow"><span>' + ({ eat: '吃好', sleep: '睡好', move: '动好', mind: '心好', check: '查好' }[k]) + '</span><div class="progress"><b style="width:' + (n / 3 * 100) + '%"></b></div><b class="tnum">' + n + '</b></div>';
             }).join('') +
-            '<div class="note teal">发布动作会为每位会员生成本周任务，并按低活跃规则自动触达。</div></div>' }) +
+            '<div class="note teal">发布动作会为每位会员生成本周任务，低活跃会员会进入电话回访清单。</div></div>' }) +
         '</div>' +
         '<div style="height:16px"></div>' +
         K.panel({ title: '会员任务进度', sub: '按人追踪，不按模板自嗨', flush: true, body: UI.table([
@@ -967,11 +967,11 @@
             const exists = fg.memberTasks.some((x) => x.memberId === m.id && x.week === 5 && x.title === t.title);
             if (!exists) Store.pushItem('fivegood.memberTasks', { id: 'mt' + Date.now() + Math.floor(Math.random() * 99), memberId: m.id, dim: t.dim, week: 5, title: t.title, type: t.type, points: t.points, due: '2026-11-15', status: 'due', evidence: '', reviewed: false }, '发布会员任务');
           });
-          if (m.stage === '低活跃') touch(m.name, '电话人工跟进', '五好第 5 周任务已发布', '待人工执行');
+          if (m.stage === '低活跃') touch(m.name, '电话', '五好第 5 周任务已发布', '已记录');
         });
         Store.set('fivegood.ops.lastRelease', '2026-11-08', '任务发布周期');
         Store.set('fivegood.ops.nextRelease', '2026-11-15', '任务发布周期');
-        UI.toast('第 5 周任务已发布，并生成低活跃会员电话跟进待办'); App.refresh();
+        UI.toast('第 5 周任务已发布，低活跃会员已生成回访记录'); App.refresh();
       },
       newTask() {
         UI.formDrawer({ title: '新增任务模板', sub: '会员每周会收到该维度的任务', icon: 'check',
@@ -997,8 +997,8 @@
       },
       nudgeTask(d) {
         const t = FG().memberTasks.find((x) => x.id === d.id), m = FG().memberProfiles.find((x) => x.id === t.memberId);
-        touch(m.name, '电话人工跟进', '任务提醒 · ' + t.title, '待人工执行');
-        UI.toast('已生成 ' + m.name + ' 的电话跟进待办'); App.refresh();
+        touch(m.name, '电话', '任务提醒 · ' + t.title, '已记录');
+        UI.toast('已记录对 ' + m.name + ' 的电话提醒'); App.refresh();
       },
       reviewTask(d) {
         const t = FG().memberTasks.find((x) => x.id === d.id);
@@ -1032,7 +1032,7 @@
         Store.saveItem('fivegood.checkins', { id: c.id, status: 'approved', note: '审核通过，已计入积分。' }, 'id', '打卡审核');
         const task = FG().memberTasks.find((x) => x.id === c.taskId) || FG().memberTasks.find((x) => x.memberId === c.memberId && x.title === c.title);
         if (task) Store.saveItem('fivegood.memberTasks', { id: task.id, status: 'done', reviewed: true, evidence: c.evidence }, 'id', '任务完成');
-        touch(c.name, '电话人工跟进', '打卡已通过 · ' + c.title, '待人工执行');
+        touch(c.name, '电话', '打卡已通过 · ' + c.title, '已记录');
         UI.toast(c.name + ' 打卡已通过'); App.refresh();
       },
       rejectCheckin(d) {
@@ -1043,8 +1043,8 @@
             Store.saveItem('fivegood.checkins', { id: c.id, status: 'rejected', note: v.note }, 'id', '打卡驳回');
             const task = FG().memberTasks.find((x) => x.id === c.taskId) || FG().memberTasks.find((x) => x.memberId === c.memberId && x.title === c.title);
             if (task) Store.saveItem('fivegood.memberTasks', { id: task.id, status: 'due', reviewed: false }, 'id', '任务退回');
-            touch(c.name, '电话人工跟进', '打卡需补充 · ' + c.title, '待人工执行');
-            UI.toast('已驳回，并生成电话告知待办'); App.refresh();
+            touch(c.name, '电话', '打卡需补充 · ' + c.title, '已记录');
+            UI.toast('已驳回并通知会员'); App.refresh();
           } });
       },
       batchApprove() {
@@ -1055,8 +1055,8 @@
       },
       coachNudge(d) {
         const c = FG().checkins.find((x) => x.id === d.id);
-        touch(c.name, '电话人工跟进', '教练提醒 · ' + c.title, '待人工执行');
-        UI.toast('已生成教练电话提醒待办'); App.refresh();
+        touch(c.name, '电话', '教练提醒 · ' + c.title, '已记录');
+        UI.toast('教练提醒已记录，请按电话回访执行'); App.refresh();
       }
     }
   };
@@ -1085,9 +1085,9 @@
             }).join('') + '</div>' }) +
           '<div class="stack">' +
             K.panel({ title: '升级规则', sub: '信号 → 动作 → 责任人', flush: true, body: '<div style="padding:4px 18px 12px">' +
-              [['睡眠维度 < 65 分 2 周', '推荐睡眠改善计划', '王雪'], ['心理量表高风险', 'EAP 24h 回访，暂停营销', '李咨询师'], ['连续 7 天无任务', '降低任务门槛 + 召回', '陈放'], ['体检维度未完成', '预约体检 + 复查提醒', '健康管理中心'], ['五维总分 < 55', '转五高一重共管', '赵医生']].map((x) =>
+              [['睡眠维度 < 65 分 2 周', '推荐睡眠改善计划', '王雪'], ['心理量表高风险', 'EAP 24h 回访，暂停非必要提醒', '李咨询师'], ['连续 7 天无任务', '降低任务门槛 + 电话回访', '陈放'], ['体检维度未完成', '预约体检 + 复查提醒', '健康管理中心'], ['五维总分 < 55', '转五高一重共管', '赵医生']].map((x) =>
                 '<div class="hn-rule"><span>' + I('target', 14) + '</span><div><b>' + x[0] + '</b><em>' + x[1] + '</em></div><strong>' + x[2] + '</strong></div>').join('') + '</div>' }) +
-            K.panel({ title: '升级后必须发生什么', body: '<div class="small mut" style="line-height:1.9">① 生成健康管理计划<br>② 生成首次随访任务<br>③ 写入会员时间线<br>④ 暂停营销类触达<br>⑤ 30 天后回看结果</div>' }) +
+            K.panel({ title: '升级后必须发生什么', body: '<div class="small mut" style="line-height:1.9">① 生成健康管理计划<br>② 生成首次随访任务<br>③ 写入会员时间线<br>④ 暂停非必要提醒<br>⑤ 30 天后回看结果</div>' }) +
           '</div>' +
         '</div>';
     },
@@ -1132,11 +1132,11 @@
           K.panel({ title: '数据使用边界', sub: '运营可配置，但不可越过产品红线', body: '<div class="hn-scopes">' +
             [['健康档案', '体检、指标、风险标签', true, '全部健管师'], ['服务记录', '预约、履约、权益核销', true, '服务与健管'], ['心理数据', '情绪打卡、PHQ/GAD、咨询记录', false, '仅本人 + 授权咨询师'], ['企业报告', '匿名化人数、比例、部门分布', true, '企业管理员']].map((x) =>
               '<div class="hn-scope ' + (x[2] ? 'ok' : 'lock') + '"><span>' + I(x[2] ? 'check' : 'lock', 15) + '</span><div><b>' + x[0] + '</b><em>' + x[1] + '</em></div><strong>' + x[3] + '</strong></div>').join('') + '</div>' +
-            '<div class="note warn">' + I('shield', 15) + '<span>心理数据默认不进入企业报告、不做营销画像、不向直线经理展示。任何导出都必须二次确认。</span></div>' }) +
+            '<div class="note warn">' + I('shield', 15) + '<span>心理数据默认不进入企业报告、不做商业画像、不向直线经理展示。任何导出都必须二次确认。</span></div>' }) +
           K.panel({ title: '隐私开关', sub: '改动会留痕', body: '<div class="stack" style="gap:14px">' +
             UI.fSwitch({ label: '心理数据独立授权', value: fg.ops.mindPrivacy, path: 'fivegood.ops.mindPrivacy' }) +
             UI.fSwitch({ label: '企业报告匿名化', value: fg.ops.reportAnonymize, path: 'fivegood.ops.reportAnonymize' }) +
-            UI.fSwitch({ label: '低活跃自动召回', value: fg.ops.autoNudge, path: 'fivegood.ops.autoNudge' }) +
+            UI.fSwitch({ label: '低活跃生成回访任务', value: fg.ops.autoNudge, path: 'fivegood.ops.autoNudge' }) +
             UI.fSwitch({ label: '风险信号自动升级', value: fg.ops.riskEscalation, path: 'fivegood.ops.riskEscalation' }) +
             UI.fInput({ label: '数据保留周期', value: fg.ops.retention, path: 'fivegood.ops.retention' }) + '</div>' }) +
         '</div>' +
@@ -1180,7 +1180,7 @@
       ];
       const low = fg.memberProfiles.filter((m) => m.stage === '低活跃');
       return K.head('五好运营闭环', '会员运营不是发任务，是持续把低活跃拉回、把风险送进管理', 
-        K.btn('运行召回旅程', 'runLoop', { icon: 'send', cls: 'primary' }), 'FIVE-GOOD / LOOP') +
+        K.btn('生成回访清单', 'runLoop', { icon: 'send', cls: 'primary' }), 'FIVE-GOOD / LOOP') +
         '<div class="hn-loop">' + stages.map((s, i) => '<div class="hn-loop-step"><span>0' + (i + 1) + '</span><b>' + s[1] + '</b><em>' + s[0] + '</em><small>' + s[2] + '</small>' + (i ? '<i>' + Math.round(s[1] / (stages[i - 1][1] || 1) * 100) + '%</i>' : '') + '</div>').join('') + '</div>' +
         K.kpis([
           { k: '入组转化', v: '68', unit: '%', d: '评估 → 入组' },
@@ -1190,8 +1190,8 @@
           { k: '季度续约', v: '31', unit: '%', d: '意向 82%' }
         ]) +
         '<div class="grid g-2">' +
-          K.panel({ title: '触达方案（演示）', sub: '只生成人工待办，不会自动发送', flush: true, body: '<div style="padding:4px 18px 12px">' +
-            [['低活跃召回', '连续 7 天无任务', '电话人工跟进', low.length + ' 人'], ['任务截止提醒', '截止前 24 小时', '电话人工跟进', '12 人'], ['月度报告', '每月 1 日', '人工发送（未接）', '6 人'], ['风险升级', '五维或量表命中', 'EAP / 健管师', '5 条'], ['续约提醒', '到期前 30 天', '客户成功', '2 人']].map((x) =>
+          K.panel({ title: '服务提醒规则', sub: '触发 → 人工提醒 → 结果', flush: true, body: '<div style="padding:4px 18px 12px">' +
+            [['低活跃回访', '连续 7 天无任务', '电话 + 线下', low.length + ' 人'], ['任务截止提醒', '截止前 24 小时', '电话', '12 人'], ['月度报告告知', '每月 1 日', '电话', '6 人'], ['风险升级', '五维或量表命中', 'EAP / 健管师', '5 条'], ['续约提醒', '到期前 30 天', '客户成功', '2 人']].map((x) =>
               '<div class="hn-journey"><span>' + I('send', 15) + '</span><div><b>' + x[0] + '</b><em>' + x[1] + ' · ' + x[2] + '</em></div><strong>' + x[3] + '</strong></div>').join('') + '</div>' }) +
           K.panel({ title: '低活跃名单', sub: '先拉回，再谈升级', flush: true,
             actions: K.btn('全部提醒', 'nudgeLow', { cls: 'ghost sm' }),
@@ -1200,17 +1200,17 @@
     },
     actions: {
       runLoop() {
-        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好召回旅程', '待人工执行'));
-        UI.toast('已生成低活跃会员召回待办，不会自动发送'); App.refresh();
+        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话', '五好回访', '已记录'));
+        UI.toast('低活跃会员电话回访清单已生成'); App.refresh();
       },
       nudgeLow() {
-        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话人工跟进', '五好任务提醒', '待人工执行'));
-        UI.toast('已批量生成电话跟进待办'); App.refresh();
+        FG().memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话', '五好任务提醒', '已记录'));
+        UI.toast('已生成批量电话提醒记录'); App.refresh();
       },
       nudgeOne(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
-        touch(m.name, '电话人工跟进', '五好召回提醒', '待人工执行');
-        UI.toast('已为 ' + m.name + ' 生成电话跟进待办'); App.refresh();
+        touch(m.name, '电话', '五好回访提醒', '已记录');
+        UI.toast('已记录对 ' + m.name + ' 的电话回访'); App.refresh();
       }
     }
   };

@@ -72,7 +72,7 @@
     { id: 'mr1', name: '连续 5 天情绪低落', when: '情绪打卡连续 5 天 ≤ 2 分', then: '推送 EAP 咨询预约 + 正念课程', svc: 'eap', on: true, urgent: true },
     { id: 'mr2', name: 'PHQ-2 阳性', when: 'PHQ-2 ≥ 3 分', then: '建议 EAP 评估（不推送诊断结论）', svc: 'eap', on: true, urgent: true },
     { id: 'mr3', name: '压力持续偏高', when: 'PSS-10 ≥ 27 分', then: '推送压力管理讲座 + 呼吸训练', svc: 'lecture', on: true },
-    { id: 'mr4', name: '高关怀不打扰', when: '已预约 EAP 且 30 天内', then: '暂停营销类推荐，仅保留服务提醒', svc: '', on: true }
+    { id: 'mr4', name: '高关怀不打扰', when: '已预约 EAP 且 30 天内', then: '暂停非必要推荐，仅保留服务提醒', svc: '', on: true }
   ];
 
   /* ------------------------------------------------------------ 查好 */

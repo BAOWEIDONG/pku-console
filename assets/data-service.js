@@ -12,12 +12,10 @@
 
   /* ---------------------------------------------------------------- 渠道 */
   S.channels = [
-    { id: 'h5-brand', name: '品牌站 H5', type: 'h5', audience: '公众获客', entry: 'https://baoweidong.github.io/PKU-introduce/mobile.html', theme: '北医蓝', on: true, owner: '品牌部', hits: 124000, svcScope: '对外可售' },
+    { id: 'h5-brand', name: '品牌站 H5', type: 'h5', audience: '公众访问', entry: 'https://baoweidong.github.io/PKU-introduce/mobile.html', theme: '北医蓝', on: true, owner: '品牌部', hits: 124000, svcScope: '对外可售' },
     { id: 'h5-employee', name: '职工健康 H5', type: 'h5', audience: '企业员工', entry: 'https://baoweidong.github.io/pku-employee-health/', theme: '暖橙', on: true, owner: '健康管理部', hits: 68300, svcScope: '权益内' },
     { id: 'h5-camp', name: '减重营 H5', type: 'h5', audience: '营期学员', entry: 'https://baoweidong.github.io/versionall/', theme: '浅色卡片', on: true, owner: '运营中心', hits: 21400, svcScope: '营期内' },
-    { id: 'wxwork', name: '企业微信工作台', type: 'miniapp', audience: '企业员工', entry: 'wxwork://pku-health', theme: '跟随企微', on: true, owner: '客户成功', hits: 45100, svcScope: '权益内' },
-    { id: 'web', name: '官网 PC', type: 'web', audience: '公众获客', entry: 'https://www.pkuhealthcare.com', theme: '北医蓝', on: true, owner: '品牌部', hits: 30800, svcScope: '对外可售' },
-    { id: 'xhs', name: '小红书企业号', type: 'social', audience: '公众获客', entry: '', theme: '—', on: false, owner: '品牌部', hits: 0, svcScope: '内容种草' }
+    { id: 'web', name: '官网 PC', type: 'web', audience: '公众访问', entry: 'https://www.pkuhealthcare.com', theme: '北医蓝', on: true, owner: '品牌部', hits: 30800, svcScope: '对外可售' }
   ];
 
   const CAT = { screen: '健康筛查', chronic: '慢病管理', medical: '就医服务', special: '特色服务', safety: '应急保障' };
@@ -31,9 +29,9 @@
     s.cat = CAT[s.mod] || '其他';
     s.owner = s.mod === 'chronic' ? '健康管理部' : s.mod === 'medical' ? '就医服务中心' : s.mod === 'special' ? '客户成功部' : '健康管理中心';
     s.channels = s.mod === 'screen' ? ['h5-brand', 'h5-employee', 'web']
-      : s.mod === 'chronic' ? ['h5-employee', 'wxwork', 'h5-camp']
+      : s.mod === 'chronic' ? ['h5-employee', 'h5-camp']
       : s.mod === 'special' ? ['h5-brand', 'h5-employee']
-      : s.mod === 'safety' ? ['web', 'wxwork'] : ['h5-employee'];
+      : s.mod === 'safety' ? ['web', 'h5-employee'] : ['h5-employee'];
     s.pricing = [
       { id: 'base', name: '标准版', cost: cost, settle: settle, list: list, contract: Math.round(settle * 0.92 / 10) * 10, tax: 6, unit: '次', validity: 365, times: 1 },
       { id: 'deep', name: '深度版', cost: Math.round(cost * 1.6 / 10) * 10, settle: Math.round(settle * 1.5 / 10) * 10, list: Math.round(list * 1.45 / 10) * 10, contract: Math.round(settle * 1.35 / 10) * 10, tax: 6, unit: '次', validity: 365, times: 1 },

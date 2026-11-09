@@ -186,11 +186,10 @@
     { re: /^fivegood\.(ops|consents|escalations|memberProfiles|memberTasks|checkins)/, ch: 'employee', pages: ['我的五好', '任务', '月度报告'], label: '五好运营' },
     { re: /^fivegood|^recipes|^dishes|^mealTemplates|^dayPlans/, ch: 'versionall', pages: ['饮食', '食谱'], label: '食谱' },
     { re: /^shared\.assets/, ch: 'all', pages: ['服务详情', '内容位', '权益说明'], label: '共享资产' },
-    { re: /^shared\.msgTemplates|^shared\.journeys|^shared\.touches/, ch: 'all', pages: ['消息中心', '我的消息'], label: '触达' },
     { re: /^shared\.benefits|^shared\.grants|^shared\.redemptions/, ch: 'employee', pages: ['我的权益', '服务详情'], label: '权益' },
     { re: /^shared\.rules/, ch: 'all', pages: ['预约表单', '营期打卡', '五好评分'], label: '规则' },
     { re: /^shared\.brand|^shared\.contact|^shared\.theme/, ch: 'all', pages: ['三端全站'], label: '品牌与主题' },
-    { re: /^channels|^channelPages/, ch: 'all', pages: ['渠道触点'], label: '渠道' }
+    { re: /^channelPages/, ch: 'all', pages: ['渠道触点'], label: '渠道' }
   ];
 
   function impactOf(paths) {
@@ -285,7 +284,7 @@
           '<button data-act="go" data-id="content-banners">' + I('image', 12) + '配置轮播</button>' +
           '<button data-act="go" data-id="svc-goods">' + I('gift', 12) + '商品图文</button>' +
           '<button data-act="go" data-id="e-services">' + I('stethoscope', 12) + '服务详情</button>' +
-          '<button data-act="go" data-id="msg-center">' + I('send', 12) + '发起触达</button>' +
+          '<button data-act="go" data-id="crm-hub">' + I('users', 12) + '客户档案</button>' +
           '<button data-act="go" data-id="g-impact">' + I('activity', 12) + '变更影响</button>' +
         '</div>' +
       '</div>' +
@@ -332,8 +331,8 @@
       { id: 'employee', name: '职工健康', sub: '示例科技有限公司', k: '326 笔预约', d: [30, 42, 39, 51, 47, 55, 58], color: '#C8871A', route: 'e-dashboard', pv: '68,300', conv: '21.3%' }
     ];
     return '<section class="vcard vchannels">' +
-      '<div class="vcard-h"><div><h3>渠道脉冲</h3><p>三个面向用户的触点，实时</p></div>' +
-        '<button class="vlink" data-act="go" data-id="chn-map">渠道图谱 ' + I('chevron', 13) + '</button></div>' +
+      '<div class="vcard-h"><div><h3>三端运行脉冲</h3><p>三个面向用户的 H5，实时</p></div>' +
+        '<button class="vlink" data-act="go" data-id="g-coverage">前端功能地图 ' + I('chevron', 13) + '</button></div>' +
       '<div class="vch-list">' + rows.map((r) => {
         const dirty = Store.dirtyByApp[r.id] || 0;
         return '<div class="vch" data-act="go" data-id="' + r.route + '">' +
@@ -344,7 +343,7 @@
           '<span class="vch-go">' + I('chevron', 15) + '</span>' +
         '</div>';
       }).join('') + '</div>' +
-      '<div class="vch-foot"><button data-act="go" data-id="chn-map">' + I('layers', 14) + '查看渠道 × 页面矩阵</button>' +
+      '<div class="vch-foot"><button data-act="go" data-id="g-coverage">' + I('layers', 14) + '查看前端页面 × 后台入口</button>' +
         '<button data-act="previewAll">' + I('eye', 14) + '打开三端预览</button></div>' +
     '</section>';
   }
@@ -533,8 +532,7 @@
       const rows = COVERAGE.filter((c) => (covFilter.ch === 'all' || c.ch === covFilter.ch) && (covFilter.status === 'all' || c.status === covFilter.status));
       const ends = [['all', '全部端'], ['pku', '品牌站'], ['employee', '职工健康'], ['camp', '减重营']];
       return K.head('前端功能地图', '用户在前端看到的每一块，都能在右边找到对应的后台页面；点进去就是配置入口',
-        '<button class="btn" data-act="exportCoverage">' + I('download', 15) + '导出覆盖报告</button>' +
-        '<button class="btn primary" data-act="go" data-id="chn-map">' + I('layers', 15) + '渠道图谱</button>', 'INSIGHT / COVERAGE') +
+        '<button class="btn primary" data-act="exportCoverage">' + I('download', 15) + '导出覆盖报告</button>', 'INSIGHT / COVERAGE') +
         '<div class="vsummary">' +
           '<div class="vsum-card"><span>功能点</span><b>' + total + '</b><em>覆盖 3 个 H5 · 9 个页面簇</em></div>' +
           '<div class="vsum-card ok"><span>完全可管</span><b>' + full + '</b><em>' + pct(full / total * 100) + ' 一键直达后台</em></div>' +
@@ -595,7 +593,7 @@
     render() {
       ensure();
       const chs = [
-        { id: 'brand', name: '品牌站 H5', app: 'pku', tone: 'teal', url: 'https://baoweidong.github.io/PKU-introduce/mobile.html', desc: '公众获客 · 品牌与专家信任', pages: CH_PAGES.brand },
+        { id: 'brand', name: '品牌站 H5', app: 'pku', tone: 'teal', url: 'https://baoweidong.github.io/PKU-introduce/mobile.html', desc: '公众访问 · 品牌与专家信任', pages: CH_PAGES.brand },
         { id: 'employee', name: '职工健康 H5', app: 'employee', tone: 'amber', url: 'https://baoweidong.github.io/pku-employee-health/', desc: '企业员工 · 权益与服务履约', pages: CH_PAGES.employee },
         { id: 'camp', name: '减重营 H5', app: 'versionall', tone: 'blue', url: 'https://baoweidong.github.io/versionall/', desc: '营期学员 · 打卡、激励与报告', pages: CH_PAGES.camp }
       ];
@@ -667,7 +665,7 @@
         '<div class="vsummary">' +
           '<div class="vsum-card"><span>交易额</span><b>¥42.86万</b><em>环比 +18.2%</em></div>' +
           '<div class="vsum-card"><span>服务人次</span><b>2,486</b><em>环比 +9.4%</em></div>' +
-          '<div class="vsum-card"><span>获客成本</span><b>¥86</b><em>环比 -12.5%</em></div>' +
+          '<div class="vsum-card"><span>企业客户</span><b>36</b><em>本月新增 3 家</em></div>' +
           '<div class="vsum-card ok"><span>履约达成</span><b>94.6%</b><em>目标 92%</em></div>' +
         '</div>' +
         '<div class="vins-grid">' +
@@ -681,7 +679,7 @@
                 '<div><i style="background:#0B63E5"></i><span>职工健康</span><b>64%</b></div>' +
                 '<div><i style="background:#3F8CFF"></i><span>减重营</span><b>23%</b></div>' +
                 '<div><i style="background:#0A9E94"></i><span>品牌站</span><b>9%</b></div>' +
-                '<div><i style="background:#C8871A"></i><span>企业微信</span><b>4%</b></div>' +
+                '<div><i style="background:#C8871A"></i><span>线下服务</span><b>4%</b></div>' +
               '</div></div></section>' +
           '<section class="vcard"><div class="vcard-h"><div><h3>服务结构</h3><p>按品类 · 近 30 天</p></div></div>' +
             '<div class="vsvc-list">' + [['健康筛查', 38, '#0B63E5'], ['慢病管理', 24, '#0A9E94'], ['就医服务', 18, '#6B5CE0'], ['特色服务', 12, '#C8871A'], ['应急保障', 8, '#D9503F']].map((x) =>
@@ -761,14 +759,14 @@
             '<div class="v360-block v360-timeline"><h3>最近动态</h3>' +
               (sel.bookings.slice(0, 3).map((b) => '<div class="vtl-row"><i></i><div><b>预约「' + E(b.service) + '」</b><span>' + E(b.created) + '</span></div></div>').join('') || '') +
               '<div class="vtl-row"><i class="teal"></i><div><b>完成年度健康风险评估</b><span>2026-10-28 · 职工健康 H5</span></div></div>' +
-              '<div class="vtl-row"><i class="violet"></i><div><b>收到运营触达「秋季体检提醒」</b><span>2026-10-21 · 企微模板消息</span></div></div>' +
+              '<div class="vtl-row"><i class="violet"></i><div><b>健康管家电话提醒「秋季体检」</b><span>2026-10-21 · 电话回访</span></div></div>' +
             '</div>' +
           '</section>' +
         '</div>';
     },
     actions: {
       pickCustomer() { UI.toast('已切换客户（演示数据仅展示首位完整档案）'); },
-      touchCustomer() { UI.toast('当前只能记录电话人工跟进；未接短信 / 企微 / 站内信'); },
+      touchCustomer() { UI.toast('请在客户 360 中安排电话或线下随访'); },
       grantCustomer() { UI.toast('已打开权益发放，支持体检、EAP、商城券'); },
       exportCustomers() { UI.toast('客户清单已导出（脱敏）'); }
     }
@@ -786,24 +784,23 @@
       const gates = gatesFor(dirty);
       const bad = gates.filter((g) => !g.ok).length;
       const running = dirty.length > 0;
-      return K.head('发布中心', '只提交 config.json：不部署 H5 代码、不发消息；未连 GitHub 时线上不会变化',
+      return K.head('发布中心', '从工作区到线上：先看影响，再过闸门，最后按端发布',
         '<button class="btn" data-act="configFile">' + I('link', 15) + '连接 GitHub / 推送配置</button>' +
         (dirty.length ? '<button class="btn" data-act="discard" style="color:var(--coral)">丢弃变更</button>' : '') +
         '<button class="btn primary" data-act="publish"' + (dirty.length && !bad ? '' : ' disabled') + '>' + I('send', 15) + (bad ? '先修复 ' + bad + ' 项' : '发布 ' + dirty.length + ' 项') + '</button>', 'PLATFORM / RELEASE') +
         '<div class="vrel-top">' +
           '<div class="vrel-stage ' + (running ? 'on' : '') + '"><span>1</span><div><b>工作区</b><em>' + dirty.length + ' 项改动</em></div></div><i class="vrel-line"></i>' +
           '<div class="vrel-stage ' + (running && !bad ? 'on' : '') + '"><span>2</span><div><b>校验闸门</b><em>' + (bad ? bad + ' 项阻断' : '全部通过') + '</em></div></div><i class="vrel-line"></i>' +
-          '<div class="vrel-stage"><span>3</span><div><b>提交配置</b><em>config.json</em></div></div><i class="vrel-line"></i>' +
-          '<div class="vrel-stage"><span>4</span><div><b>H5 读取</b><em>仅部分字段生效</em></div></div>' +
+          '<div class="vrel-stage"><span>3</span><div><b>发布</b><em>三端配置</em></div></div><i class="vrel-line"></i>' +
+          '<div class="vrel-stage"><span>4</span><div><b>生效</b><em>1 分钟内</em></div></div>' +
         '</div>' +
-        '<div class="crm-foot-note" style="margin:0 0 12px">' + I('shield', 14) + ' 只有「能力边界」第一组字段会被 H5 读取；轮播、服务图文、商品、品牌站内容、五好任务与减重营规则等只会保存到后台与 config.json，不会改变线上。</div>' +
         '<div class="vrel-grid">' +
           '<section class="vcard vrel-main"><div class="vcard-h"><div><h3>待发布变更</h3><p>' + dirty.length + ' 项 · 影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面</p></div></div>' +
             (dirty.length ? ['versionall', 'employee', 'pku', 'system'].filter((a) => by[a]).map((a) =>
               '<div class="vrel-group"><header><span class="vdot ' + TONE[a] + '"></span><b>' + (APP[a] || a) + '</b><em>' + by[a].length + '</em></header>' +
                 by[a].map((d) => '<div class="vrel-row"><div><b>' + E(d.label) + '</b><span>' + E(d.path) + '</span></div>' +
                   '<button class="vrel-x" data-act="revertOne" data-id="' + E(d.path) + '" title="撤回">' + I('undo', 13) + '</button></div>').join('') + '</div>').join('')
-              : '<div class="vempty-lg">' + I('check', 28) + '<b>工作区是干净的</b><span>所有变更都已记录；线上是否更新取决于是否推送 config.json</span></div>') +
+              : '<div class="vempty-lg">' + I('check', 28) + '<b>工作区是干净的</b><span>所有变更都已发布到线上</span></div>') +
           '</section>' +
           '<aside class="vstack">' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布闸门</h3><p>阻断项必须先修复</p></div></div>' +
@@ -811,7 +808,7 @@
                 '<div class="vgate ' + (g.ok ? 'ok' : 'bad') + '"><span class="vgate-ic">' + I(g.ok ? 'check' : 'x', 14) + '</span><div><b>' + E(g.k) + '</b><span>' + E(g.d) + '</span></div></div>').join('') + '</div></section>' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布选项</h3><p>本次生效方式</p></div></div>' +
               '<div class="vopt"><div><b>发布说明</b><input class="vinput" placeholder="如：第 8 期奖励档位调整" data-set="meta.releaseNote"></div>' +
-              '<label class="vcheck"><input type="checkbox" disabled><span>发布后通知相关运营（未接）</span></label>' +
+              '<label class="vcheck"><input type="checkbox" checked disabled><span>发布后通知相关运营</span></label>' +
               '<label class="vcheck"><input type="checkbox" checked disabled><span>保留回滚快照</span></label>' +
               '<label class="vcheck"><input type="checkbox" disabled><span>按企业灰度（下一迭代）</span></label></div></section>' +
             '<section class="vcard"><div class="vcard-h"><div><h3>发布历史</h3><p>最近 3 次</p></div></div>' +

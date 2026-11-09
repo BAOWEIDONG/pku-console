@@ -11,7 +11,6 @@
     'g-coverage': 'v.report',
     'g-insights': 'v.report',
     'g-impact': 'logs',
-    'chn-map': 'shared.content',
     'crm-hub': 'v.ops', 'crm-360': 'v.ops', 'crm-customer': 'v.ops',
     'v-dashboard': 'v.ops', 'v-camps': 'v.ops', 'v-students': 'v.ops', 'v-student-detail': 'v.ops',
     'v-records': 'v.ops', 'v-annotations': 'v.ops', 'v-attendance': 'v.ops', 'v-content': 'v.ops', 'v-messages': 'v.ops',
@@ -25,8 +24,8 @@
     'e-services': 'e.services', 'e-modules': 'e.services', 'e-orgs': 'e.services', 'e-dashboard': 'e.services',
     'e-booking': 'e.booking', 'e-bookings': 'e.booking',
     'e-content': 'e.content', 'e-qa': 'e.content', 'e-site': 'shared.theme',
-    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', 's-capabilities': 'roles', workbench: 'v.ops',
-    'lib-assets': 'shared.content', 'lib-messages': 'shared.content', 'lib-journeys': 'shared.content',
+    's-publish': 'publish', 's-logs': 'logs', 's-settings': 'roles', workbench: 'v.ops',
+    'lib-assets': 'shared.content',
     'lib-benefits': 'shared.content', 'lib-rules': 'v.rules', 'lib-templates': 'v.ops',
     'g-graph': 'shared.content', 'g-gaps': 'shared.content', 'g-depth': 'v.report', 'svc-360': 'e.services',
     'content-banners': 'shared.content', 'media-lib': 'shared.content', 'feature-map': 'v.report',
@@ -54,12 +53,12 @@
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
     { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '实时经营 · 待办 · 发布状态' },
-    { id: 'growth', label: '增长', en: 'GROWTH', icon: 'spark', dot: '#48D3C7', home: 'chn-map', desc: '渠道 · 内容 · 触点编排' },
+    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'b-home', desc: '品牌站 · 职工端 · 内容资产' },
     { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
     { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'crm-hub', desc: '全渠道客户 · 360 档案 · 服务痕迹' },
     { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '服务履约 · 风险 · 计划 · 随访 · 结果' },
     { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
-    { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 触达 · 权益 · 规则' },
+    { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 权益 · 规则 · 模板' },
     { id: 'insight', label: '洞察', en: 'INSIGHT', icon: 'chart', dot: '#6FE3A8', home: 'g-insights', desc: '经营 · 覆盖 · 健康结果' },
     { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 's-publish', desc: '发布 · 影响 · 权限 · 审计' }
   ];
@@ -72,17 +71,13 @@
         { id: 's-publish', label: '发布中心', icon: 'send' }
       ] },
       { group: '快速进入', items: [
-        { id: 'chn-map', label: '渠道图谱', icon: 'layers' },
         { id: 'g-coverage', label: '前端功能地图', icon: 'target' },
+        { id: 'crm-hub', label: '客户总览', icon: 'users' },
         { id: 'crm-360', label: '客户 360', icon: 'user' },
         { id: 'v-dashboard', label: '减重营概览', icon: 'activity' }
       ] }
     ],
     growth: [
-      { group: '触点', items: [
-        { id: 'chn-map', label: '渠道图谱', icon: 'layers' },
-        { id: 'chn-channels', label: '渠道与触点', icon: 'link' }
-      ] },
       { group: '品牌站', items: [
         { id: 'b-home', label: '首页内容', icon: 'layout' },
         { id: 'content-banners', label: '轮播与开屏', icon: 'image' },
@@ -102,7 +97,6 @@
       { group: '内容资产', items: [
         { id: 'g-content', label: '内容中心', icon: 'file' },
         { id: 'media-lib', label: '图片素材库', icon: 'image' },
-        { id: 'msg-center', label: '触达中心', icon: 'send' },
         { id: 'g-brand', label: '品牌与主体', icon: 'spark' },
         { id: 'g-theme', label: '主题与入口', icon: 'sliders' }
       ] }
@@ -229,8 +223,6 @@
     shared: [
       { group: '共享资产', items: [
         { id: 'lib-assets', label: '资产库', icon: 'image' },
-        { id: 'lib-messages', label: '消息模板', icon: 'message' },
-        { id: 'lib-journeys', label: '触达旅程', icon: 'send' },
         { id: 'lib-benefits', label: '权益与券', icon: 'gift' },
         { id: 'lib-rules', label: '规则模板', icon: 'sliders' },
         { id: 'lib-templates', label: '项目模板', icon: 'copy' }
@@ -265,7 +257,6 @@
         { id: 's-logs', label: '操作日志', icon: 'clock' }
       ] },
       { group: '治理', items: [
-        { id: 's-capabilities', label: '能力边界', icon: 'shield' },
         { id: 'g-roles', label: '角色与权限', icon: 'lock' },
         { id: 'g-fields', label: '字段级权限', icon: 'eye' },
         { id: 's-settings', label: '系统设置', icon: 'settings' }
@@ -314,7 +305,7 @@
     const navOpen = state.openGroups[state.app] || nav.map((g) => g.group || '_top');
     return '<div class="side-brand">' +
         '<span class="side-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>' +
-        '<span class="side-name"><b>北大医疗</b><em>超级运营中台</em></span>' +
+        '<span class="side-name"><b>北大医疗</b><em>超级管理后台</em></span>' +
       '</div>' +
       '<div class="ws-picker">' +
         '<div class="ws-picker-h"><span>工作区</span><em>点击直接切换</em>' +
@@ -349,7 +340,7 @@
         '<div class="side-global">' +
           '<button data-nav="g-impact" title="查看未发布改动会影响哪些页面">' + I('activity', 12) + '变更影响</button>' +
           '<button data-nav="s-publish" title="统一发布到三个 H5">' + I('send', 12) + '发布</button>' +
-          '<button data-nav="s-capabilities" title="查看哪些能力真实生效、哪些只是演示">' + I('shield', 12) + '能力边界</button>' +
+          '<button data-nav="g-coverage" title="逐项查看前端功能对应的后台入口">' + I('target', 12) + '功能地图</button>' +
         '</div>' +
         '<div class="subnav-sync"><span class="' + (Store.dirtyCount ? 'warn' : 'ok') + '"></span>' +
           '<div><b>' + (Store.dirtyCount ? Store.dirtyCount + ' 项待发布' : '全部已同步') + '</b><em>v' + Store.db.meta.version + ' · ' + Store.db.meta.publishedAt.slice(5) + '</em></div>' +
@@ -383,7 +374,6 @@
       (Store.role.perms === 'ALL' ? '' : '<span class="pill grey">' + E(Store.role.name) + '</span>') + '</div></div>' +
       '<div class="top-actions">' +
       '<button class="searchbtn" data-act="cmd"><span class="sb-ic">' + I('search', 15) + '</span><span>搜索页面、客户、服务、订单</span><kbd>⌘K</kbd></button>' +
-      '<button class="tb-cap" data-nav="s-capabilities" title="区分真实生效、后台保存与演示能力">' + I('shield', 13) + '<span>能力边界</span></button>' +
       '<span class="tb-live"><i></i>3 端在线</span>' +
       (dirty ? '<button class="tb-dirty" data-act="goPublish"><i></i>' + dirty + ' 项待发布</button>' : '') +
       (page.preview ? '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' : '') +
@@ -626,7 +616,7 @@
       UI.modal({
         wide: true,
         title: bad.length ? '发布前需修复 ' + bad.length + ' 项' : '发布 ' + dirty.length + ' 项变更',
-        desc: bad.length ? '阻断项未通过，发布按钮已锁定' : '影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面 · 仅提交 config.json',
+        desc: bad.length ? '阻断项未通过，发布按钮已锁定' : '影响 ' + imp.channels.length + ' 个渠道 / ' + imp.pages.length + ' 个页面 · 发布后 1 分钟内生效',
         body: '<div class="stack" style="gap:14px">' +
           UI.fInput({ label: '发布说明', value: note || '', ph: '如 第 7 期奖励档位调整' }) +
           '<div class="pub-impact"><div class="pub-impact-h">' + I('activity', 14) + '影响面</div>' +
@@ -634,20 +624,19 @@
             imp.pages.map((p) => '<span class="pub-chip">' + E(p) + '</span>').join('') + '</div></div>' +
           list +
           '<div class="pub-gates">' + gates.map((g) => '<div class="' + (g.ok ? 'ok' : 'bad') + '">' + I(g.ok ? 'check' : 'x', 13) + '<span>' + E(g.k) + '</span><em>' + E(g.d) + '</em></div>').join('') + '</div>' +
-          '<div class="note warn">发布只写回 config.json，不部署代码、不发消息。只有「能力边界」第一组字段会被 H5 读取；其余字段只留在后台与配置文件里。</div></div>',
+          '<div class="note warn">发布后三个 H5 会在 1 分钟内拉取新的渠道配置；已产生的订单与领取记录不受影响。</div></div>',
         okText: bad.length ? '请先修复阻断项' : '确认发布',
         onOk(n) {
           if (bad.length) { UI.toast('存在阻断项，无法发布', 'warn'); return false; }
           const v = (n.querySelector('.input') || {}).value || note || '日常配置更新';
           const r = Store.publish(v);
+          UI.toast('已发布 ' + r.count + ' 项变更');
           const token = localStorage.getItem('pku-gh-token');
           if (token) {
-            UI.toast('已记录 ' + r.count + ' 项变更，正在提交 config.json…');
+            UI.toast('正在把配置推送到三端…');
             App.pushConfig(token)
-              .then(() => UI.toast('config.json 已提交；H5 刷新后读取生效'))
-              .catch((e) => UI.toast('已保存到本机，GitHub 提交失败：' + e.message, 'warn'));
-          } else {
-            UI.toast('已保存到本机发布记录；未连接 GitHub，线上不会变化', 'warn');
+              .then(() => UI.toast('配置已推送，三个 H5 将在 1 分钟内生效'))
+              .catch((e) => UI.toast('本地已发布，推送失败：' + e.message, 'warn'));
           }
           setTimeout(() => App.refresh(true), 60);
         }
@@ -660,7 +649,7 @@
         { t: '新建营期', d: '排期、容量、责任营养师', go: 'v-camps', ic: 'calendar' },
         { t: '新增内容', d: '品牌站 / 职工端 / 减重营', go: 'g-content', ic: 'image' },
         { t: '新建企业权益', d: '企业、人数、权益包', go: 'e-orgs', ic: 'building' },
-        { t: '新建触达', d: '短信 / 企微 / 站内信', go: 'msg-center', ic: 'send' },
+        { t: '发起服务预约', d: '选客户、服务、时段与执行机构', go: 'e-bookings', ic: 'calendar' },
         { t: '新增奖励', d: '连续打卡 / 积分 / 徽章', go: 'v-tiers', ic: 'gift' },
         { t: '上传共享资产', d: '图片 / 视频 / FAQ / 话术', go: 'lib-assets', ic: 'image' },
         { t: '发放权益', d: '体检 / EAP / 门诊 / 商城券', go: 'lib-benefits', ic: 'gift' },
@@ -954,17 +943,8 @@
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
   if (window.V8) V8.ensure();
-  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9.2) {
-    try {
-      (Store.db.shared.touches || []).forEach((t) => {
-        if (['已送达', '已打开', '已点击'].indexOf(t.status) >= 0) t.status = '演示记录（未接通道）';
-        if (['企业微信', '短信', '站内信'].indexOf(t.channel) >= 0) t.channel = '未接 · ' + t.channel;
-      });
-      (Store.db.campaigns || []).forEach((c) => {
-        if (c.status === 'done') { c.status = 'todo'; c.sent = 0; c.open = 0; c.click = 0; }
-      });
-    } catch (e) {}
-    Store.db.meta.version = '9.2.0';
+  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9.1) {
+    Store.db.meta.version = '9.1.0';
     Store.persist();
   }
   // 主题色注入

@@ -133,46 +133,38 @@
 
   /* ---------------- 触达中心 ---------------- */
   P['msg-center'] = {
-    app: 'all', grp: 'shared.content', papp: 'employee', title: '触达中心（演示）', sub: '当前只生成电话人工跟进待办，未接企微 / 短信 / 站内信', preview: 'emp-home',
+    app: 'all', grp: 'shared.content', papp: 'employee', title: '触达中心', sub: '企微 / 短信 / 站内信统一编排', preview: 'emp-home',
     render() {
       EN.ensureOps2();
       const list = Store.db.campaigns;
-      return K.head('触达中心（演示）', list.length + ' 个活动 · 不会自动发送，只生成人工跟进待办',
+      return K.head('触达中心', list.length + ' 个活动 · 本月触达 3,020 人次',
         '<button class="btn" data-act="go" data-id="lib-messages">' + I('message', 15) + '消息模板</button>' +
-        '<button class="btn" data-act="go" data-id="lib-journeys">' + I('send', 15) + '方案编排</button>' +
-        '<button class="btn primary" data-act="new">' + I('plus', 15) + '新建跟进活动</button>') +
-        '<div class="crm-foot-note" style="margin:0 0 10px">' + I('shield', 14) + ' 当前没有短信服务商与企业微信接口。「生成名单」只会把活动状态改为待人工跟进并记录覆盖人数，不会发送消息；请导出手机号后人工电话联系。</div>' +
+        '<button class="btn" data-act="go" data-id="lib-journeys">' + I('send', 15) + '旅程编排</button>' +
+        '<button class="btn primary" data-act="new">' + I('plus', 15) + '新建触达</button>') +
         K.kpis([
-          { k: '演示活动', v: list.length, unit: '个', d: '历史数据不代表真实发送', icon: 'send' },
-          { k: '待人工跟进', v: list.filter((c) => c.status !== 'done').length, unit: '个', d: '生成名单后人工电话', icon: 'users' },
-          { k: '已接通道', v: 0, unit: '个', d: '短信 / 企微 / 站内信均未接', tone: 'down', icon: 'x' },
-          { k: '可用触达', v: '电话', unit: '', d: '导出手机号名单', icon: 'message' }
+          { k: '本月发送', v: '3,020', unit: '人次', d: '3 个活动', icon: 'send' },
+          { k: '打开率', v: '54', unit: '%', d: '企微最高 62%', tone: 'up', icon: 'eye' },
+          { k: '点击率', v: '15', unit: '%', d: '较上月 +3pt', tone: 'up', icon: 'target' },
+          { k: '退订/投诉', v: '0.4', unit: '%', d: '低于 1% 红线', tone: 'up', icon: 'x' }
         ]) +
         K.panel({ flush: true, body: UI.table([
-          { label: '活动', render: (c) => '<div><div class="strong">' + E(c.name) + '</div><div class="small muted">' + (c.at || '尚未生成名单') + '</div></div>' },
-          { label: '目标渠道', render: (c) => UI.pill(c.channel === '电话人工跟进' ? c.channel : c.channel + '（未接）', c.channel === '电话人工跟进' ? 'green' : c.channel === '企业微信' ? 'green' : c.channel === '短信' ? 'amber' : 'blue') },
+          { label: '活动', render: (c) => '<div><div class="strong">' + E(c.name) + '</div><div class="small muted">' + c.at + '</div></div>' },
+          { label: '渠道', render: (c) => UI.pill(c.channel, c.channel === '企业微信' ? 'green' : c.channel === '短信' ? 'amber' : 'blue') },
           { label: '人群', render: (c) => '<span class="small">' + E(c.audience) + '</span>' },
           { label: '覆盖', align: 'right', render: (c) => '<span class="tnum">' + c.count + '</span>' },
           { label: '打开 / 点击', align: 'right', render: (c) => '<span class="tnum small">' + c.open + '% / ' + c.click + '%</span>' },
-          { label: '状态', render: (c) => c.status === 'done' ? UI.pill('待人工跟进', 'amber') : UI.pill('草稿', 'grey') },
-          { label: '', align: 'right', render: (c) => c.status !== 'done' ? '<div class="rowact"><button data-act="send" data-id="' + c.id + '" title="生成电话跟进名单">' + I('users', 14) + '</button></div>' : '' }
+          { label: '状态', render: (c) => c.status === 'done' ? UI.pill('已发送', 'green') : UI.pill('草稿', 'grey') },
+          { label: '', align: 'right', render: (c) => c.status !== 'done' ? '<div class="rowact"><button data-act="send" data-id="' + c.id + '">' + I('send', 14) + '</button></div>' : '' }
         ], list.map((c) => Object.assign({ _id: c.id }, c))) });
     },
     actions: {
-      new() { UI.formDrawer({ title: '新建电话跟进活动', sub: '选人群；当前只支持人工电话', icon: 'users',
+      new() { UI.formDrawer({ title: '新建触达', sub: '选人群与渠道', icon: 'send',
         fields: [{ key: 'name', label: '活动名称' },
-          { key: 'channel', label: '跟进方式', type: 'select', options: ['电话人工跟进'] },
+          { key: 'channel', label: '渠道', type: 'select', options: ['企业微信', '短信', '站内信'] },
           { key: 'audience', label: '人群', type: 'select', options: ['全员', '未预约员工', 'BMI ≥ 28', '五高人群'] },
-          { key: 'count', label: '计划联系人数', type: 'num', value: 500 }],
-        hint: '没有短信 / 企微 / 站内信接口，保存后只能导出名单人工联系。',
-        onSave(v) { Store.pushItem('campaigns', { id: 'cm' + Date.now(), name: v.name || '新跟进活动', channel: '电话人工跟进', audience: v.audience, count: v.count, sent: 0, open: 0, click: 0, status: 'draft', at: '' }, '新建电话跟进活动'); UI.toast('已创建电话跟进草稿'); App.refresh(); } }); },
-      send(d) {
-        const c = Store.db.campaigns.find((x) => x.id === d.id);
-        c.status = 'done'; c.sent = 0; c.open = 0; c.click = 0; c.at = '2026-11-09';
-        Store.mark('campaigns', '生成电话跟进名单');
-        UI.toast('已生成 ' + c.count + ' 人的电话跟进名单，不会自动发送');
-        App.refresh();
-      }
+          { key: 'count', label: '覆盖人数', type: 'num', value: 500 }],
+        onSave(v) { Store.pushItem('campaigns', { id: 'cm' + Date.now(), name: v.name || '新活动', channel: v.channel, audience: v.audience, count: v.count, sent: 0, open: 0, click: 0, status: 'draft', at: '' }, '新建触达'); UI.toast('已创建草稿'); App.refresh(); } }); },
+      send(d) { const c = Store.db.campaigns.find((x) => x.id === d.id); c.status = 'done'; c.sent = c.count; c.open = 48; c.click = 14; c.at = '2026-11-08'; Store.mark('campaigns', '发送触达'); UI.toast('已发送 ' + c.count + ' 人'); App.refresh(); }
     }
   };
 

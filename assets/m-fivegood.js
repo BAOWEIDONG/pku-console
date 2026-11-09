@@ -215,7 +215,7 @@
             UI.fInput({ label: '报告标题', value: r.title, path: 'fivegood.report.title' }) +
             UI.fNum({ label: '每月生成日', value: r.pushDay, path: 'fivegood.report.pushDay' }) +
             UI.fSwitch({ label: '自动推送', value: r.push, path: 'fivegood.report.push' }) +
-            '</div><div class="note">报告通过企业微信与短信触达，未读会在 3 天后提醒一次。</div>' }) +
+            '</div><div class="note">报告由健康管家电话或当面反馈，未读会在 3 天后由管家再次联系。</div>' }) +
           K.panel({ title: '报告会回答的问题', body: '<div class="small mut" style="line-height:1.9">' +
             '· 我这个月有没有变好？<br>· 哪个维度拖了后腿？<br>· 下个月该做哪三件事？<br>· 还有哪些权益没用？</div>' }) +
         '</div></div>';

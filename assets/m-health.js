@@ -430,7 +430,7 @@
           K.panel({ title: '服务机构', flush: true, body: '<div style="padding:4px 18px 12px">' + h.orgs.map((o, i) =>
             '<div class="listrow"><div class="meta"><b>' + E(o.name) + '</b><span>' + E(o.sub) + '</span></div>' +
             '<button class="switch right ' + (o.on ? 'on' : '') + '" data-toggle="employee.orgs.' + i + '.on"></button></div>').join('') + '</div>' }) +
-          K.panel({ title: '预约入口', body: '<div class="small mut" style="line-height:1.8">员工从企业微信工作台进入，免登录。<br>每个员工可见的服务由其权益包决定。</div>' }) +
+          K.panel({ title: '预约入口', body: '<div class="small mut" style="line-height:1.8">员工从职工健康 H5 进入，免登录。<br>每个员工可见的服务由其权益包决定。</div>' }) +
         '</div><div class="stack">' +
           K.panel({ title: '权益额度', body: '<div class="stack" style="gap:14px">' +
             UI.fNum({ label: '年度体检（次/人/年）', value: e.annualExam, path: 'employee.site.entitlement.annualExam' }) +

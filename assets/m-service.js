@@ -34,7 +34,7 @@
           { k: '在售 SPU', v: online.length, unit: '个', d: '草稿 ' + list.filter((s) => s.status === 'draft').length + ' 个待上架', icon: 'package' },
           { k: '平均毛利率', v: avgMargin, unit: '%', d: '低于 25% 的有 3 个', tone: avgMargin < 30 ? 'down' : 'up', icon: 'chart' },
           { k: '本月服务收入', v: '42.8', unit: '万', d: '较上月 <b>+12%</b>', tone: 'up', icon: 'target' },
-          { k: '覆盖渠道', v: CH().filter((c) => c.on).length, unit: '个', d: 'H5 3 · 企微 · 官网', icon: 'layers' }
+          { k: '覆盖渠道', v: CH().filter((c) => c.on).length, unit: '个', d: 'H5 3 · 官网', icon: 'layers' }
         ]) +
         K.toolbar(
           '<div class="row" style="gap:6px;flex-wrap:wrap">' + K.seg([{ id: '', label: '全部 ' + list.length }].concat(cats.map((c) => ({ id: c, label: c }))), st.cat, 'filterCat') + '</div>',

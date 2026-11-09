@@ -81,7 +81,7 @@
       { id: 'hr3', name: '血脂异常', dim: '血脂', condition: 'LDL-C ≥ 4.1 mmol/L', level: 'medium', action: '营养师方案 + 8 周后复测', on: true, hits: 9 },
       { id: 'hr4', name: '肥胖风险', dim: '体重', condition: 'BMI ≥ 28', level: 'medium', action: '推荐减重营或体重管理计划', on: true, hits: 12 },
       { id: 'hr5', name: '睡眠呼吸暂停风险', dim: '睡眠', condition: '打鼾 + 夜间 SpO₂ 下降 ≥ 3 次', level: 'high', action: '建议多导睡眠监测', on: true, hits: 3 },
-      { id: 'hr6', name: '情绪高风险', dim: '心理', condition: 'PHQ-2 ≥ 3 或连续 5 天情绪 ≤ 2 分', level: 'high', action: 'EAP 24 小时内回访，暂停营销触达', on: true, hits: 5 },
+      { id: 'hr6', name: '情绪高风险', dim: '心理', condition: 'PHQ-2 ≥ 3 或连续 5 天情绪 ≤ 2 分', level: 'high', action: 'EAP 24 小时内回访，暂停非必要提醒', on: true, hits: 5 },
       { id: 'hr7', name: '高尿酸风险', dim: '尿酸', condition: '尿酸 ≥ 420 μmol/L', level: 'medium', action: '饮食干预 + 8 周复测', on: true, hits: 7 },
       { id: 'hr8', name: '随访逾期', dim: '依从性', condition: '计划内随访逾期 ≥ 7 天', level: 'medium', action: '升级至健管师人工跟进', on: true, hits: 8 }
     ],
@@ -105,17 +105,17 @@
     ],
 
     followups: [
-      { id: 'fu1', profileId: 'hp4', planId: 'cp1', type: '血压复核', due: '2026-11-08', time: '09:30', channel: '企业微信', owner: '赵医生', status: 'due', priority: 'high', note: '昨日自测 158/96，需确认服药与复诊安排。' },
+      { id: 'fu1', profileId: 'hp4', planId: 'cp1', type: '血压复核', due: '2026-11-08', time: '09:30', channel: '电话', owner: '赵医生', status: 'due', priority: 'high', note: '昨日自测 158/96，需确认服药与复诊安排。' },
       { id: 'fu2', profileId: 'hp1', planId: 'cp2', type: '睡眠周复盘', due: '2026-11-08', time: '15:00', channel: '电话', owner: '王雪', status: 'due', priority: 'normal', note: '睡眠日记完成 5/7 天。' },
       { id: 'fu3', profileId: 'hp7', planId: 'cp3', type: 'EAP 咨询后回访', due: '2026-11-08', time: '17:30', channel: 'EAP 专线', owner: '李咨询师', status: 'due', priority: 'high', note: '仅记录服务完成情况，不采集咨询内容。' },
-      { id: 'fu4', profileId: 'hp6', planId: 'cp4', type: '第 4 周复测', due: '2026-11-09', time: '10:00', channel: '企业微信', owner: '赵医生', status: 'upcoming', priority: 'normal', note: '需上传家庭血压 7 天记录。' },
-      { id: 'fu5', profileId: 'hp8', planId: 'cp5', type: '饮食打卡复盘', due: '2026-11-09', time: '14:00', channel: '企业微信', owner: '王雪', status: 'upcoming', priority: 'normal', note: '重点确认饮酒频次。' },
+      { id: 'fu4', profileId: 'hp6', planId: 'cp4', type: '第 4 周复测', due: '2026-11-09', time: '10:00', channel: '电话', owner: '赵医生', status: 'upcoming', priority: 'normal', note: '需上传家庭血压 7 天记录。' },
+      { id: 'fu5', profileId: 'hp8', planId: 'cp5', type: '饮食打卡复盘', due: '2026-11-09', time: '14:00', channel: '电话', owner: '王雪', status: 'upcoming', priority: 'normal', note: '重点确认饮酒频次。' },
       { id: 'fu6', profileId: 'hp2', planId: 'cp6', type: '运动处方调整', due: '2026-11-10', time: '11:00', channel: '电话', owner: '陈放', status: 'upcoming', priority: 'normal', note: '膝关节无不适后提升至 L2。' },
-      { id: 'fu7', profileId: 'hp4', planId: 'cp1', type: '复查预约确认', due: '2026-11-06', time: '16:00', channel: '企业微信', owner: '赵医生', status: 'overdue', priority: 'high', note: '已逾期 2 天，复查尚未预约。' },
-      { id: 'fu8', profileId: 'hp3', planId: '', type: '年度健康回访', due: '2026-11-06', time: '10:30', channel: '企业微信', owner: '王雪', status: 'completed', priority: 'low', note: '指标稳定，建议继续保持。', outcome: '已完成，无需升级。', next: '2027-03-01' },
-      { id: 'fu9', profileId: 'hp5', planId: '', type: '睡眠筛查', due: '2026-11-04', time: '09:00', channel: '企业微信', owner: '陈放', status: 'completed', priority: 'normal', note: 'PSQI 得分 9，建议加入睡眠改善计划。', outcome: '已转睡眠改善计划。', next: '2026-11-20' },
+      { id: 'fu7', profileId: 'hp4', planId: 'cp1', type: '复查预约确认', due: '2026-11-06', time: '16:00', channel: '电话', owner: '赵医生', status: 'overdue', priority: 'high', note: '已逾期 2 天，复查尚未预约。' },
+      { id: 'fu8', profileId: 'hp3', planId: '', type: '年度健康回访', due: '2026-11-06', time: '10:30', channel: '电话', owner: '王雪', status: 'completed', priority: 'low', note: '指标稳定，建议继续保持。', outcome: '已完成，无需升级。', next: '2027-03-01' },
+      { id: 'fu9', profileId: 'hp5', planId: '', type: '睡眠筛查', due: '2026-11-04', time: '09:00', channel: '电话', owner: '陈放', status: 'completed', priority: 'normal', note: 'PSQI 得分 9，建议加入睡眠改善计划。', outcome: '已转睡眠改善计划。', next: '2026-11-20' },
       { id: 'fu10', profileId: 'hp4', planId: 'cp1', type: '用药依从性确认', due: '2026-11-03', time: '18:00', channel: '电话', owner: '赵医生', status: 'completed', priority: 'high', note: '患者自述偶有漏服。', outcome: '已设置每日提醒，下次复核。', next: '2026-11-10' },
-      { id: 'fu11', profileId: 'hp6', planId: 'cp4', type: '血压记录复核', due: '2026-11-05', time: '09:00', channel: '企业微信', owner: '赵医生', status: 'completed', priority: 'normal', note: '7 天平均 142/90。', outcome: '继续当前方案，2 周后复测。', next: '2026-11-19' },
+      { id: 'fu11', profileId: 'hp6', planId: 'cp4', type: '血压记录复核', due: '2026-11-05', time: '09:00', channel: '电话', owner: '赵医生', status: 'completed', priority: 'normal', note: '7 天平均 142/90。', outcome: '继续当前方案，2 周后复测。', next: '2026-11-19' },
       { id: 'fu12', profileId: 'hp7', planId: 'cp3', type: '安全风险评估', due: '2026-11-02', time: '20:00', channel: 'EAP 专线', owner: '李咨询师', status: 'completed', priority: 'high', note: '已完成风险分级，无即时危机。', outcome: '进入 4 周关怀计划。', next: '2026-11-09' }
     ],
 
@@ -187,7 +187,7 @@
     { id: 'fmp3', memberId: 'fm3', name: '周雯', tier: '尊享版', stage: '优秀', coach: '王雪', consent: 'signed', risk: 'low', tasksDone: 10, tasksDue: 10, streak: 28, lastActive: '2026-11-08', next: '月度报告已生成', joined: '2026-01-08' },
     { id: 'fmp4', memberId: 'fm4', name: '徐一鸣', tier: '进阶版', stage: '风险暂停', coach: '赵医生', consent: 'signed', risk: 'high', tasksDone: 4, tasksDue: 10, streak: 1, lastActive: '2026-11-05', next: '转健康管理计划', joined: '2026-06-20' },
     { id: 'fmp5', memberId: 'fm5', name: '何雨桐', tier: '基础版', stage: '执行中', coach: '陈放', consent: 'signed', risk: 'medium', tasksDone: 7, tasksDue: 10, streak: 7, lastActive: '2026-11-08', next: '压力自评待完成', joined: '2026-08-02' },
-    { id: 'fmp6', memberId: 'fm6', name: '赵启明', tier: '进阶版', stage: '低活跃', coach: '王雪', consent: 'signed', risk: 'medium', tasksDone: 3, tasksDue: 10, streak: 0, lastActive: '2026-10-28', next: '召回触达', joined: '2026-04-15' }
+    { id: 'fmp6', memberId: 'fm6', name: '赵启明', tier: '进阶版', stage: '低活跃', coach: '王雪', consent: 'signed', risk: 'medium', tasksDone: 3, tasksDue: 10, streak: 0, lastActive: '2026-10-28', next: '电话回访', joined: '2026-04-15' }
   ];
 
   fg.memberTasks = [
@@ -218,7 +218,7 @@
 
   fg.escalations = [
     { id: 'fe1', memberId: 'fmp4', name: '徐一鸣', signal: '五维总分 53.6，睡眠 48，体检 50', level: 'high', from: '五好评分', action: '转入五高一重共管 + 随访', status: 'open', at: '2026-11-06' },
-    { id: 'fe2', memberId: 'fmp6', name: '赵启明', signal: '连续 11 天无任务完成', level: 'medium', from: '活跃度', action: '召回触达 + 降低任务门槛', status: 'open', at: '2026-11-05' },
+    { id: 'fe2', memberId: 'fmp6', name: '赵启明', signal: '连续 11 天无任务完成', level: 'medium', from: '活跃度', action: '电话回访 + 降低任务门槛', status: 'open', at: '2026-11-05' },
     { id: 'fe3', memberId: 'fmp1', name: '林悦', signal: '睡眠维度连续 2 周低于 65 分', level: 'medium', from: '睡好', action: '推荐睡眠改善计划', status: 'converted', at: '2026-11-03' },
     { id: 'fe4', memberId: 'fmp5', name: '何雨桐', signal: 'PSS-10 得分 29，压力偏高', level: 'medium', from: '心好', action: '推送压力管理课程 + EAP 入口', status: 'open', at: '2026-11-07' },
     { id: 'fe5', memberId: 'fmp3', name: '周雯', signal: '无风险，连续 28 天达标', level: 'low', from: '五好评分', action: '邀请成为健康榜样', status: 'converted', at: '2026-11-04' }
