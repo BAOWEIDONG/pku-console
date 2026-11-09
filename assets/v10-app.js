@@ -99,6 +99,7 @@
   let data = saved.data;
   const state = {
     route: 'home', ctx: {}, openGroup: 'camp', ui: {}, navOpen: false,
+    prevRoute: '', prevCtx: {},
     dirty: saved.dirty || 0, logs: saved.logs || [], savedAt: saved.savedAt || '尚未保存',
     assets: saved.assets || [], drawer: null, toast: '', init: true
   };
@@ -136,11 +137,16 @@
       ]
     }, b.about || {});
     const e = data.employee;
+    e.modules.forEach((m, i) => {
+      m.on = m.on !== false;
+      m.order = Number(m.order || i + 1);
+      m.desc = m.desc || m.sub || '';
+    });
     e.home = Object.assign({
       greeting: '你好，杨君', company: '国家电网 · 华东分部', entitlement: '健康权益已开通',
       searchPlaceholder: '搜索服务、症状或机构', aiTitle: '不知道选哪项？', aiSub: '说说症状或诉求，企康小安帮你匹配服务',
       hotTitle: '热门服务', hotCount: 5, footer: '北大医疗集团 · 企康办',
-      aiEnabled: true, showAppointments: true, showBenefits: true, showFamily: true, showArticles: true
+      aiEnabled: true, showAppointments: true, showBenefits: true, showFamily: true, showArticles: true, showModules: true, moduleSort: true
     }, e.home || {});
     e.banners = e.banners || [
       { id: 'bn1', enabled: true, title: '企业职工医疗健康管理系列产品', sub: '筛、诊、治、康　全生命周期守护', brand: '北大医疗', link: 'e-services', image: '', tone: '#1d5f86' },
@@ -239,6 +245,50 @@
     data.meal.dishes.forEach((d) => { d.imageUrl = d.imageUrl || ''; d.tags = d.tags || []; d.allerg = d.allerg || []; d.ing = d.ing || []; d.on = d.on !== false; });
     data.meal.mealTemplates.forEach((t) => { t.dishes = t.dishes || []; t.tags = t.tags || []; t.on = t.on !== false; });
     data.meal.supplements.forEach((s) => { s.imageUrl = s.imageUrl || ''; s.avoid = s.avoid || []; s.on = s.on !== false; });
+    data.meal.rules = data.meal.rules || [
+      { id: 'mr1', name: '普通职工均衡推荐', audience: '普通职工', condition: '无特殊慢病与禁忌', dayPlanId: 'dp1', note: '默认推荐标准均衡 1800kcal', on: true },
+      { id: 'mr2', name: '血糖偏高控糖推荐', audience: '血糖偏高', condition: '空腹血糖 ≥ 6.1 或糖化 ≥ 6%', dayPlanId: 'dp2', note: '优先低 GI 主食与足量蛋白；不替代营养门诊', on: true },
+      { id: 'mr3', name: '减重期低热量推荐', audience: 'BMI ≥ 28', condition: 'BMI ≥ 28 且无孕期 / 哺乳', dayPlanId: 'dp3', note: '热量缺口不宜过大，配合运动处方', on: true },
+      { id: 'mr4', name: '高尿酸低嘌呤推荐', audience: '高尿酸', condition: '尿酸 ≥ 420 μmol/L', dayPlanId: 'dp4', note: '限制高嘌呤与酒精，建议 8 周复测', on: true },
+      { id: 'mr5', name: '高管高压地中海推荐', audience: '高管 / 高压', condition: '应酬多、血脂偏高', dayPlanId: 'dp9', note: '强调优质脂肪与蔬果，不承诺降指标', on: false }
+    ];
+    const opsSeed = window.V10_OPS_SEED || {};
+    data.ops = data.ops || {};
+    ['health', 'price', 'bundles', 'settle', 'fivegood', 'rbac'].forEach((k) => { if (!data.ops[k]) data.ops[k] = clone(opsSeed[k] || {}); });
+    ['checkupPlans', 'checkFlow', 'sleepSources', 'sleepRules', 'exercisePlans', 'mindCheckins', 'mindRules', 'servicePricing', 'qa'].forEach((k) => { if (!Array.isArray(data.ops[k])) data.ops[k] = clone(opsSeed[k] || []); });
+    data.ops.health = data.ops.health || {};
+    ['profiles', 'riskRules', 'planTemplates', 'carePlans', 'followups', 'programs', 'enrollments', 'outcomes', 'serviceCases', 'exceptions'].forEach((k) => { if (!Array.isArray(data.ops.health[k])) data.ops.health[k] = clone((opsSeed.health || {})[k] || []); });
+    data.ops.health.followups.forEach((f) => { if (f.channel === '企业微信') f.channel = '电话人工'; });
+    const five = data.ops.fivegood = data.ops.fivegood || {};
+    ['dims', 'tiers', 'tasks', 'members', 'memberProfiles', 'memberTasks', 'checkins', 'escalations', 'consents', 'reports'].forEach((k) => { if (!Array.isArray(five[k])) five[k] = clone(((opsSeed.fivegood || {})[k]) || []); });
+    ['program', 'scoreRule', 'ops'].forEach((k) => { if (!five[k]) five[k] = clone(((opsSeed.fivegood || {})[k]) || {}); });
+    five.reports = five.reports || [];
+    five.memberProfiles.forEach((m) => { m.consent = m.consent || 'signed'; m.risk = m.risk || 'medium'; });
+    five.checkins.forEach((c) => { c.status = c.status || 'pending'; });
+    five.consents.forEach((c) => { c.scopes = Object.assign({ health: true, service: true, mind: false, report: true }, c.scopes || {}); });
+    data.ops.sleepSources.forEach((s) => {
+      if (s.id === 'ss1') { s.name = '手环 / 手表数据导入'; s.type = '文件'; s.desc = '职工上传截图或导出文件，后台人工录入；未接设备接口'; }
+      if (s.id === 'ss2') { s.name = '手机健康 App 数据导入'; s.type = '文件'; s.desc = '职工上传健康 App 截图，后台人工录入；未接 Health Connect'; }
+    });
+    const bundleDefaults = {
+      b1: ['fivehigh', 'sleep', 'weight', 'annual-exam', 'eap'],
+      b2: ['annual-exam', 'risk-report', 'fast'],
+      b3: ['fivehigh', 'risk-report', 'cpet', 'fast'],
+      b4: ['vip', 'cpet', 'annual-exam', 'fast', 'second', 'eap']
+    };
+    data.ops.bundles.forEach((b) => {
+      b.services = b.services || bundleDefaults[b.id] || [];
+      b.imageUrl = b.imageUrl || '';
+      b.status = b.status || 'draft';
+      b.on = b.on !== false;
+    });
+    data.ops.qaUnmatched = data.ops.qaUnmatched || [
+      { id: 'qu1', q: '体检报告里的甲状腺结节 TI-RADS 4a 要不要穿刺？', cat: '体检解读', hits: 28, source: '职工端提问', at: '2026-11-08' },
+      { id: 'qu2', q: '长期吃降压药会不会伤肝？需要多久复查一次？', cat: '慢病管理', hits: 21, source: '电话咨询', at: '2026-11-07' },
+      { id: 'qu3', q: '膝盖不好还能做减重训练营里的运动吗？', cat: '运动康复', hits: 17, source: '训练营提问', at: '2026-11-07' },
+      { id: 'qu4', q: '五好生活会员可以给家属使用吗？', cat: '权益说明', hits: 12, source: '职工端提问', at: '2026-11-06' },
+      { id: 'qu5', q: '睡眠监测报告多久能出？需要住院吗？', cat: '服务流程', hits: 9, source: '预约咨询', at: '2026-11-06' }
+    ];
   }
   normalizeData();
   function saveStore() {
@@ -314,6 +364,18 @@
     'v-badges': { label: '徽章体系', group: '健康训练营', desc: '里程碑、成就与活动徽章' },
     'v-points': { label: '积分与排行', group: '健康训练营', desc: '积分获取规则与学员排行榜' },
     'v-meal': { label: '食谱工程', group: '健康训练营', desc: '全天食谱、餐次模板、菜品、食材与营养补剂' },
+    'e-health': { label: '健康管理总览', group: '职工健康', desc: '风险管理、随访待办、服务到管理的转化' },
+    'e-risk': { label: '风险与健康计划', group: '职工健康', desc: '风险分层、健康画像、共管计划与目标' },
+    'e-programs': { label: '项目与健康结果', group: '职工健康', desc: '干预队列、结果指标与企业健康报告' },
+    'e-followup': { label: '随访工作台', group: '职工健康', desc: '电话随访、逾期提醒、完成记录' },
+    'e-serviceflow': { label: '服务履约台', group: '职工健康', desc: '预约到报告、转管理的服务链与履约异常' },
+    'e-five-members': { label: '五好会员运营', group: '职工健康', desc: '会员档案、打卡审核、月报与授权' },
+    'e-five-ops': { label: '五好主题运营', group: '职工健康', desc: '睡好、动好、心好与任务升级' },
+    'e-qa': { label: '健康问答', group: '职工健康', desc: '知识库、审核规则与未命中问题池' },
+    'plan-pricing': { label: '价格与政策', group: '运营规划', desc: '服务挂牌价、协议价、成本与毛利' },
+    'plan-bundles': { label: '服务组合', group: '运营规划', desc: '可售卖的服务包、组合价与权益' },
+    'trade-orders': { label: '订单中心', group: '交易与结算', desc: '预约、兑换、奖励统一订单台账' },
+    'trade-settle': { label: '结算与对账', group: '交易与结算', desc: '企业客户、合作方账期与对账单' },
     'v-tiers': { label: '连续打卡奖励', group: '健康训练营', desc: '连续天数、库存、图片和领取方式' },
     'v-mall': { label: '积分商城商品', group: '健康训练营', desc: '商品主图、图集、图文详情、积分与库存' },
     'v-fulfill': { label: '发放与核销', group: '健康训练营', desc: '连续打卡奖品与积分兑换的发货、线下领取' },
@@ -329,6 +391,7 @@
     'b-about': { label: '关于北大医疗', group: '品牌站', desc: '品牌故事、数字、历程与愿景' },
     'e-home': { label: '职工端首页', group: '职工健康', desc: '问候、权益、横幅、快捷搜索与热门服务' },
     'e-services': { label: '服务目录', group: '职工健康', desc: '5 大模块与 28 项真实服务' },
+    'e-modules': { label: '服务模块与宫格', group: '职工健康', desc: '职工端首页五宫格的名称、顺序与启停' },
     'e-service': { label: '服务详情配置', group: '职工健康', desc: '单个服务的图片、介绍、包含、流程与预约须知' },
     'e-booking': { label: '预约设置', group: '职工健康', desc: '按模块配置预约字段、机构、时段和规则' },
     'e-orders': { label: '预约记录', group: '职工健康', desc: '全量预约、改约、取消与履约状态' },
@@ -354,6 +417,7 @@
   function metaOf(route) { return META[route] || META.home; }
 
   function navigate(route, ctx) {
+    if (state.route && state.route !== route) { state.prevRoute = state.route; state.prevCtx = state.ctx || {}; }
     state.route = route;
     state.ctx = ctx || {};
     if (route.indexOf('v-') === 0) state.openGroup = 'camp';
@@ -497,18 +561,29 @@
       children: [
         { section: '首页与目录', items: [
           { r: 'e-home', l: '首页配置', i: 'home' },
-          { r: 'e-services', l: '服务目录', i: 'package' }
+          { r: 'e-services', l: '服务目录', i: 'package' },
+          { r: 'e-modules', l: '模块与宫格', i: 'layers' }
+        ] },
+        { section: '健康管理', items: [
+          { r: 'e-health', l: '健康管理总览', i: 'pulse' },
+          { r: 'e-risk', l: '风险与计划', i: 'shield' },
+          { r: 'e-programs', l: '项目与结果', i: 'activity' },
+          { r: 'e-followup', l: '随访工作台', i: 'phone' }
         ] },
         { section: '服务履约', items: [
           { r: 'e-booking', l: '预约设置', i: 'calendar' },
           { r: 'e-orders', l: '预约记录', i: 'doc', badge: () => pendingBookings(data) },
-          { r: 'e-orgs', l: '服务机构', i: 'hospital' }
+          { r: 'e-orgs', l: '服务机构', i: 'hospital' },
+          { r: 'e-serviceflow', l: '服务履约台', i: 'activity' }
         ] },
         { section: '员工侧内容', items: [
           { r: 'e-benefits', l: '权益额度', i: 'shield' },
           { r: 'e-records', l: '健康档案', i: 'file' },
           { r: 'e-content', l: '科普与讲座', i: 'book' },
           { r: 'e-fivegood', l: '五好生活', i: 'star' },
+          { r: 'e-five-members', l: '五好会员运营', i: 'badge' },
+          { r: 'e-five-ops', l: '五好主题运营', i: 'leaf' },
+          { r: 'e-qa', l: '健康问答', i: 'chat' },
           { r: 'e-messages', l: '消息中心', i: 'bell' }
         ] }
       ]
@@ -530,8 +605,10 @@
         NAV_GROUPS.map((g) => {
           const open = activeGroup === g.id;
           return '<div class="nav-group ' + (open ? 'open' : '') + '">' +
-            '<button class="nav-group-head" data-go="' + g.route + '" data-open-group="' + g.id + '"><span class="gdot" style="background:' + g.color + '"></span><span>' + esc(g.title) + '</span><span class="gcount">' + g.children.reduce((n, s) => n + s.items.length, 0) + '</span>' + ic('chevron') + '</button>' +
-            (open ? '<div class="nav-children">' + g.children.map((s) =>
+            '<button class="nav-group-head" data-act="toggleGroup" data-group="' + g.id + '"><span class="gdot" style="background:' + g.color + '"></span><span>' + esc(g.title) + '</span><span class="gcount">' + g.children.reduce((n, s) => n + s.items.length, 0) + '</span>' + ic('chevron') + '</button>' +
+            (open ? '<div class="nav-children">' +
+              '<button class="navlink nav-group-home ' + (state.route === g.route ? 'on' : '') + '" data-go="' + g.route + '">' + ic('grid') + '<span>' + esc(g.title) + '总览</span></button>' +
+              g.children.map((s) =>
               '<div class="nav-child-label">' + esc(s.section) + '</div>' + s.items.map((it) => {
                 const b = it.badge ? it.badge() : 0;
                 return '<button class="navlink ' + (state.route === it.r ? 'on' : '') + '" data-go="' + it.r + '">' + ic(it.i) + '<span>' + esc(it.l) + '</span>' + (b ? '<span class="badge">' + b + '</span>' : '') + '</button>';
@@ -542,7 +619,9 @@
         '<button class="nav-single ' + (state.route.indexOf('crm') === 0 ? 'on' : '') + '" data-go="crm">' + ic('users') + '<span>客户中心</span><span class="badge">' + data.customers.length + '</span></button>' +
         '<button class="nav-single ' + (['assets','templates'].indexOf(state.route) >= 0 ? 'on' : '') + '" data-go="assets">' + ic('layers') + '<span>共享资产</span></button>' +
         '<div class="nav-caption">运营规划</div>' +
-        [['plan','规划总览','calendar'],['plan-services','服务与商品','package'],['plan-exams','体检套餐','pulse'],['plan-schedule','预约排期','clock']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
+        [['plan','规划总览','calendar'],['plan-services','服务与商品','package'],['plan-exams','体检套餐','pulse'],['plan-schedule','预约排期','clock'],['plan-pricing','价格与政策','coins'],['plan-bundles','服务组合','layers']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
+        '<div class="nav-caption">交易与结算</div>' +
+        [['trade-orders','订单中心','doc'],['trade-settle','结算与对账','coins']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
         '<div class="nav-caption">平台</div>' +
         '<button class="nav-single ' + (state.route === 'publish' ? 'on' : '') + '" data-go="publish">' + ic('send') + '<span>发布中心</span>' + (state.dirty ? '<span class="badge">' + state.dirty + '</span>' : '') + '</button>' +
         '<button class="nav-single ' + (state.route === 'map' ? 'on' : '') + '" data-go="map">' + ic('map') + '<span>H5 页面对照</span></button>' +
@@ -557,6 +636,7 @@
     const m = metaOf(state.route);
     const d = domainMeta(state.route);
     return '<header class="topbar"><button class="menu-btn" data-act="toggleNav">' + ic('menu') + '</button>' +
+      (state.route !== 'home' ? '<button class="tb-icon" data-act="goHome" title="回到指挥中心">' + ic('home', 14) + '</button>' : '') +
       '<div class="crumbs"><span class="root">三端运营</span>' + ic('chevron') + '<span>' + esc(d.label) + '</span>' + ic('chevron') + '<b>' + esc(m.label) + '</b></div>' +
       '<button class="search" data-act="openSearch">' + ic('search') + '<span>搜索页面、服务、专家、客户</span><kbd>⌘K</kbd></button>' +
       '<div class="top-actions"><span class="online-chip"><i></i>3 个 H5 在线</span>' +
@@ -882,7 +962,9 @@
       { id: 'tpl', label: '餐次模板 ' + M.mealTemplates.length },
       { id: 'dish', label: '菜品库 ' + M.dishes.length },
       { id: 'ing', label: '食材库 ' + M.ingredients.length },
-      { id: 'sup', label: '营养补剂 ' + M.supplements.length }
+      { id: 'sup', label: '营养补剂 ' + M.supplements.length },
+      { id: 'pair', label: '食谱搭配器' },
+      { id: 'rule', label: '推荐规则' }
     ];
     const match = (x) => !q || (x.name + (x.audience || '') + (x.tags || []).join('') + (x.cat || '') + (x.slot || '')).indexOf(q) >= 0;
     let body = '';
@@ -908,6 +990,28 @@
     if (tab === 'sup') {
       const rows = M.supplements.filter(match);
       body = panel('营养补剂', '适用人群与禁忌必须写清楚；当前只做后台商品配置', '<div class="grid three">' + (rows.length ? rows.map((s) => '<div class="panel pkg-card" style="box-shadow:none" data-act="editMealSup" data-id="' + esc(s.id) + '"><div class="meal-cover" style="height:108px;background:' + (s.imageUrl ? '#eef3f7' : mealCoverStyle(s.id)) + '">' + (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="">' : '<div class="mc-orb"></div>') + '<div class="mc-top"><span class="tag">' + esc(s.cat || '营养补剂') + '</span>' + mealOnPill(s.on) + '</div><div class="mc-title"><b>' + esc(s.name) + '</b><span>已售 ' + (s.sold || 0) + ' · 库存 ' + (s.stock || 0) + '</span></div></div><div class="panel-body"><div class="row-flex"><b style="font-size:18px;color:#c75311">¥' + s.price + '</b><span class="tiny muted right-auto">结算 ¥' + s.settle + '</span></div><div class="tiny muted" style="margin-top:8px;line-height:1.6">' + esc(s.fit || '') + '</div>' + ((s.avoid || []).length ? '<div class="chips" style="margin-top:8px">' + s.avoid.map((a) => pill('忌 ' + a, 'red')).join('') + '</div>' : '') + '<button class="btn sm w-full" style="margin-top:11px" data-act="editMealSup" data-id="' + esc(s.id) + '">编辑补剂</button></div></div>').join('') : empty('没有匹配的补剂')) + '</div>', '<button class="btn sm" data-act="newMealSup">' + ic('plus') + '新增补剂</button>', true);
+    }
+    if (tab === 'pair') {
+      const goal = state.ui.mealPairGoal || 'balanced';
+      const goalMap = { balanced: ['均衡', 'dp1'], sugar: ['控糖', 'dp2'], fatloss: ['减脂', 'dp3'], lowpurine: ['低嘌呤', 'dp4'] };
+      const sel = {};
+      MEAL_SLOTS.forEach((m) => { sel[m] = state.ui['pair' + m] || ((M.mealTemplates.find((t) => t.meal === m) || {}).id || ''); });
+      const totals = MEAL_SLOTS.reduce((n, m) => { const t = mealTplById(sel[m]); if (t) { n.kcal += Number(t.kcal || 0); n.p += Number(t.p || 0); n.c += Number(t.c || 0); n.f += Number(t.f || 0); } return n; }, { kcal: 0, p: 0, c: 0, f: 0 });
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('食谱搭配器', '先选目标，再按四餐组合；不是让营养师从零写', '<div class="toolbar" style="padding:0 0 12px">' + seg([{id:'balanced',label:'均衡'},{id:'sugar',label:'控糖'},{id:'fatloss',label:'减脂'},{id:'lowpurine',label:'低嘌呤'}], goal, 'mealPairGoal') + '<button class="btn sm right-auto" data-act="applyMealPairGoal">' + ic('spark') + '套用推荐</button></div>' +
+          '<div class="form-grid two">' + MEAL_SLOTS.map((m) => '<div class="field"><label>' + m + '</label><select class="select" data-ui-select="pair' + m + '">' + M.mealTemplates.filter((t) => t.meal === m).map((t) => '<option value="' + esc(t.id) + '"' + (sel[m] === t.id ? ' selected' : '') + '>' + esc(t.name) + ' · ' + t.kcal + ' kcal</option>').join('') + '</select></div>').join('') + '</div>' +
+          '<div class="meal-macros" style="margin-top:14px"><div><b>' + totals.kcal + '</b><span>kcal</span></div><div><b>' + totals.p + 'g</b><span>蛋白</span></div><div><b>' + totals.c + 'g</b><span>碳水</span></div><div><b>' + totals.f + 'g</b><span>脂肪</span></div></div>' +
+          '<button class="btn primary" data-act="createPairedMeal" style="margin-top:14px">' + ic('plus') + '生成全天食谱</button>') +
+        panel('搭配原则', '营养师经验要能复用', '<div class="stack tight">' + ['每餐先定蛋白，再配主食与蔬菜', '控糖优先低 GI 主食，不用“无主食”方案', '减脂热量缺口不超过 500kcal / 天', '高尿酸限制高嘌呤与酒精，不靠补剂替代', '孕期、哺乳、肾病等特殊人群必须医生或营养门诊确认'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">原则</span><span>' + esc(x) + '</span></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('当前组合预览', goalMap[goal][0] + '方向', '<div class="meal-preview">' + MEAL_SLOTS.map((m) => { const t = mealTplById(sel[m]); return '<div class="mp-row"><span class="slot">' + m + '</span><div><b>' + esc(t ? t.name : '未选择') + '</b><div class="chips" style="margin-top:5px">' + (t ? mealTplDishes(t).slice(0, 4).map((x) => pill(x.name, 'outline')).join('') : '') + '</div></div><span class="tiny muted right-auto">' + (t ? t.kcal + ' kcal' : '') + '</span></div>'; }).join('') + '</div>') +
+        panel('边界', '搭配器不是诊断工具', '<div class="notice warm">' + ic('info') + '<span>推荐只基于后台规则与营养师配置，不读取个人化验单；特殊人群必须由医生或营养门诊确认。</span></div>') +
+      '</div></div>';
+    }
+    if (tab === 'rule') {
+      const rules = M.rules || [];
+      body = '<div class="grid main-side"><div class="stack">' + panel('推荐规则', '人群与条件命中后，推荐一套全天食谱', '<div class="table-wrap"><table class="table"><thead><tr><th>规则</th><th>适用人群</th><th>触发条件</th><th>推荐食谱</th><th>状态</th></tr></thead><tbody>' + rules.map((r, i) => { const d = M.dayPlans.find((x) => x.id === r.dayPlanId) || {}; return '<tr class="click" data-act="editMealRule" data-id="' + esc(r.id) + '"><td><b style="font-size:11.5px">' + esc(r.name) + '</b><div class="sub">' + esc(r.note || '') + '</div></td><td>' + esc(r.audience) + '</td><td class="small muted">' + esc(r.condition) + '</td><td>' + pill(d.name || '未关联', 'outline') + '</td><td><button class="switch-btn ' + (r.on ? 'on' : '') + '" data-switch="meal.rules.' + i + '.on"></button></td></tr>'; }).join('') + '</tbody></table></div>', '<button class="btn sm" data-act="newMealRule">' + ic('plus') + '新增规则</button>', true) +
+      '</div><div class="stack">' + panel('规则优先级', '避免多个规则打架', '<div class="stack tight">' + ['特殊人群（孕期 / 肾病）优先转医生，不走自动推荐', '疾病条件优先于一般人群标签', '命中多条时取优先级最高的一条', '推荐结果可由营养师手动调整'].map((x, i) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="avatar square" style="width:24px;height:24px;font-size:9px">' + (i + 1) + '</span><span>' + esc(x) + '</span></div>').join('') + '</div>') + panel('能力边界', '', '<div class="notice warm">' + ic('shield') + '<span>规则只做食谱推荐，不提供诊断、处方或药物建议；H5 当前不读取推荐结果。</span></div>') + '</div></div>';
     }
     return '<div class="page wide">' + pageHead('吃好 · 食谱工程', '从食材、菜品到餐次模板和全天食谱，把营养师的经验做成可复用、可采纳、可追踪的产品。', '<button class="btn" data-act="newMealIng">' + ic('leaf') + '<span>新增食材</span></button><button class="btn" data-act="newMealDish">' + ic('bowl') + '<span>新增菜品</span></button><button class="btn primary" data-act="newMealDay">' + ic('plus') + '<span>新建全天食谱</span></button>', 'VERSIONALL / 食谱工程') +
       purpose('把「一餐怎么搭、一天怎么吃」配置成标准食谱，减少营养师重复答疑，也让学员更容易坚持。', '后台食谱库、餐次组合与菜品营养；当前 H5 只展示饮食打卡，食谱需要后续增加学员端入口。', '营养师 / 企康内容运营') +
@@ -1140,6 +1244,25 @@
           const m = moduleMeta(p.mod);
           return '<div class="service-card" style="cursor:pointer" data-go="e-service" data-id="' + esc(p.id) + '"><div class="sc-top"><div class="sc-icon" style="--tint:' + m.tint + ';--inkc:' + m.ink + '">' + ic(m.icon) + '</div><div class="sc-name"><b>' + esc(p.name) + '</b><span>' + esc(p.en || moduleName(p.mod)) + '</span></div><button class="switch-btn ' + (p.active ? 'on' : '') + '" data-switch="employee.products.' + productIndex(p.id) + '.active" title="上下架"></button></div><p class="sc-p">' + esc(p.intro) + '</p><div class="chips">' + (p.tags || []).slice(0, 2).map((t) => pill(t, 'outline')).join('') + '</div><div class="sc-bottom"><span class="tiny muted">' + esc(p.scope || '') + '</span><span class="tiny muted">' + esc((p.payer || [])[0] || '') + '</span><span class="chev">' + ic('chevron') + '</span></div></div>';
         }).join('') : empty('没有匹配服务')) + '</div>' + '<div class="hint" style="margin-top:10px">整卡点击 = 打开服务详情页；右上角开关只切换上下架，不会误跳。</div>', '<span class="pill">' + rows.length + ' 项</span>', false) + '</div>';
+  };
+
+  PAGES['e-modules'] = function () {
+    const mods = data.employee.modules.slice().sort((a, b) => Number(a.order || 99) - Number(b.order || 99));
+    const active = mods.filter((m) => m.on !== false);
+    return '<div class="page wide">' + pageHead('服务模块与宫格', '职工端首页的五宫格不是装饰，它决定职工第一眼能看到哪五类服务，以及点进去先到哪个目录。', '<button class="btn primary" data-act="newModule">' + ic('plus') + '<span>新增模块</span></button>', 'PKU-EMPLOYEE-HEALTH / 模块与宫格') +
+      purpose('维护首页五宫格的名称、短名、顺序、图标、配色和启停。', '职工端首页宫格、服务目录筛选与服务详情归属；模块关闭后其下服务不再从首页进入。', '企康产品运营') +
+      '<div class="kpi-grid">' + kpi('服务模块', mods.length, '个', '对应首页入口', 'grid', ['#fff1e7','#e5540b']) + kpi('已启用', active.length, '个', '职工端可见', 'check', ['#e9f7f1','#0c7c59']) + kpi('关联服务', data.employee.products.length, '项', '分布在 5 个模块', 'package', ['#edf3ff','#1f4fd1']) + kpi('待补图', mods.filter((m) => !m.tint || !m.ink).length, '个', '缺少强调色', 'image', ['#fff6e0','#a86a06']) + '</div>' +
+      '<div class="grid main-side"><div class="stack">' +
+        panel('模块卡片', '整卡点击编辑 · 右上角开关只控制启停', '<div class="grid two">' + mods.map((m, i) => {
+          const realIndex = data.employee.modules.indexOf(m);
+          const count = data.employee.products.filter((p) => p.mod === m.id).length;
+          return '<div class="panel" style="box-shadow:none;cursor:pointer;border-top:3px solid ' + esc(m.ink || '#ff6a13') + '" data-act="editModule" data-id="' + esc(m.id) + '"><div class="panel-head"><div class="ph"><div class="row-flex"><span class="avatar square" style="width:36px;height:36px;background:' + esc(m.tint || '#fff1e7') + ';color:' + esc(m.ink || '#e5540b') + '">' + ic(m.icon || 'package') + '</span><div><h2>' + esc(m.name) + '</h2><p>' + esc(m.stab + ' · 第 ' + (m.order || i + 1) + ' 位') + '</p></div></div></div><div class="actions"><button class="switch-btn ' + (m.on !== false ? 'on' : '') + '" data-switch="employee.modules.' + realIndex + '.on" title="启停模块"></button></div></div><div class="panel-body"><div class="tiny muted" style="line-height:1.7">' + esc(m.sub || '') + '</div><div class="meal-macros compact" style="margin-top:11px"><div><b>' + count + '</b><span>关联服务</span></div><div><b>' + esc(m.stab) + '</b><span>首页短名</span></div><div><b>' + (m.on !== false ? '展示' : '隐藏') + '</b><span>当前状态</span></div><div><b>' + esc(m.icon || 'package') + '</b><span>图标</span></div></div><div class="meal-foot"><span class="tiny muted">点击整卡编辑</span><button class="btn sm" data-act="editModule" data-id="' + esc(m.id) + '">编辑模块</button></div></div></div>';
+        }).join('') + '</div>', '<span class="pill">' + active.length + ' 个启用</span>', true) +
+        panel('模块与服务归属', '先看结构，再进入服务目录', '<div class="stack">' + mods.map((m) => '<div class="row-flex" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-badge" style="background:' + esc(m.tint || '#fff1e7') + ';color:' + esc(m.ink || '#e5540b') + '">' + esc(m.stab) + '</span><div><b style="font-size:11px">' + esc(m.name) + '</b><div class="tiny muted" style="margin-top:3px">' + data.employee.products.filter((p) => p.mod === m.id).slice(0, 6).map((p) => p.name).join(' · ') + '</div></div><button class="btn sm right-auto" data-go="e-services">查看服务</button></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('五宫格预览', '职工端首屏 · 橙色主视觉', '<div class="phone-frame" style="--accent:#ff6a13"><div class="phone-bar"><i></i></div><div class="phone-body"><div class="phone-hero" style="background:linear-gradient(145deg,#ff8a4c,#ef530f)"><div class="micro">' + esc(data.employee.home.company) + '</div><h3 style="font-size:18px">' + esc(data.employee.home.greeting) + '</h3><p>五好生活 · 企业专属健康福利</p></div><div class="phone-sec"><h4>5 大服务模块</h4><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">' + active.map((m) => '<div style="text-align:center;padding:9px 2px;border-radius:9px;background:' + esc(m.tint || '#fff1e7') + '"><div style="color:' + esc(m.ink || '#e5540b') + ';font-size:13px">' + ic(m.icon || 'package', 15) + '</div><div style="font-size:8px;margin-top:3px;color:#31465c">' + esc(m.stab) + '</div></div>').join('') + '</div></div><div class="phone-sec"><h4>排序说明</h4><div class="tiny muted" style="line-height:1.8">按「排序值」升序展示，关闭的模块不出现在首页。最多建议 5 个，超过 5 个会换行。</div></div></div></div>') +
+        panel('展示规则', '不要让首页变成第二个服务目录', '<div class="stack tight">' + switchRow('首页展示模块宫格', '关闭后 H5 首页不显示五宫格', 'employee.home.showModules', data.employee.home.showModules !== false) + switchRow('按排序值展示', '数字越小越靠前', 'employee.home.moduleSort', data.employee.home.moduleSort !== false) + '</div><div class="notice warm" style="margin-top:12px">' + ic('info') + '<span>模块关闭不会删除其下服务与历史预约；但职工无法从首页宫格进入该模块。建议至少保留 3 个启用模块。</span></div>') +
+      '</div></div></div>';
   };
 
   PAGES['e-service'] = function () {
@@ -1380,6 +1503,342 @@
       '</div><div class="stack">' +
         panel('日期例外', '停诊、加开与临时缩容', '<div class="stack tight">' + (data.planning.overrides.length ? data.planning.overrides.slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).map((o) => '<div class="rowlink" data-act="editOverride" data-id="' + esc(o.id) + '"><span class="avatar square" style="width:30px;height:30px;background:' + (o.status === 'closed' ? '#fdeef4' : '#fff6e0') + ';color:' + (o.status === 'closed' ? '#be2a5e' : '#a86a06') + '">' + ic(o.status === 'closed' ? 'x' : 'calendar') + '</span><div class="main-tx"><b>' + esc(o.date.slice(5) + ' · ' + planOrgName(o.orgId)) + '</b><span>' + esc(planServiceName(o.serviceId) + ' · ' + (o.status === 'closed' ? '停诊' : o.capacity + ' 个号源') + ' · ' + o.note) + '</span></div><span class="tail">' + planStatePill(o.status) + '</span></div>').join('') : empty('没有日期例外')) + '</div>', '<button class="btn sm" data-act="newOverride">新增</button>', true) +
         panel('排期口径', '避免前台显示可约、现场却没号', '<div class="notice warm">' + ic('info') + '<span>模板容量只用于后台计划与客服答复。真实占用号源需要医院排班接口；当前 H5 只展示机构号源总数，不会自动扣减。</span></div>') +
+      '</div></div></div>';
+  };
+
+  /* ----------------------------------------------------------- 健康管理 */
+  function ops() { return data.ops; }
+  function riskInfo(level) {
+    return { high: { label: '高风险', tone: 'red', color: '#d4433b' }, medium: { label: '中风险', tone: 'amber', color: '#c8871a' }, low: { label: '低风险', tone: 'green', color: '#0c7c59' } }[level] || { label: '未分层', tone: '', color: '#8fa2b4' };
+  }
+  function healthProfileById(id) { return ops().health.profiles.find((x) => x.id === id); }
+  function healthFollowById(id) { return ops().health.followups.find((x) => x.id === id); }
+  function carePlanFor(pid) { return ops().health.carePlans.find((x) => x.profileId === pid); }
+  function priceRow(pid) { return ops().servicePricing.find((x) => x.id === pid); }
+  function serviceListPrice(pid) { const x = priceRow(pid); return x ? Number(x.price || 0) : 0; }
+  function bundleById(id) { return ops().bundles.find((x) => x.id === id); }
+  function settleById(id) { return ops().settle.records.find((x) => x.id === id); }
+  function qaById(id) { return ops().qa.find((x) => x.id === id); }
+  function followStatusPill(status) {
+    return { due: pill('待随访', 'amber'), overdue: pill('已逾期', 'red'), upcoming: pill('待开始', 'blue'), completed: pill('已完成', 'green') }[status] || pill(status, '');
+  }
+
+  PAGES['e-health'] = function () {
+    const H = ops().health;
+    const high = H.profiles.filter((p) => p.risk === 'high');
+    const medium = H.profiles.filter((p) => p.risk === 'medium');
+    const low = H.profiles.filter((p) => p.risk === 'low');
+    const open = H.followups.filter((f) => f.status !== 'completed');
+    const due = H.followups.filter((f) => f.status === 'due' || f.status === 'overdue');
+    const abnormal = H.profiles.reduce((n, p) => n + ((p.exam || {}).abnormal || []).length, 0);
+    const activePlans = H.carePlans.filter((c) => c.status === 'active');
+    return '<div class="page wide">' + pageHead('健康管理总览', '从一次体检或服务开始，把风险分层、健康计划、随访和结果管理接起来，而不是停在预约量。', '<button class="btn" data-act="newHealthFollow">' + ic('phone') + '<span>新建随访</span></button><button class="btn primary" data-go="e-risk">' + ic('shield') + '<span>风险与计划</span></button>', 'PKU-EMPLOYEE-HEALTH / 健康管理') +
+      purpose('回答“谁需要管理、今天该跟进谁、管理有没有效果”。', '风险分层、健康画像、共管计划与随访；H5 当前只提供体检预约与报告查看。', '健康管理部 / 健康管家') +
+      '<div class="kpi-grid">' + kpi('在管人群', H.profiles.length, '人', '已建立健康画像', 'users', ['#fff1e7','#e5540b']) + kpi('高风险', high.length, '人', '需重点跟进', 'shield', ['#fdeef4','#be2a5e']) + kpi('待随访', open.length, '条', due.length + ' 条已到期', 'phone', ['#fff6e0','#a86a06']) + kpi('异常指标', abnormal, '项', '来自最近体检', 'activity', ['#edf3ff','#1f4fd1']) + '</div>' +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('在管人群', '按风险排序 · 点击进入健康画像', '<div class="table-wrap"><table class="table"><thead><tr><th>姓名</th><th>企业 / 部门</th><th>风险</th><th>健康分</th><th>主要问题</th><th>负责人</th><th>最近联系</th></tr></thead><tbody>' + H.profiles.slice().sort((a, b) => ['high','medium','low'].indexOf(a.risk) - ['high','medium','low'].indexOf(b.risk)).map((p) => { const r = riskInfo(p.risk); return '<tr class="click" data-act="editHealthProfile" data-id="' + esc(p.id) + '"><td><div class="row-main">' + avatar(p.name) + '<div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(p.sex + ' · ' + p.age + ' 岁') + '</div></div></div></td><td>' + esc(p.company + ' / ' + p.dept) + '</td><td>' + pill(r.label, r.tone) + '</td><td><b style="color:' + r.color + '">' + p.score + '</b></td><td style="max-width:280px"><div class="chips">' + (p.tags || []).map((t) => pill(t, 'outline')).join('') + '</div></td><td>' + esc(p.owner) + '</td><td class="muted">' + esc(p.lastContact) + '</td></tr>'; }).join('') + '</tbody></table></div>', '<span class="pill">' + H.profiles.length + ' 人</span>', true) +
+        panel('五好共管项目', '服务到长期管理的承接', '<div class="grid two">' + H.programs.map((g) => { const en = H.enrollments.filter((e) => e.programId === g.id); const avg = en.length ? Math.round(en.reduce((n, e) => n + Number(e.adherence || 0), 0) / en.length) : 0; return '<div class="plan-shift" style="display:block"><div class="shift"><div class="row-flex"><b>' + esc(g.name) + '</b>' + pill(g.status === 'active' ? '进行中' : g.status, g.status === 'active' ? 'green' : 'outline') + '</div><p>' + esc(g.audience || '') + ' · ' + en.length + ' 人在组</p><div class="line"><span>依从性</span><b style="margin-left:auto">' + avg + '%</b></div>' + progress(avg, '#0c7c59') + '</div></div>'; }).join('') + '</div>', '<button class="btn sm" data-go="e-risk">查看计划</button>', true) +
+      '</div><div class="stack">' +
+        panel('风险分层', '共 ' + H.profiles.length + ' 人', '<div class="stack">' + [['high', high.length], ['medium', medium.length], ['low', low.length]].map(([k, n]) => { const r = riskInfo(k); return '<div><div class="row-flex"><span>' + pill(r.label, r.tone) + '</span><b class="right-auto">' + n + ' 人</b></div>' + progress(n / Math.max(1, H.profiles.length) * 100, r.color) + '</div>'; }).join('') + '</div>') +
+        panel('今天必须处理', '到期与逾期随访', '<div class="stack tight">' + (due.length ? due.slice(0, 5).map((f) => { const p = healthProfileById(f.profileId) || {}; return '<div class="rowlink" data-act="editHealthFollow" data-id="' + esc(f.id) + '"><span class="avatar square" style="width:29px;height:29px;background:' + riskInfo(p.risk).color + '18;color:' + riskInfo(p.risk).color + '">' + ic('phone') + '</span><div class="main-tx"><b>' + esc(p.name + ' · ' + f.type) + '</b><span>' + esc(f.due + ' ' + (f.time || '') + ' · ' + f.owner) + '</span></div><span class="tail">' + pill(f.priority === 'high' ? '优先' : '常规', f.priority === 'high' ? 'red' : 'outline') + '</span></div>'; }).join('') : empty('今天没有到期随访')) + '</div>', '<button class="btn sm" data-go="e-followup">全部随访</button>') +
+        panel('履约异常', '需要人工介入', '<div class="stack tight">' + H.exceptions.slice(0, 4).map((x) => '<div class="row-flex small" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span>' + pill(x.severity === 'high' ? '高' : '中', x.severity === 'high' ? 'red' : 'amber') + '</span><span>' + esc(x.type) + '</span><span class="right-auto tiny muted">' + esc(x.owner) + '</span></div>').join('') + '</div>', '<button class="btn sm" data-go="e-serviceflow">履约台</button>') +
+        panel('在管计划', '共 ' + activePlans.length + ' 个执行中', '<div class="stack tight">' + activePlans.slice(0, 4).map((c) => '<div class="rowlink" data-act="editCarePlan" data-id="' + esc(c.id) + '"><span class="avatar square" style="width:28px;height:28px">' + ic('target') + '</span><div class="main-tx"><b>' + esc(c.name) + '</b><span>' + esc((healthProfileById(c.profileId) || {}).name + ' · 第 ' + c.week + ' 周') + '</span></div><span class="tail tiny muted">' + c.adherence + '%</span></div>').join('') + '</div>') +
+      '</div></div></div>';
+  };
+
+  PAGES['e-risk'] = function () {
+    const H = ops().health;
+    const level = state.ui.riskLevel || 'all';
+    const rows = H.profiles.filter((p) => level === 'all' || p.risk === level);
+    return '<div class="page wide">' + pageHead('风险与健康计划', '把体检异常、生活方式和随访结果汇总成风险分层，再为高风险人群建立可执行的共管计划。', '<button class="btn primary" data-act="newCarePlan">' + ic('plus') + '<span>新建健康计划</span></button>', 'PKU-EMPLOYEE-HEALTH / 健康计划') +
+      purpose('让“异常”变成有负责人、有目标、有复测节点的管理计划。', '风险标签、健康计划与复测结果；不直接下诊断，不替代医生面诊。', '健康管理部 / 医生') +
+      '<div class="kpi-grid">' + kpi('高风险', H.profiles.filter((p) => p.risk === 'high').length, '人', '24 小时内复核', 'shield', ['#fdeef4','#be2a5e']) + kpi('执行中计划', H.carePlans.filter((c) => c.status === 'active').length, '个', '含 12 周共管', 'target', ['#e9f7f1','#0c7c59']) + kpi('计划模板', H.planTemplates.length, '个', '可复用的管理路径', 'layers', ['#f1efff','#5b4bc4']) + kpi('风险规则', H.riskRules.length, '条', '自动命中与分层', 'activity', ['#fff6e0','#a86a06']) + '</div>' +
+      panel('健康画像', '按风险筛选 · 点击整行进入 360', '<div class="toolbar" style="padding:8px 0 10px">' + seg([{id:'all',label:'全部 '+H.profiles.length},{id:'high',label:'高风险 '+H.profiles.filter(p=>p.risk==='high').length},{id:'medium',label:'中风险 '+H.profiles.filter(p=>p.risk==='medium').length},{id:'low',label:'低风险 '+H.profiles.filter(p=>p.risk==='low').length}], level, 'riskLevel') + '</div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>姓名</th><th>风险</th><th>血压</th><th>血糖</th><th>BMI</th><th>睡眠</th><th>步数</th><th>计划</th></tr></thead><tbody>' + rows.map((p) => { const m = p.metrics || {}; const plan = carePlanFor(p.id); const r = riskInfo(p.risk); return '<tr class="click" data-act="editHealthProfile" data-id="' + esc(p.id) + '"><td><div class="row-main">' + avatar(p.name) + '<div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(p.tags.slice(0, 2).join(' · ')) + '</div></div></div></td><td>' + pill(r.label, r.tone) + '</td><td>' + (m.bpSys || '-') + '/' + (m.bpDia || '-') + '</td><td>' + (m.glucose || '-') + '</td><td>' + (m.bmi || '-') + '</td><td>' + (m.sleep || '-') + ' h</td><td>' + (m.steps || '-') + '</td><td>' + (plan ? pill(plan.name, 'blue') : '<span class="muted">未建计划</span>') + '</td></tr>'; }).join('') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 人</span>', true) +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('健康计划', '计划有目标、有周期、有复测节点', '<div class="grid two">' + H.carePlans.map((c) => { const p = healthProfileById(c.profileId) || {}; const done = (c.milestones || []).filter((m) => m.done).length; return '<div class="meal-tpl-card" data-act="editCarePlan" data-id="' + esc(c.id) + '"><div class="row-flex"><span class="meal-badge">' + esc(c.name.split(' · ')[0] || '计划') + '</span><b>' + esc(p.name || c.profileId) + '</b><span class="right-auto">' + pill(c.status === 'active' ? '执行中' : c.status, c.status === 'active' ? 'green' : 'outline') + '</span></div><div class="tiny muted" style="margin-top:7px;line-height:1.6">' + esc(c.goal) + '</div><div class="meal-macros compact"><div><b>第 ' + c.week + ' 周</b><span>进度</span></div><div><b>' + c.adherence + '%</b><span>依从性</span></div><div><b>' + done + '/' + (c.milestones || []).length + '</b><span>里程碑</span></div><div><b>' + esc(c.nextReview || '-') + '</b><span>下次复评</span></div></div><div class="meal-foot"><span class="tiny muted">' + esc(c.owner) + '</span><button class="btn sm" data-act="editCarePlan" data-id="' + esc(c.id) + '">编辑计划</button></div></div>'; }).join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('风险规则', '命中后自动分层与提示', '<div class="stack">' + H.riskRules.map((r, i) => '<div style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><div class="row-flex"><b style="font-size:11px">' + esc(r.name) + '</b><span class="right-auto">' + pill(r.level === 'high' ? '高' : r.level === 'medium' ? '中' : '低', riskInfo(r.level).tone) + '</span></div><div class="tiny muted" style="margin-top:3px">' + esc(r.condition) + '</div><div class="tiny muted" style="margin-top:3px">→ ' + esc(r.action) + '</div><div class="row-flex" style="margin-top:6px"><span class="tiny muted">命中 ' + (r.hits || 0) + ' 人</span><button class="switch-btn ' + (r.on ? 'on' : '') + '" data-switch="ops.health.riskRules.' + i + '.on" style="margin-left:auto"></button></div></div>').join('') + '</div>') +
+      '</div></div></div>';
+  };
+
+  PAGES['e-programs'] = function () {
+    const H = ops().health;
+    const tab = state.ui.progTab || 'programs';
+    const running = H.programs.filter((p) => p.status === 'running');
+    const activeEnroll = H.enrollments.filter((e) => e.status === 'active');
+    const totalActive = running.reduce((n, p) => n + Number(p.active || 0), 0);
+    const improved = H.outcomes.filter((o) => o.status === 'improving' || o.status === 'reached');
+    const reached = H.outcomes.filter((o) => o.status === 'reached');
+    const avgAdherence = running.length ? Math.round(running.reduce((n, p) => n + Number(p.adherence || 0), 0) / running.length) : 0;
+    const primary = tab === 'outcomes' ? '<button class="btn primary" data-act="newOutcome">' + ic('plus') + '<span>新增结果指标</span></button>' : tab === 'report' ? '<button class="btn primary" data-act="exportHealthReport">' + ic('download') + '<span>导出企业报告</span></button>' : '<button class="btn primary" data-act="newProgram">' + ic('plus') + '<span>新建干预项目</span></button>';
+    let body = '';
+    if (tab === 'programs') {
+      body = '<div class="grid two">' + H.programs.map((p) => {
+        const en = H.enrollments.filter((e) => e.programId === p.id);
+        const active = Number(p.active || en.filter((e) => e.status === 'active').length || 0);
+        return '<div class="panel" style="box-shadow:none;cursor:pointer" data-act="editProgram" data-id="' + esc(p.id) + '"><div class="panel-head"><div class="ph"><div class="row-flex"><span class="avatar square" style="width:34px;height:34px;background:#f1efff;color:#5b4bc4">' + ic('activity') + '</span><div><h2>' + esc(p.name) + '</h2><p>' + esc(p.owner + ' · 第 ' + p.week + ' / ' + p.weeks + ' 周') + '</p></div></div></div><div class="actions">' + pill(p.status === 'running' ? '进行中' : '草稿', p.status === 'running' ? 'green' : 'amber') + '</div></div><div class="panel-body"><div class="meal-macros"><div><b>' + p.enrolled + '</b><span>入组</span></div><div><b>' + active + '</b><span>在组</span></div><div><b>' + p.adherence + '%</b><span>依从性</span></div><div><b>' + p.riskCount + '</b><span>高风险</span></div></div>' + progress(p.adherence, '#5b4bc4') + '<div class="tiny muted" style="margin-top:10px">' + esc(p.start + ' → ' + p.end) + ' · 目标 ' + p.cohort + ' 人</div><div class="meal-foot"><span class="tiny muted">' + esc(p.name.split(' · ')[0]) + '</span><button class="btn sm" data-act="editProgram" data-id="' + esc(p.id) + '">管理项目</button></div></div></div>';
+      }).join('') + '</div>' +
+      '<div class="section-space">' + panel('项目重点成员', '当前展示 ' + H.enrollments.length + ' 条重点管理样本 · 项目总在组 ' + totalActive + ' 人', '<div class="table-wrap"><table class="table"><thead><tr><th>对象</th><th>项目</th><th>周次</th><th>依从性</th><th>风险</th><th>负责人</th><th>状态</th></tr></thead><tbody>' + (H.enrollments.length ? H.enrollments.map((e) => { const p = healthProfileById(e.profileId) || {}; const g = H.programs.find((x) => x.id === e.programId) || {}; return '<tr class="click" data-act="editEnrollment" data-id="' + esc(e.id) + '"><td><div class="row-main">' + avatar(p.name || '未知') + '<div><div class="name">' + esc(p.name || '未知') + '</div><div class="sub">' + esc(p.company || '') + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(g.name || '') + '</b></td><td>第 ' + e.week + ' 周</td><td><b>' + e.adherence + '%</b></td><td>' + pill(riskInfo(e.risk || p.risk).label, riskInfo(e.risk || p.risk).tone) + '</td><td>' + esc(e.coach) + '</td><td>' + pill(e.status === 'active' ? '在组' : '已完成', e.status === 'active' ? 'green' : '') + '</td></tr>'; }).join('') : '<tr><td colspan="7">' + empty('还没有项目成员') + '</td></tr>') + '</tbody></table></div>', '<button class="btn sm" data-act="newEnrollment">' + ic('plus') + '安排入组</button>', true) + '</div>';
+    }
+    if (tab === 'outcomes') {
+      body = panel('结果指标', '每个指标都要有基线、当前值、目标和复测日期', '<div class="table-wrap"><table class="table"><thead><tr><th>对象</th><th>指标</th><th>基线</th><th>当前</th><th>目标</th><th>变化</th><th>状态</th><th>复测</th></tr></thead><tbody>' + H.outcomes.map((o) => { const p = healthProfileById(o.profileId) || {}; const delta = Number(o.current) - Number(o.baseline); const good = o.direction === 'down' ? delta <= 0 : o.direction === 'up' ? delta >= 0 : true; return '<tr class="click" data-act="editOutcome" data-id="' + esc(o.id) + '"><td><div class="row-main">' + avatar(p.name || '未知') + '<div><div class="name">' + esc(p.name || '未知') + '</div><div class="sub">' + esc(p.dept || '') + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(o.metric) + '</b></td><td>' + esc(o.baseline + ' ' + (o.unit || '')) + '</td><td><b>' + esc(o.current + ' ' + (o.unit || '')) + '</b></td><td>' + esc(o.target + ' ' + (o.unit || '')) + '</td><td><b style="color:' + (good ? 'var(--green)' : 'var(--red)') + '">' + (delta > 0 ? '+' : '') + delta + '</b></td><td>' + pill(o.status === 'reached' ? '已达标' : o.status === 'improving' ? '改善中' : '需关注', o.status === 'reached' ? 'green' : o.status === 'improving' ? 'blue' : 'amber') + '</td><td class="muted">' + esc(o.at) + '</td></tr>'; }).join('') + '</tbody></table></div>', '<span class="pill">' + H.outcomes.length + ' 项</span>', true) +
+        '<div class="grid two section-space">' + panel('指标怎么看', '不要用单次数据下结论', '<div class="stack tight">' + [['改善', '当前值向目标方向变化，且复测间隔足够'], ['达标', '当前值达到目标值，仍需在计划结束时复核'], ['需关注', '连续两次无改善或偏离目标，转医生或调整计划']].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill blue">' + x[0] + '</span><span>' + x[1] + '</span></div>').join('') + '</div>') + panel('数据来源', '每个数字都要能追溯', '<div class="notice">' + ic('info') + '<span>结果指标来自体检、随访、可穿戴数据手工导入与量表。当前不接设备接口，也不做自动诊断。</span></div>') + '</div>';
+    }
+    if (tab === 'report') {
+      const depts = {};
+      H.profiles.forEach((p) => { depts[p.dept] = (depts[p.dept] || 0) + 1; });
+      const topRisk = {};
+      H.profiles.forEach((p) => (p.tags || []).forEach((t) => { topRisk[t] = (topRisk[t] || 0) + 1; }));
+      const riskRows = Object.keys(topRisk).sort((a, b) => topRisk[b] - topRisk[a]).slice(0, 6);
+      body = panel('企业健康经营报告 · 2026 年 11 月', '管理覆盖、风险分布、结果改善与下一步动作', '<div class="grid three">' +
+        '<div class="stat-strip" style="box-shadow:none"><div><b>' + H.profiles.length + '</b><span>在管人群</span></div><div><b>' + totalActive + '</b><span>项目在组</span></div><div><b>' + avgAdherence + '%</b><span>平均依从性</span></div><div><b>' + reached.length + '</b><span>指标达标</span></div></div>' +
+        '<div class="notice" style="margin:0">' + ic('chart') + '<span>报告按月生成，只汇总企业层面的匿名趋势，不展示个人心理与咨询内容。</span></div>' +
+        '<div class="notice warm" style="margin:0">' + ic('shield') + '<span>心理数据、EAP 咨询内容不进入企业报告；个人报告需本人授权。</span></div></div>' +
+        '<div class="grid two section-space"><div>' + panel('部门分布', '在管人群按部门', '<div class="stack">' + Object.keys(depts).map((d) => '<div><div class="row-flex"><span>' + esc(d) + '</span><b class="right-auto">' + depts[d] + ' 人</b></div>' + progress(depts[d] / Math.max(1, H.profiles.length) * 100, '#ff6a13') + '</div>').join('') + '</div>') + '</div><div>' + panel('主要风险标签', '按出现频次', '<div class="stack">' + riskRows.map((t) => '<div><div class="row-flex"><span>' + esc(t) + '</span><b class="right-auto">' + topRisk[t] + ' 人</b></div>' + progress(topRisk[t] / Math.max(1, H.profiles.length) * 100, '#be2a5e') + '</div>').join('') + '</div>') + '</div></div>' +
+        '<div class="grid two section-space">' + panel('本月改善', '有基线、有复测的结果', '<div class="stack tight">' + improved.slice(0, 6).map((o) => { const p = healthProfileById(o.profileId) || {}; return '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">' + esc(o.metric) + '</span><span>' + esc(p.name || '') + '</span><span class="right-auto muted">' + esc(o.baseline + ' → ' + o.current + ' ' + (o.unit || '')) + '</span></div>'; }).join('') + '</div>') + panel('下一步建议', '从数据到动作', '<div class="stack tight">' + ['高风险人群 24 小时内完成复核，优先安排未复查者', '把睡眠与心理风险转入五好会员任务，降低任务门槛', '对依从性低于 60% 的在组人员安排电话随访', '按月复盘项目结果，未达标指标调整计划而不是加任务'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill amber">建议</span><span>' + esc(x) + '</span></div>').join('') + '</div>') + '</div>', '<span class="pill">企业版</span>', true);
+    }
+    return '<div class="page wide">' + pageHead('项目与健康结果', '健康管理不是一张风险名单，而是项目队列、过程依从和结果改善三条线同时跑。', primary, 'PKU-EMPLOYEE-HEALTH / 项目与结果') +
+      purpose('回答“哪些项目在跑、谁在组里、管理有没有效果”。', '后台项目、入组、结果指标与企业报告；H5 目前只展示服务预约与报告查看。', '健康管理部 / 企业客户成功') +
+      '<div class="kpi-grid">' + kpi('干预项目', H.programs.length, '个', running.length + ' 个进行中', 'activity', ['#fff1e7','#e5540b']) + kpi('项目在组', totalActive, '人', '含共管与训练营', 'users', ['#f1efff','#5b4bc4']) + kpi('平均依从性', avgAdherence, '%', '进行中项目口径', 'chart', ['#e9f7f1','#0c7c59']) + kpi('结果改善', improved.length, '项', reached.length + ' 项已达标', 'check', ['#edf3ff','#1f4fd1']) + '</div>' +
+      panel('项目工作台', '项目队列 / 结果评估 / 企业报告', '<div class="toolbar" style="padding:8px 0 12px">' + seg([{id:'programs',label:'项目队列 ' + H.programs.length},{id:'outcomes',label:'结果评估 ' + H.outcomes.length},{id:'report',label:'企业报告'}], tab, 'progTab') + '<span class="right tiny muted">数据来自健康画像、随访与体检</span></div>' + body, '<span class="pill">健康管理</span>') +
+      '<div class="notice warm section-space">' + ic('info') + '<span>项目与结果只做管理台账，不替代医生诊疗；企业报告默认匿名汇总，个人数据需授权查看。</span></div></div>';
+  };
+
+  PAGES['e-followup'] = function () {
+    const H = ops().health;
+    const tab = state.ui.followTab || 'due';
+    const rows = H.followups.filter((f) => tab === 'all' || f.status === tab);
+    const counts = { all: H.followups.length, due: H.followups.filter((f) => f.status === 'due').length, overdue: H.followups.filter((f) => f.status === 'overdue').length, upcoming: H.followups.filter((f) => f.status === 'upcoming').length, completed: H.followups.filter((f) => f.status === 'completed').length };
+    return '<div class="page wide">' + pageHead('随访工作台', '按到期时间管理电话随访：谁要跟、为什么跟、跟完记什么。当前不接企业微信和短信，只做人工电话记录。', '<button class="btn primary" data-act="newHealthFollow">' + ic('plus') + '<span>新建随访</span></button>', 'PKU-EMPLOYEE-HEALTH / 随访') +
+      purpose('把体检异常、计划复评和报告解读落到具体的人与日期。', '后台随访任务与结果；H5 不接收自动提醒，需要电话联系。', '健康管家 / 护士') +
+      '<div class="kpi-grid">' + kpi('待随访', counts.due + counts.overdue, '条', '含 ' + counts.overdue + ' 条逾期', 'phone', ['#fff1e7','#e5540b']) + kpi('即将开始', counts.upcoming, '条', '未来 7 天', 'calendar', ['#edf3ff','#1f4fd1']) + kpi('已完成', counts.completed, '条', '有随访记录', 'check', ['#e9f7f1','#0c7c59']) + kpi('高风险人群', H.profiles.filter((p) => p.risk === 'high').length, '人', '优先安排', 'shield', ['#fdeef4','#be2a5e']) + '</div>' +
+      panel('随访清单', '点击整行登记结果', '<div class="toolbar" style="padding:8px 0 10px">' + seg([{id:'due',label:'待随访 '+counts.due},{id:'overdue',label:'已逾期 '+counts.overdue},{id:'upcoming',label:'待开始 '+counts.upcoming},{id:'completed',label:'已完成 '+counts.completed},{id:'all',label:'全部 '+counts.all}], tab, 'followTab') + '</div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>对象</th><th>随访类型</th><th>计划时间</th><th>优先级</th><th>负责人</th><th>状态</th><th>操作</th></tr></thead><tbody>' + (rows.length ? rows.map((f) => { const p = healthProfileById(f.profileId) || {}; return '<tr class="click" data-act="editHealthFollow" data-id="' + esc(f.id) + '"><td><div class="row-main">' + avatar(p.name || '未知') + '<div><div class="name">' + esc(p.name || '未知') + '</div><div class="sub">' + esc((p.company || '') + ' · ' + riskInfo(p.risk).label) + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(f.type) + '</b><div class="sub">' + esc(f.note || '') + '</div></td><td>' + esc(f.due + ' ' + (f.time || '')) + '</td><td>' + pill(f.priority === 'high' ? '优先' : '常规', f.priority === 'high' ? 'red' : 'outline') + '</td><td>' + esc(f.owner) + '</td><td>' + followStatusPill(f.status) + '</td><td class="actions"><button class="btn sm">登记</button></td></tr>'; }).join('') : '<tr><td colspan="7">' + empty('当前没有随访任务') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 条</span>', true) +
+      '<div class="notice warm section-space">' + ic('phone') + '<span><b>能力边界</b>：没有企业微信、短信或自动外呼。随访完成只记录在本机后台与电话待办，不会自动通知职工。</span></div></div>';
+  };
+
+  PAGES['e-serviceflow'] = function () {
+    const H = ops().health;
+    const lanes = [
+      { id: 'book', name: '预约与确认', stages: ['已预约', '待确认'], color: '#c8871a' },
+      { id: 'visit', name: '到院与履约', stages: ['已签到', '履约中'], color: '#e5540b' },
+      { id: 'report', name: '报告与结算', stages: ['报告待解读', '已结算'], color: '#1f4fd1' },
+      { id: 'managed', name: '已转管理', stages: ['已转管理'], color: '#0c7c59' }
+    ];
+    const openEx = H.exceptions.filter((x) => x.status !== 'done');
+    const reportPending = H.serviceCases.filter((c) => c.stage === '报告待解读').length;
+    const converted = H.serviceCases.filter((c) => c.stage === '已转管理').length;
+    return '<div class="page wide">' + pageHead('服务履约台', '预约、到院、报告、结算、转管理是一条服务链。任何一段卡住，都要在后台看见并有人处理。', '<button class="btn primary" data-go="e-followup">' + ic('phone') + '<span>去随访</span></button>', 'PKU-EMPLOYEE-HEALTH / 履约台') +
+      purpose('按阶段推进每一单服务，暴露报告逾期、未结算和异常未处理。', '后台履约案例与异常；H5 只展示预约状态，不读取履约台。', '履约运营 / 健康管理中心') +
+      '<div class="kpi-grid">' + kpi('履约案例', H.serviceCases.length, '单', '从预约到转管理', 'activity', ['#fff1e7','#e5540b']) + kpi('报告待解读', reportPending, '单', '需医生处理', 'doc', ['#edf3ff','#1f4fd1']) + kpi('已转管理', converted, '单', '进入健康计划', 'target', ['#e9f7f1','#0c7c59']) + kpi('履约异常', openEx.length, '条', '待人工介入', 'info', ['#fdeef4','#be2a5e']) + '</div>' +
+      panel('服务链看板', '点击案例推进阶段', '<div class="flow-board">' + lanes.map((l) => { const cases = H.serviceCases.filter((c) => l.stages.indexOf(c.stage) >= 0); return '<div class="flow-lane"><div class="fl-head"><i style="background:' + l.color + '"></i><b>' + l.name + '</b><span>' + cases.length + '</span></div><div class="fl-body">' + (cases.length ? cases.map((c) => '<div class="flow-case" data-act="editServiceCase" data-id="' + esc(c.id) + '"><div class="row-flex"><b>' + esc(c.person) + '</b><span class="right-auto">' + pill(c.stage, c.stage === '已转管理' ? 'green' : c.stage === '报告待解读' ? 'blue' : 'amber') + '</span></div><div class="tiny muted" style="margin-top:4px">' + esc(c.service) + '</div><div class="tiny muted" style="margin-top:4px">' + esc(c.next || '') + '</div><div class="meal-foot"><span class="tiny muted">' + esc(c.owner) + '</span><span class="tiny muted right-auto">' + esc(c.due || '') + '</span></div></div>').join('') : '<div class="tiny muted" style="padding:10px">暂无案例</div>') + '</div></div>'; }).join('') + '</div>') +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('履约异常', '报告逾期、未结算、异常未处理', '<div class="table-wrap"><table class="table"><thead><tr><th>异常</th><th>关联案例</th><th>严重度</th><th>负责人</th><th>状态</th></tr></thead><tbody>' + H.exceptions.map((x) => { const c = H.serviceCases.find((v) => v.id === x.caseId) || {}; return '<tr class="click" data-act="editServiceCase" data-id="' + esc(x.caseId) + '"><td><b style="font-size:11.5px">' + esc(x.type) + '</b><div class="sub">' + esc(x.desc) + '</div></td><td>' + esc(c.person || '') + ' · ' + esc(c.service || '') + '</td><td>' + pill(x.severity === 'high' ? '高' : '中', x.severity === 'high' ? 'red' : 'amber') + '</td><td>' + esc(x.owner) + '</td><td>' + pill(x.status === 'done' ? '已处理' : '待处理', x.status === 'done' ? 'green' : 'amber') + '</td></tr>'; }).join('') + '</tbody></table></div>', '<span class="pill">' + openEx.length + ' 条待处理</span>', true) +
+      '</div><div class="stack">' +
+        panel('履约前置检查', '预约前就要发现缺口', '<div class="stack tight">' + [['资格与权益', '确认企业权益、适用人群与禁忌'], ['机构与排期', '确认机构、日期与可约容量'], ['检前准备', '空腹、用药与陪同要求'], ['报告路径', '谁解读、何时通知、异常怎么转']].map((x) => '<div class="row-flex small" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">检查</span><span>' + x[0] + '</span><span class="right-auto tiny muted">' + x[1] + '</span></div>').join('') + '</div>') +
+        panel('服务链口径', '避免预约完成就结束', '<div class="notice warm">' + ic('info') + '<span>预约只是起点。报告解读、异常复查和转健康管理需要独立负责人；当前静态 H5 不读取这些状态。</span></div>') +
+      '</div></div></div>';
+  };
+
+  PAGES['e-five-members'] = function () {
+    const F = ops().fivegood;
+    const tab = state.ui.fiveMemberTab || 'members';
+    const pending = F.checkins.filter((c) => c.status === 'pending');
+    const signed = F.consents.filter((c) => c.status === 'signed');
+    const avg = F.members.length ? (F.members.reduce((n, m) => n + Number(m.score || 0), 0) / F.members.length).toFixed(1) : 0;
+    const primary = tab === 'members' ? '<button class="btn primary" data-act="newFiveMember">' + ic('plus') + '<span>新增会员</span></button>' : tab === 'reports' ? '<button class="btn primary" data-act="generateFiveReport">' + ic('file') + '<span>生成本月报告</span></button>' : '';
+    let body = '';
+    if (tab === 'members') {
+      body = '<div class="grid main-side"><div class="stack">' + panel('会员档案', '点击整行编辑会员阶段、负责人和任务完成情况', '<div class="table-wrap"><table class="table"><thead><tr><th>会员</th><th>档位</th><th>阶段</th><th class="nowrap">任务</th><th class="nowrap">连续</th><th>风险</th><th>负责人</th><th>下一步</th></tr></thead><tbody>' + (F.memberProfiles.length ? F.memberProfiles.map((m) => '<tr class="click" data-act="editFiveMember" data-id="' + esc(m.id) + '"><td><div class="row-main">' + avatar(m.name) + '<div><div class="name">' + esc(m.name) + '</div><div class="sub">加入 ' + esc(m.joined) + '</div></div></div></td><td>' + pill(m.tier, 'outline') + '</td><td class="nowrap">' + esc(m.stage) + '</td><td class="nowrap"><b>' + m.tasksDone + '</b> / ' + m.tasksDue + '</td><td class="nowrap">' + m.streak + ' 天</td><td>' + pill(riskInfo(m.risk).label, riskInfo(m.risk).tone) + '</td><td class="nowrap">' + esc(m.coach) + '</td><td class="muted">' + esc(m.next) + '</td></tr>').join('') : '<tr><td colspan="8">' + empty('还没有五好会员') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + F.memberProfiles.length + ' 人</span>', true) + '</div><div class="stack">' +
+        panel('会员阶段', '从入组到执行', '<div class="stack">' + ['待入组','执行中','需干预','已续费'].map((s) => { const n = F.memberProfiles.filter((m) => m.stage === s).length; return '<div><div class="row-flex"><span>' + s + '</span><b class="right-auto">' + n + ' 人</b></div>' + progress(n / Math.max(1, F.memberProfiles.length) * 100, '#6b5ce4') + '</div>'; }).join('') + '</div>') +
+        panel('五好总分', '平均 ' + avg + ' 分', '<div class="stack">' + F.members.map((m) => '<div><div class="row-flex"><span>' + esc(m.name) + ' · ' + esc(m.tier) + '</span><b class="right-auto">' + m.score + '</b></div>' + progress(m.score, '#6b5ce4') + '</div>').join('') + '</div>') +
+        panel('共管入口', '从会员到健康管理', '<div class="stack tight">' + [['e-risk','风险与健康计划','shield'],['e-five-ops','五好主题与任务','leaf'],['e-followup','电话随访','phone']].map((x) => '<div class="rowlink" data-go="' + x[0] + '"><span class="avatar square" style="width:28px;height:28px">' + ic(x[2]) + '</span><div class="main-tx"><b>' + x[1] + '</b></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>') +
+      '</div></div>';
+    }
+    if (tab === 'checkins') {
+      body = '<div class="grid main-side"><div class="stack">' + panel('待审核打卡', '证据、任务与会员说明放在一起看', '<div class="stack">' + (pending.length ? pending.map((c) => '<div class="meal-tpl-card"><div class="row-flex"><span class="meal-badge">' + esc((F.dims.find((d) => d.key === c.dim) || {}).name || c.dim) + '</span><b>' + esc(c.name) + '</b><span class="right-auto">' + pill(c.evidence || '无证据', 'outline') + '</span></div><div style="font-size:12px;margin-top:8px">' + esc(c.title) + '</div><div class="tiny muted" style="margin-top:5px">' + esc(c.at + ' · ' + c.coach) + '</div><div class="notice" style="margin-top:9px">' + ic('info') + '<span>' + esc(c.note || '无补充说明') + '</span></div><div class="row-flex" style="margin-top:10px"><button class="btn sm" data-act="reviewCheckin" data-id="' + esc(c.id) + '" data-result="reject">退回补充</button><button class="btn sm primary" data-act="reviewCheckin" data-id="' + esc(c.id) + '" data-result="pass">通过审核</button><span class="tiny muted right-auto">审核后计入任务完成</span></div></div>').join('') : empty('今天没有待审核打卡')) + '</div>', '<span class="pill">' + pending.length + ' 条待审</span>') +
+        panel('已审核记录', '保留证据与审核结果', '<div class="table-wrap"><table class="table"><thead><tr><th>会员</th><th>任务</th><th>证据</th><th>审核</th></tr></thead><tbody>' + F.checkins.filter((c) => c.status !== 'pending').map((c) => '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.title) + '</td><td>' + esc(c.evidence || '—') + '</td><td>' + pill(c.status === 'approved' ? '已通过' : '已退回', c.status === 'approved' ? 'green' : 'amber') + '</td></tr>').join('') + '</tbody></table></div>', '', true) + '</div><div class="stack">' +
+        panel('审核口径', '只看证据，不评价人', '<div class="stack tight">' + ['有照片/截图：核对任务是否完成，不要求完美', '证据不足：退回补充，并写清缺什么', '身体不适或关节疼痛：先转健康管理，不硬性要求完成', '心理类打卡：不展示内容给企业，只记录完成状态'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill blue">口径</span><span>' + esc(x) + '</span></div>').join('') + '</div>') +
+        panel('审核 SLA', '当前设置', '<div class="form-grid two">' + field('审核时限（小时）', F.ops.reviewSLA, 'ops.fivegood.ops.reviewSLA', { num: true }) + field('任务窗口（天）', F.ops.taskWindow, 'ops.fivegood.ops.taskWindow', { num: true }) + '</div><div class="notice" style="margin-top:10px">' + ic('clock') + '<span>审核由健康管家人工完成，不做自动通过。</span></div>') +
+      '</div></div>';
+    }
+    if (tab === 'reports') {
+      body = '<div class="grid main-side"><div class="stack">' + panel('月度报告', '按会员汇总五维得分、任务完成与下月建议', F.reports.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>月份</th><th>会员</th><th>平均分</th><th>达标</th><th>生成时间</th><th>状态</th></tr></thead><tbody>' + F.reports.map((r) => '<tr class="click" data-act="openFiveReport" data-id="' + esc(r.id) + '"><td><b>' + esc(r.month) + '</b></td><td>' + r.members + ' 人</td><td>' + r.avgScore + '</td><td>' + r.reached + ' 人</td><td class="muted">' + esc(r.generatedAt) + '</td><td>' + pill('已生成', 'green') + '</td></tr>').join('') + '</tbody></table></div>' : empty('本月报告尚未生成'), '<button class="btn sm primary" data-act="generateFiveReport">' + ic('file') + '生成本月报告</button>', true) +
+        panel('报告内容', '企业看到趋势，个人看到行动', '<div class="grid two">' + ['五维平均分与环比', '任务完成率与连续天数', '高风险会员数量（匿名）', '下月行动建议', '服务使用与履约', '隐私与授权状态'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">包含</span><span>' + esc(x) + '</span></div>').join('') + '</div>') +
+      '</div><div class="stack">' + panel('评分口径', '所有报告共用一套算法', '<div class="form-grid two">' + field('基础分', F.scoreRule.base, 'ops.fivegood.scoreRule.base', { num: true }) + field('及格线', F.scoreRule.pass, 'ops.fivegood.scoreRule.pass', { num: true }) + field('优秀线', F.scoreRule.excellent, 'ops.fivegood.scoreRule.excellent', { num: true }) + field('报告周期', F.scoreRule.reportCycle, 'ops.fivegood.scoreRule.reportCycle', { select: [{v:'month',l:'每月'},{v:'quarter',l:'每季度'}] }) + '</div><div class="notice" style="margin-top:10px">' + ic('chart') + '<span>评分用于运营分层，不作为绩效或人事评价依据。</span></div>') +
+        panel('报告边界', '不暴露个人隐私', '<div class="notice warm">' + ic('shield') + '<span>企业报告只展示匿名汇总；个人五维明细只对本人、授权健康管家和咨询师可见。</span></div>') + '</div></div>';
+    }
+    if (tab === 'consent') {
+      body = '<div class="grid main-side"><div class="stack">' + panel('授权与隐私', '每项数据用途单独授权，可撤回', '<div class="table-wrap"><table class="table"><thead><tr><th>会员</th><th>授权状态</th><th>版本</th><th>签署时间</th><th>数据范围</th></tr></thead><tbody>' + F.consents.map((c) => '<tr class="click" data-act="editFiveConsent" data-id="' + esc(c.id) + '"><td><div class="row-main">' + avatar(c.name) + '<div><div class="name">' + esc(c.name) + '</div></div></div></td><td>' + pill(c.status === 'signed' ? '已签署' : c.status === 'revoked' ? '已撤回' : '待签署', c.status === 'signed' ? 'green' : c.status === 'revoked' ? 'red' : 'amber') + '</td><td>' + esc(c.version) + '</td><td class="muted">' + esc(c.at) + '</td><td><div class="chips">' + [['health','健康'],['service','服务'],['mind','心理'],['report','报告']].map((x) => pill(x[1], c.scopes[x[0]] ? 'blue' : 'outline')).join('') + '</div></td></tr>').join('') + '</tbody></table></div>', '<span class="pill">' + signed.length + ' / ' + F.consents.length + ' 已签署</span>', true) + '</div><div class="stack">' +
+        panel('隐私规则', '心理数据默认最严', '<div class="stack">' + switchRow('心理数据仅本人与咨询师可见', '不进入企业人事记录', 'ops.fivegood.ops.mindPrivacy', F.ops.mindPrivacy !== false) + switchRow('企业报告匿名化', '只显示人数与趋势', 'ops.fivegood.ops.reportAnonymize', F.ops.reportAnonymize !== false) + switchRow('风险升级转人工', '命中后生成随访，不做自动触达', 'ops.fivegood.ops.riskEscalation', F.ops.riskEscalation !== false) + '</div>') +
+        panel('数据保留', '', field('保留期限', F.ops.retention, 'ops.fivegood.ops.retention') + '<div class="notice warm" style="margin-top:10px">' + ic('shield') + '<span>撤回授权后停止新增采集，历史服务记录按合规要求保留；不做企业微信、短信或营销触达。</span></div>') +
+      '</div></div>';
+    }
+    return '<div class="page wide">' + pageHead('五好会员运营', '五好生活不是一个活动页，而是会员从入组、任务、打卡审核到月报与授权的完整运营闭环。', primary, 'PKU-EMPLOYEE-HEALTH / 五好会员') +
+      purpose('回答“谁在用、执行到哪、谁需要干预、数据是否被授权”。', '后台会员档案、打卡审核、月报与授权；H5 目前展示五好主题入口。', '五好产品运营 / 健康管理部') +
+      '<div class="kpi-grid">' + kpi('五好会员', F.memberProfiles.length, '人', '含基础 / 进阶 / 尊享', 'users', ['#f1efff','#5b4bc4']) + kpi('平均总分', avg, '分', '五维加权', 'star', ['#edf3ff','#1f4fd1']) + kpi('待审打卡', pending.length, '条', '人工审核', 'check', ['#fff6e0','#a86a06']) + kpi('授权签署', Math.round(signed.length / Math.max(1, F.consents.length) * 100), '%', signed.length + ' / ' + F.consents.length, 'shield', ['#e9f7f1','#0c7c59']) + '</div>' +
+      panel('会员工作台', '会员档案 / 打卡审核 / 月度报告 / 授权隐私', '<div class="toolbar" style="padding:8px 0 12px">' + seg([{id:'members',label:'会员档案 ' + F.memberProfiles.length},{id:'checkins',label:'打卡审核 ' + pending.length},{id:'reports',label:'月度报告'},{id:'consent',label:'授权隐私'}], tab, 'fiveMemberTab') + '<span class="right tiny muted">年度会员制 · 不含私域获客</span></div>' + body, '<span class="pill">五好主推</span>') +
+      '<div class="notice warm section-space">' + ic('info') + '<span>这里不做企业微信、短信、营销触达和自动召回；低活跃与风险升级只生成人工待办。会员数据用于健康管理，不进入人事绩效。</span></div></div>';
+  };
+
+  PAGES['e-five-ops'] = function () {
+    const F = ops().fivegood;
+    const tab = state.ui.fiveOpsTab || 'sleep';
+    const tabs = [{ id: 'eat', label: '吃好' }, { id: 'sleep', label: '睡好' }, { id: 'move', label: '动好' }, { id: 'mind', label: '心好' }, { id: 'check', label: '查好' }, { id: 'tasks', label: '任务与升级' }];
+    const avgScore = F.members.length ? (F.members.reduce((n, m) => n + Number(m.score || 0), 0) / F.members.length).toFixed(1) : 0;
+    const doneTasks = F.memberTasks.filter((t) => t.status === 'done').length;
+    const openEsc = F.escalations.filter((e) => e.status !== 'done').length;
+    const primary = tab === 'eat' ? '<button class="btn primary" data-go="v-meal">' + ic('bowl') + '<span>打开食谱工程</span></button>' : tab === 'move' ? '<button class="btn primary" data-act="newMovePlan">' + ic('plus') + '<span>新增运动计划</span></button>' : tab === 'tasks' ? '<button class="btn primary" data-act="newFiveTask">' + ic('plus') + '<span>新增五好任务</span></button>' : tab === 'sleep' ? '<button class="btn primary" data-act="newSleepRule">' + ic('plus') + '<span>新增睡眠规则</span></button>' : tab === 'check' ? '<button class="btn primary" data-go="plan-exams">' + ic('pulse') + '<span>管理体检套餐</span></button>' : '<button class="btn primary" data-act="newMindRule">' + ic('plus') + '<span>新增心理规则</span></button>';
+    let body = '';
+    if (tab === 'eat') {
+      const eatDim = F.dims.find((d) => d.key === 'eat') || {};
+      const eatTasks = F.tasks.filter((t) => t.dim === 'eat');
+      const plans = (window.V10_MEAL_SEED && window.V10_MEAL_SEED.dayPlans) || mealData().dayPlans || [];
+      const tpls = mealData().mealTemplates.slice(0, 6);
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('吃好运营结构', '食谱、任务、评分与执行率', '<div class="grid three">' + [['食谱工程', mealData().dayPlans.length, '套全天食谱', 'v-meal'], ['餐次模板', mealData().mealTemplates.length, '个可复用组合', 'v-meal'], ['吃好任务', eatTasks.length, '条周任务', 'e-five-ops']].map((x) => '<div class="meal-tpl-card" ' + (x[3] ? 'data-go="' + x[3] + '"' : '') + '><div class="tiny muted">' + x[0] + '</div><div class="meal-macros compact"><div><b>' + x[1] + '</b><span>' + x[2] + '</span></div></div></div>').join('') + '</div>') +
+        panel('推荐食谱', '按人群与热量配置', '<div class="stack">' + (plans.length ? plans.slice(0, 4).map((d) => '<div class="rowlink" data-go="v-meal"><span class="avatar square" style="width:30px;height:30px;background:#e9f7f1;color:#0c7c59">' + ic('bowl') + '</span><div class="main-tx"><b>' + esc(d.name) + '</b><span>' + esc((d.audience || '通用') + ' · ' + d.kcal + ' kcal · 蛋白 ' + d.p + 'g') + '</span></div><span class="tail">' + pill('查看', 'outline') + '</span></div>').join('') : '<div class="tiny muted">食谱库为空，请先去食谱工程创建。</div>') + '</div>') +
+        panel('吃好评分口径', '不是只看热量', '<div class="grid two">' + ['膳食结构（主食 / 蛋白 / 蔬果）', '规律进餐与早餐完成', '食谱执行率', '营养师批注后的改进'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">计入</span><span>' + esc(x) + '</span></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('吃好任务', '当前 ' + eatTasks.length + ' 条', '<div class="stack tight">' + (eatTasks.length ? eatTasks.map((t) => '<div class="rowlink" data-act="editFiveTask" data-id="' + esc(t.id) + '"><span class="avatar square" style="width:28px;height:28px;background:#e9f7f1;color:#0c7c59">' + ic('check') + '</span><div class="main-tx"><b>第 ' + t.week + ' 周 · ' + esc(t.title) + '</b><span>' + esc(t.type + ' · ' + t.points + ' 积分') + '</span></div><span class="tail">' + pill(t.on ? '启用' : '停用', t.on ? 'green' : '') + '</span></div>').join('') : '<div class="tiny muted">暂无吃好任务。</div>') + '</div>', '<button class="btn sm" data-act="newFiveTask">新增任务</button>', true) +
+        panel('数据来源', '不接外卖与点餐系统', '<div class="notice">' + ic('info') + '<span>吃好数据来自饮食打卡、食谱执行和营养师批注；不接外卖平台、点餐系统或支付。推荐只做健康建议，不替代营养门诊。</span></div>') +
+      '</div></div>';
+    }
+    if (tab === 'sleep') {
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('睡眠数据来源', '文件导入 + 手动 + 量表 + 医疗服务', '<div class="stack">' + ops().sleepSources.map((s, i) => '<div class="row-flex" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-badge">' + esc(s.type) + '</span><div><b style="font-size:11px">' + esc(s.name) + '</b><div class="tiny muted" style="margin-top:3px">' + esc(s.desc) + ' · 覆盖 ' + esc(s.cover) + '</div></div><button class="switch-btn ' + (s.on ? 'on' : '') + '" data-switch="ops.sleepSources.' + i + '.on" style="margin-left:auto"></button></div>').join('') + '</div>') +
+        panel('睡眠干预规则', '命中后转服务，不做诊断', '<div class="stack">' + ops().sleepRules.map((r, i) => '<div class="meal-tpl-card" style="margin-bottom:8px"><div class="row-flex"><span class="meal-badge">' + esc(r.svc || '服务') + '</span><b>' + esc(r.name) + '</b><div class="right-auto row-flex" style="gap:6px"><button class="btn sm" data-act="editSleepRule" data-id="' + esc(r.id) + '">编辑</button><button class="switch-btn ' + (r.on ? 'on' : '') + '" data-switch="ops.sleepRules.' + i + '.on"></button></div></div><div class="tiny muted" style="margin-top:7px">触发：' + esc(r.when) + '</div><div class="tiny muted" style="margin-top:3px">动作：' + esc(r.then) + '</div></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('五好会员睡眠表现', '按当前会员评分', '<div class="stack">' + F.members.map((m) => '<div><div class="row-flex"><span>' + esc(m.name) + '</span><b class="right-auto">' + (m.dims || {}).sleep + '</b></div>' + progress((m.dims || {}).sleep || 0, '#6b5ce4') + '</div>').join('') + '</div>') +
+        panel('关联服务', '睡眠问题不能只推内容', '<div class="stack tight">' + [['sleep', '睡眠监测与改善服务'], ['eap', 'EAP 心理咨询'], ['heart', '心血管风险评估']].map((x) => '<div class="rowlink" data-go="e-services"><span class="avatar square" style="width:28px;height:28px">' + ic('sleep') + '</span><div class="main-tx"><b>' + x[1] + '</b><span>' + esc(x[0]) + '</span></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>') +
+      '</div></div>';
+    }
+    if (tab === 'move') {
+      body = '<div class="grid two">' + ops().exercisePlans.map((p) => '<div class="meal-tpl-card" data-act="editMovePlan" data-id="' + esc(p.id) + '"><div class="row-flex"><span class="meal-badge">' + esc(p.level) + '</span><b>' + esc(p.name) + '</b><span class="right-auto">' + pill(p.on ? '开放' : '停用', p.on ? 'green' : '') + '</span></div><div class="tiny muted" style="margin-top:7px">' + esc(p.goal + ' · ' + p.freq) + '</div><div class="chips" style="margin-top:8px">' + (p.items || []).map((x) => pill(x, 'outline')).join('') + '</div><div class="meal-macros compact"><div><b>' + p.joined + '</b><span>参与</span></div><div><b>' + esc(p.joints) + '</b><span>关节要求</span></div><div><b>' + (p.items || []).length + '</b><span>动作</span></div><div><b>—</b><span>完成率</span></div></div><div class="meal-foot"><span class="tiny muted">运动处方</span><button class="btn sm" data-act="editMovePlan" data-id="' + esc(p.id) + '">编辑计划</button></div></div>').join('') + '</div>' +
+        '<div class="notice warm section-space">' + ic('info') + '<span>运动计划是后台处方模板，不会自动同步到 H5 训练计划。关节风险人群应先做康复评估。</span></div>';
+    }
+    if (tab === 'mind') {
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('心理测评与打卡', '隐私优先', '<div class="stack">' + ops().mindCheckins.map((m, i) => '<div class="row-flex" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-badge">' + esc(m.type) + '</span><div><b style="font-size:11px">' + esc(m.name) + '</b><div class="tiny muted" style="margin-top:3px">' + esc(m.freq + ' · ' + m.items + ' · ' + m.privacy) + '</div></div><span class="right-auto row-flex" style="gap:8px"><span class="tiny muted">完成率 ' + esc(m.rate) + '</span><button class="switch-btn ' + (m.on ? 'on' : '') + '" data-switch="ops.mindCheckins.' + i + '.on"></button></span></div>').join('') + '</div>') +
+        panel('心理干预规则', '只做关怀与转介', '<div class="stack">' + ops().mindRules.map((r, i) => '<div class="meal-tpl-card" style="margin-bottom:8px"><div class="row-flex"><span class="meal-badge">' + (r.urgent ? '优先' : '常规') + '</span><b>' + esc(r.name) + '</b><div class="right-auto row-flex" style="gap:6px"><button class="btn sm" data-act="editMindRule" data-id="' + esc(r.id) + '">编辑</button><button class="switch-btn ' + (r.on ? 'on' : '') + '" data-switch="ops.mindRules.' + i + '.on"></button></div></div><div class="tiny muted" style="margin-top:7px">触发：' + esc(r.when) + '</div><div class="tiny muted" style="margin-top:3px">动作：' + esc(r.then) + '</div></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('隐私边界', '心理数据不能外泄', '<div class="notice warm">' + ic('shield') + '<span>情绪打卡与量表只对本人和授权咨询师可见，不进入企业人事记录；命中高风险只做 EAP 转介，不下诊断。</span></div>') +
+        panel('关联服务', '', '<div class="stack tight">' + [['eap', 'EAP 心理咨询'], ['lecture', '压力管理讲座'], ['sleep', '睡眠改善服务']].map((x) => '<div class="rowlink" data-go="e-services"><span class="avatar square" style="width:28px;height:28px">' + ic('heart') + '</span><div class="main-tx"><b>' + x[1] + '</b></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>') +
+      '</div></div>';
+    }
+    if (tab === 'check') {
+      const checkDim = F.dims.find((d) => d.key === 'check') || {};
+      const checkTasks = F.tasks.filter((t) => t.dim === 'check');
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('体检套餐与检后链路', '查好不是一份报告，而是从检前到 90 天干预', '<div class="grid two">' + ops().checkupPlans.map((p) => '<div class="meal-tpl-card" data-go="plan-exams"><div class="row-flex"><span class="meal-badge">' + esc(p.audience) + '</span><b>' + esc(p.name) + '</b><span class="right-auto">' + pill('¥' + p.price, 'outline') + '</span></div><div class="tiny muted" style="margin-top:8px;line-height:1.7">' + esc((p.items || []).join(' · ')) + '</div><div class="meal-foot"><span class="tiny muted">结算 ¥' + p.settle + '</span><button class="btn sm" data-go="plan-exams">配置套餐</button></div></div>').join('') + '</div>') +
+        panel('检后 90 天链路', '每一段都要有人负责', '<div class="stack">' + ops().checkFlow.map((s, i) => '<div class="row-flex" style="padding:10px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-badge">' + esc(s.name) + '</span><div><b style="font-size:11px">' + esc((s.items || []).join(' · ')) + '</b>' + (s.svc ? '<div class="tiny muted" style="margin-top:3px">关联服务：' + esc(planServiceName(s.svc)) + '</div>' : '') + '</div><span class="right-auto tiny muted">第 ' + (i + 1) + ' 步</span></div>').join('') + '</div><button class="btn sm" data-go="e-serviceflow" style="margin-top:10px">去服务履约台</button>') +
+      '</div><div class="stack">' +
+        panel('查好评分', '体检参与 + 异常复查 + 报告解读', '<div class="stack">' + ['完成年度体检', '异常项完成复查', '报告被解读并理解', '按建议进入管理或转诊'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">计入</span><span>' + esc(x) + '</span></div>').join('') + '</div><div class="notice" style="margin-top:10px">' + ic('pulse') + '<span>查好只做体检与检后管理，不提供诊断；异常结论由医生面诊确认。</span></div>') +
+        panel('查好任务', '当前 ' + checkTasks.length + ' 条', '<div class="stack tight">' + (checkTasks.length ? checkTasks.map((t) => '<div class="rowlink" data-act="editFiveTask" data-id="' + esc(t.id) + '"><span class="avatar square" style="width:28px;height:28px;background:#edf3ff;color:#1f4fd1">' + ic('scan') + '</span><div class="main-tx"><b>第 ' + t.week + ' 周 · ' + esc(t.title) + '</b><span>' + t.points + ' 积分</span></div><span class="chev">' + ic('chevron') + '</span></div>').join('') : '<div class="tiny muted">暂无查好任务。</div>') + '</div>') +
+      '</div></div>';
+    }
+    if (tab === 'tasks') {
+      body = '<div class="grid main-side"><div class="stack">' +
+        panel('五好任务库', '按周发放，可配置积分', '<div class="table-wrap"><table class="table"><thead><tr><th>周</th><th>维度</th><th>任务</th><th>类型</th><th>积分</th><th>状态</th></tr></thead><tbody>' + F.tasks.map((t) => '<tr class="click" data-act="editFiveTask" data-id="' + esc(t.id) + '"><td>第 ' + t.week + ' 周</td><td>' + pill((F.dims.find((d) => d.key === t.dim) || {}).name || t.dim, 'outline') + '</td><td><b style="font-size:11.5px">' + esc(t.title) + '</b></td><td>' + esc(t.type) + '</td><td>' + t.points + '</td><td>' + pill(t.on ? '启用' : '停用', t.on ? 'green' : '') + '</td></tr>').join('') + '</tbody></table></div>', '<span class="pill">' + F.tasks.length + ' 条</span>', true) +
+        panel('会员任务执行', '最近 12 条', '<div class="table-wrap"><table class="table"><thead><tr><th>会员</th><th>任务</th><th>到期</th><th>状态</th><th>审核</th></tr></thead><tbody>' + F.memberTasks.slice(0, 12).map((t) => '<tr><td>' + esc(t.memberId) + '</td><td>' + esc(t.title) + '</td><td class="muted">' + esc(t.due) + '</td><td>' + pill(t.status === 'done' ? '已完成' : '待完成', t.status === 'done' ? 'green' : 'amber') + '</td><td>' + pill(t.reviewed ? '已审核' : '待审核', t.reviewed ? 'blue' : 'outline') + '</td></tr>').join('') + '</tbody></table></div>') +
+      '</div><div class="stack">' +
+        panel('升级与转介', openEsc + ' 条待处理', '<div class="stack tight">' + F.escalations.map((e) => '<div class="meal-tpl-card" style="margin-bottom:8px"><div class="row-flex"><b>' + esc(e.name) + '</b><span class="right-auto">' + pill(e.status === 'done' ? '已处理' : e.level === 'high' ? '高风险' : '跟进中', e.status === 'done' ? 'green' : e.level === 'high' ? 'red' : 'amber') + '</span></div><div class="tiny muted" style="margin-top:4px">' + esc(e.signal) + '</div><div class="tiny muted" style="margin-top:3px">→ ' + esc(e.action) + '</div>' + (e.status === 'done' ? '' : '<button class="btn sm" style="margin-top:8px" data-act="resolveEscalation" data-id="' + esc(e.id) + '">标记已处理</button>') + '</div>').join('') + '</div>') +
+        panel('五好总分', '会员平均 ' + avgScore + ' 分', '<div class="stack">' + F.members.map((m) => '<div><div class="row-flex"><span>' + esc(m.name) + ' · ' + esc(m.tier) + '</span><b class="right-auto">' + m.score + '</b></div>' + progress(m.score, '#6b5ce4') + '</div>').join('') + '</div>') +
+      '</div></div>';
+    }
+    return '<div class="page wide">' + pageHead('五好主题运营', '吃好之外，睡好、动好、心好是五好生活的三条主运营线：数据来源、干预规则、任务与升级都要能配。', primary, 'PKU-EMPLOYEE-HEALTH / 五好主题') +
+      purpose('把五个健康主题做成可运营、可干预、可追踪的年度产品。', '后台睡眠/运动/心理数据与干预规则；H5 目前只展示五好主题入口。', '企康产品运营 / 健康管理部') +
+      '<div class="kpi-grid">' + kpi('五好会员', F.members.length, '人', '在组会员', 'users', ['#f1efff','#5b4bc4']) + kpi('平均总分', avgScore, '分', '五维加权', 'star', ['#edf3ff','#1f4fd1']) + kpi('任务完成', doneTasks, '条', '已提交并审核', 'check', ['#e9f7f1','#0c7c59']) + kpi('待处理升级', openEsc, '条', '需转介或随访', 'activity', ['#fdeef4','#be2a5e']) + '</div>' +
+      panel('主题工作台', '吃好 / 睡好 / 动好 / 心好 / 查好 / 任务与升级', '<div class="toolbar" style="padding:8px 0 12px">' + seg(tabs, tab, 'fiveOpsTab') + '<span class="right tiny muted">五维加权 · 年度会员制</span></div>' + body, '<span class="pill">主推产品</span>') +
+      '<div class="notice warm section-space">' + ic('info') + '<span>这里不包含企业微信、私域获客和营销触达；所有干预只做健康管理转介，服务预约仍需职工本人确认。</span></div></div>';
+  };
+
+  PAGES['plan-pricing'] = function () {
+    const q = (state.ui.priceQ || '').trim();
+    const rows = data.employee.products.map((p) => ({ p: p, pr: priceRow(p.id) })).filter(({ p }) => !q || (p.name + (p.en || '') + p.id).indexOf(q) >= 0);
+    const valid = rows.filter((r) => r.pr);
+    const avgMargin = valid.length ? Math.round(valid.reduce((n, r) => { const t = (r.pr.pricing || [])[0] || {}; return n + (Number(t.list || r.pr.price || 0) ? (Number(t.list || r.pr.price) - Number(t.cost || 0)) / Number(t.list || r.pr.price) * 100 : 0); }, 0) / valid.length) : 0;
+    const sold = valid.reduce((n, r) => n + Number(r.pr.sold || 0), 0);
+    return '<div class="page wide">' + pageHead('价格与政策', '每项服务都要有挂牌价、企业协议价、成本和毛利。价格不是详情页的一段文字，而是可审批、可追溯的经营口径。', '<button class="btn primary" data-act="newService">' + ic('plus') + '<span>新增服务</span></button>', '运营规划 / 价格与政策') +
+      purpose('统一服务定价、协议价与毛利口径，避免销售随口报价。', '后台价格与政策；H5 不展示价格，真实支付与开票需要后端订单系统。', '企康产品运营 / 财务') +
+      '<div class="kpi-grid">' + kpi('可售服务', data.employee.products.length, '项', '含待定价', 'package', ['#f1efff','#5b4bc4']) + kpi('平均毛利率', avgMargin, '%', '按标准版口径', 'chart', ['#e9f7f1','#0c7c59']) + kpi('累计销量', sold, '单', '按服务台账', 'coins', ['#fff1e7','#e5540b']) + kpi('审批要求', ops().price.needApproval ? '需审批' : '免审批', '', ops().price.floorGuard ? '底价保护开启' : '底价保护关闭', 'shield', ['#edf3ff','#1f4fd1']) + '</div>' +
+      panel('服务价格表', '点击整行编辑价格档位与退款规则', '<div class="toolbar" style="padding:8px 0 10px"><div class="searchbar">' + ic('search') + '<input class="input" data-ui-input="priceQ" placeholder="服务名称 / 编码" value="' + esc(q) + '"></div><span class="right tiny muted">标准版 / 深度版 / 企业版三档</span></div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>服务</th><th>编码</th><th>标准价</th><th>企业协议价</th><th>成本</th><th>毛利率</th><th>销量</th><th>状态</th></tr></thead><tbody>' + rows.map(({ p, pr }) => { const t = pr ? (pr.pricing || [])[0] || {} : {}; const list = Number(t.list || (pr && pr.price) || 0); const cost = Number(t.cost || 0); const margin = list ? Math.round((list - cost) / list * 100) : 0; return '<tr class="click" data-act="editPricing" data-id="' + esc(p.id) + '"><td><div class="row-main"><span class="avatar square" style="width:30px;height:30px">' + ic(moduleMeta(p.mod).icon) + '</span><div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(moduleName(p.mod)) + '</div></div></div></td><td class="muted">' + esc(pr ? pr.code : '待定价') + '</td><td>' + (list ? '¥' + list : '<span class="muted">未定价</span>') + '</td><td>' + (t.contract ? '¥' + t.contract : '-') + '</td><td>' + (cost ? '¥' + cost : '-') + '</td><td><b style="color:' + (margin >= 30 ? 'var(--green)' : margin > 0 ? '#c8871a' : 'var(--muted)') + '">' + (list ? margin + '%' : '-') + '</b></td><td>' + (pr ? pr.sold : 0) + '</td><td>' + (p.active ? pill('可售', 'green') : pill('下架', '')) + '</td></tr>'; }).join('') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 项</span>', true) +
+      '<div class="grid two section-space">' +
+        panel('价格政策', '影响所有服务', '<div class="stack">' + switchRow('调价需审批', '改挂牌价或协议价需走审批', 'ops.price.needApproval', ops().price.needApproval !== false) + switchRow('底价保护', '低于成本价时阻止保存', 'ops.price.floorGuard', ops().price.floorGuard !== false) + switchRow('按档位自动折扣', '企业档位可享折扣价', 'ops.price.tierDiscount', !!ops().price.tierDiscount) + '</div>') +
+        panel('定价口径', '避免前台和财务对不上', '<div class="notice">' + ic('info') + '<span>标准价用于挂牌，企业协议价用于合同，成本用于毛利核算。H5 当前不展示价格；真实售卖需要订单、支付与开票接口。</span></div>') +
+      '</div></div>';
+  };
+
+  PAGES['plan-bundles'] = function () {
+    const bundles = ops().bundles;
+    const totalSold = bundles.reduce((n, b) => n + Number(b.sold || 0), 0);
+    const avgMargin = bundles.length ? Math.round(bundles.reduce((n, b) => n + (Number(b.price) ? (Number(b.price) - Number(b.cost || 0)) / Number(b.price) * 100 : 0), 0) / bundles.length) : 0;
+    return '<div class="page wide">' + pageHead('服务组合', '把多个服务打包成可售卖的企业产品：组合价、结算价、包含服务、适用人群与销量都要清楚。', '<button class="btn primary" data-act="newBundle">' + ic('plus') + '<span>新建服务组合</span></button>', '运营规划 / 服务组合') +
+      purpose('让销售能直接拿组合报价，而不是逐项服务相加。', '后台组合与价格；H5 目前没有组合购买页，真实下单需要后端订单。', '企康产品运营 / 销售') +
+      '<div class="kpi-grid">' + kpi('服务组合', bundles.length, '个', '可售卖产品包', 'layers', ['#f1efff','#5b4bc4']) + kpi('累计销量', totalSold, '单', '按组合成交', 'coins', ['#fff1e7','#e5540b']) + kpi('平均毛利率', avgMargin, '%', '按组合价与成本', 'chart', ['#e9f7f1','#0c7c59']) + kpi('在售组合', bundles.filter((b) => b.status === 'online').length, '个', '草稿未计入', 'check', ['#edf3ff','#1f4fd1']) + '</div>' +
+      '<div class="grid two">' + bundles.map((b) => { const margin = Number(b.price) ? Math.round((Number(b.price) - Number(b.cost || 0)) / Number(b.price) * 100) : 0; return '<div class="panel pkg-card" style="box-shadow:none" data-act="editBundle" data-id="' + esc(b.id) + '"><div class="meal-cover" style="height:128px;background:' + mealCoverStyle(b.id) + '"><div class="mc-orb"></div><div class="mc-top"><span class="tag">' + esc(b.code) + '</span>' + pill(b.status === 'online' ? '在售' : '草稿', b.status === 'online' ? 'green' : 'amber') + '</div><div class="mc-title"><b>' + esc(b.name) + '</b><span>' + esc(b.audience) + '</span></div><div class="mc-kcal"><b>¥' + b.price + '</b><span>组合价</span></div></div><div class="panel-body"><div class="meal-macros"><div><b>¥' + b.settle + '</b><span>结算价</span></div><div><b>¥' + b.cost + '</b><span>成本</span></div><div><b>' + margin + '%</b><span>毛利</span></div><div><b>' + b.sold + '</b><span>销量</span></div></div><div class="tiny muted" style="margin-top:10px;line-height:1.6">' + esc(b.desc) + '</div><div class="chips" style="margin-top:10px">' + ((b.services || []).slice(0, 5).map((id) => pill(planServiceName(id), 'outline'))).join('') + '</div><div class="meal-foot"><span class="tiny muted">' + esc(b.owner) + ' · ' + (b.services || []).length + ' 项服务</span><button class="btn sm" data-act="editBundle" data-id="' + esc(b.id) + '">编辑组合</button></div></div></div>'; }).join('') + '</div>' +
+      '<div class="notice warm section-space">' + ic('info') + '<span>组合价是后台报价口径。组合内服务的履约仍按单项服务执行；一个组合可能对应多次预约和多次核销。</span></div></div>';
+  };
+
+  function tradeOrders() {
+    const list = [];
+    data.employee.bookings.forEach((b) => {
+      list.push({ key: 'bk-' + b.id, kind: 'booking', id: b.id, type: '服务预约', person: b.person, item: b.service, source: b.channel || '职工健康', at: (b.date || '') + ' ' + (b.time || ''), amount: serviceListPrice(b.pid), amountText: serviceListPrice(b.pid) ? '¥' + serviceListPrice(b.pid) : '—', status: b.statusKey === 'completed' ? 'done' : b.statusKey === 'cancelled' ? 'cancelled' : ['pending', 'confirmed', 'in_service'].indexOf(b.statusKey) >= 0 ? 'open' : 'open', statusText: orderStatusLabel(b.statusKey) });
+    });
+    data.camp.rewardClaims.forEach((c) => {
+      const tier = data.camp.rewardTiers.find((t) => t.id === c.tierId) || {};
+      list.push({ key: 'claim-' + c.id, kind: 'claim', id: c.id, type: '打卡奖励', person: c.studentName, item: tier.name || '连续打卡奖励', source: '健康训练营', at: c.claimDate, amount: 0, amountText: '奖励', status: c.status === 'fulfilled' ? 'done' : c.status === 'cancelled' ? 'cancelled' : 'open', statusText: c.status === 'fulfilled' ? '已领取' : c.status === 'shipped' ? '已发货' : '待发放' });
+    });
+    data.camp.pointExchanges.forEach((e) => {
+      list.push({ key: 'ex-' + e.id, kind: 'exchange', id: e.id, type: '积分兑换', person: e.studentName, item: e.productName, source: '积分商城', at: e.exchangeDate, amount: 0, amountText: (e.pointsSpent || 0) + ' 积分', status: e.status === 'fulfilled' ? 'done' : e.status === 'cancelled' ? 'cancelled' : 'open', statusText: e.status === 'fulfilled' ? '已完成' : e.status === 'shipped' ? '已发货' : e.status === 'cancelled' ? '已取消' : '待处理' });
+    });
+    return list.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  }
+  PAGES['trade-orders'] = function () {
+    const type = state.ui.orderType || 'all';
+    const status = state.ui.orderStatus || 'all';
+    const q = (state.ui.orderQ || '').trim();
+    const all = tradeOrders();
+    const rows = all.filter((o) => (type === 'all' || o.type === type) && (status === 'all' || o.status === status) && (!q || (o.person + o.item + o.source + o.id).indexOf(q) >= 0));
+    const amount = all.reduce((n, o) => n + Number(o.amount || 0), 0);
+    return '<div class="page wide">' + pageHead('订单中心', '把服务预约、积分兑换和连续打卡奖励统一成一张订单台账。查询、筛选、进入详情都在一页完成。', '<button class="btn" data-act="exportOrders">' + ic('download') + '<span>导出订单</span></button>', '交易与结算 / 订单中心') +
+      purpose('用一张表回答“谁、买了/兑了什么、现在到哪一步”。', '预约订单与服务履约联动；兑换和奖励进入原有发放核销流程。', '履约运营 / 客服') +
+      '<div class="kpi-grid">' + kpi('全部订单', all.length, '单', '三类业务合并', 'doc', ['#fff1e7','#e5540b']) + kpi('待处理', all.filter((o) => o.status === 'open').length, '单', '需确认或发放', 'clock', ['#fff6e0','#a86a06']) + kpi('已完成', all.filter((o) => o.status === 'done').length, '单', '含履约与领取', 'check', ['#e9f7f1','#0c7c59']) + kpi('服务金额', '¥' + amount, '', '仅服务预约', 'coins', ['#edf3ff','#1f4fd1']) + '</div>' +
+      panel('订单台账', '点击整行进入对应业务详情', '<div class="toolbar" style="padding:8px 0 10px">' + seg([{id:'all',label:'全部类型'},{id:'服务预约',label:'服务预约'},{id:'积分兑换',label:'积分兑换'},{id:'打卡奖励',label:'打卡奖励'}], type, 'orderType') + seg([{id:'all',label:'全部状态'},{id:'open',label:'待处理'},{id:'done',label:'已完成'},{id:'cancelled',label:'已取消'}], status, 'orderStatus') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="orderQ" placeholder="姓名 / 项目 / 来源" value="' + esc(q) + '"></div></div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>订单</th><th>类型</th><th>客户</th><th>项目</th><th>来源</th><th>时间</th><th>金额 / 积分</th><th>状态</th></tr></thead><tbody>' + (rows.length ? rows.map((o) => '<tr class="click" data-act="openTradeOrder" data-kind="' + esc(o.kind) + '" data-id="' + esc(o.id) + '"><td class="tnum muted">' + esc(o.key) + '</td><td>' + pill(o.type, o.type === '服务预约' ? 'orange' : o.type === '积分兑换' ? 'blue' : 'amber') + '</td><td><div class="row-main">' + avatar(o.person) + '<div><div class="name">' + esc(o.person) + '</div></div></div></td><td><b style="font-size:11.5px">' + esc(o.item) + '</b></td><td class="muted">' + esc(o.source) + '</td><td class="muted">' + esc(String(o.at).slice(0, 16)) + '</td><td>' + esc(o.amountText) + '</td><td>' + pill(o.statusText, o.status === 'done' ? 'green' : o.status === 'cancelled' ? '' : 'amber') + '</td></tr>').join('') : '<tr><td colspan="8">' + empty('没有匹配订单') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 单</span>', true) + '</div>';
+  };
+
+  PAGES['trade-settle'] = function () {
+    const S = ops().settle;
+    const records = S.records;
+    const pending = records.filter((r) => r.status === 'pending');
+    const settled = records.filter((r) => r.status === 'settled');
+    return '<div class="page wide">' + pageHead('结算与对账', '企业客户与渠道合作方按账期结算。订单量、结算金额、毛利和回款状态要能对上。', '<button class="btn primary" data-act="newSettle">' + ic('plus') + '<span>生成对账单</span></button>', '交易与结算 / 结算对账') +
+      purpose('避免服务做了、钱没结；也避免销售承诺的协议价和财务口径不一致。', '后台合作方账期与对账单；不包含真实开票、打款与财务系统对接。', '财务 / 客户成功') +
+      '<div class="kpi-grid">' + kpi('合作方', S.partners.length, '家', '企业 / 工会 / 渠道', 'building', ['#fff1e7','#e5540b']) + kpi('待对账', pending.length, '份', '需确认金额', 'doc', ['#fff6e0','#a86a06']) + kpi('已结清', settled.length, '份', '历史对账单', 'check', ['#e9f7f1','#0c7c59']) + kpi('本期金额', '¥' + records.reduce((n, r) => n + Number(r.amount || 0), 0), '', '全部对账单', 'coins', ['#edf3ff','#1f4fd1']) + '</div>' +
+      panel('合作方账期', '授信、已用额度与结算周期', '<div class="grid three">' + S.partners.map((p) => '<div class="meal-tpl-card"><div class="row-flex"><span class="avatar square" style="width:30px;height:30px">' + ic('building') + '</span><b>' + esc(p.name) + '</b></div><div class="tiny muted" style="margin-top:6px">' + esc(p.type + ' · ' + p.plan + ' · ' + p.cycle) + '</div><div class="meal-macros compact"><div><b>¥' + p.used + '</b><span>已用</span></div><div><b>¥' + p.limit + '</b><span>授信</span></div><div><b>' + p.credit + ' 天</b><span>账期</span></div><div><b>' + Math.round(p.used / Math.max(1, p.limit) * 100) + '%</b><span>额度使用</span></div></div>' + progress(p.used / Math.max(1, p.limit) * 100, '#6b5bd2') + '</div>').join('') + '</div>') +
+      panel('对账单', '点击整行查看与确认', '<div class="table-wrap"><table class="table"><thead><tr><th>对账单</th><th>合作方</th><th>账期</th><th>订单</th><th>应收</th><th>结算金额</th><th>毛利</th><th>状态</th></tr></thead><tbody>' + records.map((r) => '<tr class="click" data-act="editSettle" data-id="' + esc(r.id) + '"><td class="tnum">' + esc(r.id) + '</td><td>' + esc(r.partner) + '</td><td>' + esc(r.period) + '</td><td>' + r.orders + '</td><td>¥' + r.amount + '</td><td>¥' + r.settleAmount + '</td><td>' + r.margin + '%</td><td>' + pill(r.status === 'settled' ? '已结清' : r.status === 'invoiced' ? '已开票' : '待对账', r.status === 'settled' ? 'green' : r.status === 'invoiced' ? 'blue' : 'amber') + '</td></tr>').join('') + '</tbody></table></div>', '<span class="pill">' + records.length + ' 份</span>', true) +
+      '<div class="notice warm section-space">' + ic('info') + '<span>对账单只记录业务口径，不会自动开票或打款；真实结算需要对接收款与财务系统。</span></div></div>';
+  };
+
+  PAGES['e-qa'] = function () {
+    const q = (state.ui.qaQ || '').trim();
+    const cat = state.ui.qaCat || 'all';
+    const cats = [];
+    ops().qa.forEach((x) => { if (cats.indexOf(x.cat) < 0) cats.push(x.cat); });
+    const rows = ops().qa.filter((x) => (cat === 'all' || x.cat === cat) && (!q || (x.q + x.answer).indexOf(q) >= 0));
+    return '<div class="page wide">' + pageHead('健康问答', '把职工最常问的问题做成可审核、可复用的知识库；回答边界、敏感词和未命中问题都要有人管。', '<button class="btn primary" data-act="newQa">' + ic('plus') + '<span>新增问答</span></button>', 'PKU-EMPLOYEE-HEALTH / 健康问答') +
+      purpose('减少重复答疑，同时避免把健康建议说成诊断结论。', '后台问答与审核规则；H5 当前没有问答入口，发布不会自动上线。', '健康管理部 / 内容审核') +
+      '<div class="kpi-grid">' + kpi('知识条目', ops().qa.length, '条', '在架 ' + ops().qa.filter((x) => x.on !== false).length + ' 条', 'chat', ['#fff1e7','#e5540b']) + kpi('累计命中', ops().qa.reduce((n, x) => n + Number(x.hits || 0), 0), '次', '来自 H5 与电话', 'activity', ['#edf3ff','#1f4fd1']) + kpi('待审核', ops().qa.filter((x) => x.on === false).length, '条', '未发布', 'clock', ['#fff6e0','#a86a06']) + kpi('未命中问题', ops().qaUnmatched.length, '条', '待补知识库', 'inbox', ['#fdeef4','#be2a5e']) + '</div>' +
+      panel('知识库', '点击整行编辑问题与答案', '<div class="toolbar" style="padding:8px 0 10px">' + seg([{id:'all',label:'全部分类'}].concat(cats.map((c) => ({id:c,label:c}))), cat, 'qaCat') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="qaQ" placeholder="问题 / 答案" value="' + esc(q) + '"></div></div>' +
+        '<div class="table-wrap"><table class="table"><thead><tr><th>问题</th><th>分类</th><th>命中</th><th>状态</th><th>操作</th></tr></thead><tbody>' + (rows.length ? rows.map((x) => '<tr class="click" data-act="editQa" data-id="' + esc(x.id) + '"><td><b style="font-size:11.5px">' + esc(x.q) + '</b><div class="sub" style="max-width:640px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.answer) + '</div></td><td>' + pill(x.cat, 'outline') + '</td><td>' + x.hits + '</td><td>' + pill(x.on !== false ? '已发布' : '待审核', x.on !== false ? 'green' : 'amber') + '</td><td class="actions"><button class="btn sm">编辑</button></td></tr>').join('') : '<tr><td colspan="5">' + empty('没有匹配问答') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 条</span>', true) +
+      '<div class="grid main-side section-space"><div class="stack">' +
+        panel('未命中问题池', '用户问了但知识库没有', '<div class="stack tight">' + ops().qaUnmatched.map((x) => '<div class="rowlink" data-act="convertQa" data-id="' + esc(x.id) + '"><span class="avatar square" style="width:29px;height:29px;background:#fff6e0;color:#a86a06">' + ic('chat') + '</span><div class="main-tx"><b>' + esc(x.q) + '</b><span>' + esc(x.cat + ' · ' + x.source + ' · 命中 ' + x.hits + ' 次') + '</span></div><span class="tail">' + pill('转为问答', 'amber') + '</span></div>').join('') + '</div>') +
+      '</div><div class="stack">' +
+        panel('回答边界', '哪些问题必须转医生', '<div class="stack tight">' + ['出现胸痛、呼吸困难、意识改变等急症 → 立即就医', '涉及诊断、用药调整、手术指征 → 转专科医生', '孕期、儿童、肾功能不全等特殊人群 → 医生评估', '心理量表阳性 → EAP 转介，不给诊断结论'].map((x) => '<div class="row-flex small" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span class="pill red">边界</span><span>' + esc(x) + '</span></div>').join('') + '</div>') +
+        panel('审核规则', '敏感内容不进自动回复', '<div class="chips">' + ['诊断', '处方', '剂量', '手术', '治愈', '包治', '停药', '偏方'].map((x) => pill(x, 'outline')).join('') + '</div><div class="notice" style="margin-top:10px">' + ic('shield') + '<span>命中敏感词后进入人工审核；审核通过才发布。问答不替代医生面诊。</span></div>') +
       '</div></div></div>';
   };
 
@@ -1688,6 +2147,12 @@
     (meal.supplements || []).forEach((s) => {
       if (s.avoidText != null) { s.avoid = splitList(s.avoidText); delete s.avoidText; }
     });
+    ((data.ops || {}).health || {}).profiles && data.ops.health.profiles.forEach((p) => {
+      if (p.tagsText != null) { p.tags = splitList(p.tagsText); delete p.tagsText; }
+    });
+    ((data.ops || {}).exercisePlans || []).forEach((p) => {
+      if (p.itemsText != null) { p.items = splitList(p.itemsText); delete p.itemsText; }
+    });
   }
 
   /* ----------------------------------------------------------- 抽屉 */
@@ -1741,6 +2206,44 @@
     mealData().dayPlans.unshift(copy);
     commit('复制全天食谱');
     openMealDayDrawer(copy.id);
+  }
+  function applyMealPairGoal() {
+    const goal = state.ui.mealPairGoal || 'balanced';
+    const map = { balanced: 'dp1', sugar: 'dp2', fatloss: 'dp3', lowpurine: 'dp4' };
+    const d = mealData().dayPlans.find((x) => x.id === map[goal]) || mealData().dayPlans[0] || {};
+    MEAL_SLOTS.forEach((m) => { state.ui['pair' + m] = (d.meals || {})[m] || state.ui['pair' + m] || ''; });
+    toast('已套用「' + ({ balanced: '均衡', sugar: '控糖', fatloss: '减脂', lowpurine: '低嘌呤' }[goal]) + '」推荐组合，可继续微调');
+    render(true);
+  }
+  function createPairedMeal() {
+    const goal = state.ui.mealPairGoal || 'balanced';
+    const labels = { balanced: '均衡搭配', sugar: '控糖搭配', fatloss: '减脂搭配', lowpurine: '低嘌呤搭配' };
+    const audiences = { balanced: '普通职工', sugar: '血糖偏高', fatloss: 'BMI ≥ 28', lowpurine: '高尿酸' };
+    const meals = {};
+    MEAL_SLOTS.forEach((m) => { meals[m] = state.ui['pair' + m] || ((mealData().mealTemplates.find((t) => t.meal === m) || {}).id || ''); });
+    const draft = { meals: meals };
+    const t = mealDayTotals(draft);
+    const d = { id: uid('dp'), name: labels[goal] + ' ' + t.kcal + 'kcal', audience: audiences[goal], kcal: t.kcal, p: t.p, c: t.c, f: t.f, meals: meals, tags: [labels[goal]], on: false, used: 0, owner: '营养师', imageUrl: '' };
+    mealData().dayPlans.unshift(d);
+    commit('生成搭配食谱');
+    openMealDayDrawer(d.id);
+  }
+  function openMealRuleDrawer(id) {
+    const r = mealData().rules.find((x) => x.id === id);
+    if (!r) return;
+    const i = mealData().rules.indexOf(r);
+    const prefix = 'meal.rules.' + i;
+    openDrawer({ title: '推荐规则 · ' + r.name, sub: r.audience + ' / ' + (mealData().dayPlans.find((d) => d.id === r.dayPlanId) || {}).name, save: true, saveLabel: '推荐规则', extra: function () {
+      return '<button class="btn danger" data-act="deleteMealRule" data-id="' + esc(r.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('规则信息', '', '<div class="form-grid two">' + field('规则名称', r.name, prefix + '.name') + field('适用人群', r.audience, prefix + '.audience') + field('推荐全天食谱', r.dayPlanId, prefix + '.dayPlanId', { select: mealData().dayPlans.map((d) => ({ v: d.id, l: d.name + ' · ' + d.kcal + ' kcal' })) }) + '</div>' + field('触发条件', r.condition, prefix + '.condition', { area: true, rows: 2 }) + field('规则说明', r.note || '', prefix + '.note', { area: true, rows: 3 }) + switchRow('启用规则', '关闭后不参与推荐', prefix + '.on', r.on !== false)) + '<div class="notice warm">' + ic('shield') + '<span>规则只做食谱推荐，特殊人群必须转医生或营养门诊；不生成诊断、处方或药物建议。</span></div></div>';
+    } });
+  }
+  function createNewMealRule() {
+    const r = { id: uid('mr'), name: '新推荐规则', audience: '普通职工', condition: '请填写触发条件', dayPlanId: (mealData().dayPlans[0] || {}).id || '', note: '', on: false };
+    mealData().rules.unshift(r);
+    commit('新增推荐规则');
+    openMealRuleDrawer(r.id);
   }
   function previewMealDay(id) {
     const d = mealData().dayPlans.find((x) => x.id === id);
@@ -1831,6 +2334,418 @@
     mealData().supplements.unshift(s);
     commit('新建营养补剂');
     openMealSupDrawer(s.id);
+  }
+
+  function ensurePricing(pid) {
+    let x = priceRow(pid);
+    if (!x) {
+      x = { id: pid, code: 'SVC-' + String(Date.now()).slice(-4), price: 0, sold: 0, pricing: [{ name: '标准版', cost: 0, settle: 0, list: 0, contract: 0, tax: 6, unit: '次', validity: 365, times: 1 }], rules: { leadDays: 1, cancelHours: 24, refund: '', noShow: '', validity: 365 } };
+      ops().servicePricing.push(x);
+    }
+    if (!x.pricing || !x.pricing.length) x.pricing = [{ name: '标准版', cost: 0, settle: 0, list: Number(x.price || 0), contract: 0, tax: 6, unit: '次', validity: 365, times: 1 }];
+    if (!x.rules) x.rules = { leadDays: 1, cancelHours: 24, refund: '', noShow: '', validity: 365 };
+    return x;
+  }
+  function openPricingDrawer(pid) {
+    const p = productById(pid);
+    if (!p) return;
+    const x = ensurePricing(pid);
+    const i = ops().servicePricing.indexOf(x);
+    const prefix = 'ops.servicePricing.' + i;
+    openDrawer({ title: '价格 · ' + p.name, sub: '标准版 / 深度版 / 企业版', save: true, saveLabel: '价格配置', extra: '<button class="btn" data-go="e-service" data-id="' + esc(p.id) + '">' + ic('external') + '服务详情</button>', body: function () {
+      return '<div class="stack">' + panel('服务信息', '', '<div class="row-main"><span class="avatar square" style="width:36px;height:36px">' + ic(moduleMeta(p.mod).icon) + '</span><div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(moduleName(p.mod) + ' · ' + (p.en || p.id)) + '</div></div></div><div class="form-grid two" style="margin-top:12px">' + field('服务编码', x.code, prefix + '.code') + field('累计销量', x.sold, prefix + '.sold', { num: true }) + '</div>') +
+        panel('价格档位', '每档都有成本、结算价、挂牌价与协议价', '<div class="stack">' + x.pricing.map((t, k) => '<div class="meal-tpl-card"><div class="row-flex"><span class="meal-badge">' + esc(t.name) + '</span><span class="right tiny muted">' + esc(t.unit || '次') + ' · 有效 ' + (t.validity || 365) + ' 天</span></div><div class="form-grid two" style="margin-top:10px">' + field('挂牌价', t.list, prefix + '.pricing.' + k + '.list', { num: true }) + field('企业协议价', t.contract, prefix + '.pricing.' + k + '.contract', { num: true }) + field('结算价', t.settle, prefix + '.pricing.' + k + '.settle', { num: true }) + field('成本', t.cost, prefix + '.pricing.' + k + '.cost', { num: true }) + '</div><div class="tiny muted" style="margin-top:8px">毛利：¥' + Math.max(0, Number(t.list || 0) - Number(t.cost || 0)) + ' · 毛利率 ' + (Number(t.list) ? Math.round((Number(t.list) - Number(t.cost)) / Number(t.list) * 100) : 0) + '%</div></div>').join('') + '</div>') +
+        panel('预约与退款规则', '影响职工端预约和客服答复', '<div class="form-grid two">' + field('最早提前（天）', x.rules.leadDays, prefix + '.rules.leadDays', { num: true }) + field('最晚可约（天）', x.rules.maxDays || 14, prefix + '.rules.maxDays', { num: true }) + field('取消截止（小时）', x.rules.cancelHours, prefix + '.rules.cancelHours', { num: true }) + field('有效期（天）', x.rules.validity, prefix + '.rules.validity', { num: true }) + '</div>' + field('退款规则', x.rules.refund || '', prefix + '.rules.refund', { area: true, rows: 2 }) + field('爽约规则', x.rules.noShow || '', prefix + '.rules.noShow', { area: true, rows: 2 })) +
+        '<div class="notice warm">' + ic('info') + '<span>价格只保存在后台。H5 当前不展示价格、不发起支付；真实售卖需要后端订单与支付接口。</span></div></div>';
+    } });
+  }
+
+  function openBundleDrawer(id) {
+    const b = bundleById(id);
+    if (!b) return;
+    const i = ops().bundles.indexOf(b);
+    const prefix = 'ops.bundles.' + i;
+    openDrawer({ title: '服务组合 · ' + b.name, sub: b.code + ' / ' + (b.services || []).length + ' 项服务', save: true, saveLabel: '服务组合', extra: function () {
+      return '<button class="btn danger" data-act="deleteBundle" data-id="' + esc(b.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      const margin = Number(b.price) ? Math.round((Number(b.price) - Number(b.cost || 0)) / Number(b.price) * 100) : 0;
+      return '<div class="stack">' + panel('组合封面', '', uploadBox(prefix + '.imageUrl', b.imageUrl, false, 'cover')) +
+        panel('组合信息', '', '<div class="form-grid two">' + field('组合名称', b.name, prefix + '.name') + field('组合编码', b.code, prefix + '.code') + field('适用人群', b.audience, prefix + '.audience') + field('负责人', b.owner, prefix + '.owner') + field('组合价', b.price, prefix + '.price', { num: true }) + field('结算价', b.settle, prefix + '.settle', { num: true }) + field('成本', b.cost, prefix + '.cost', { num: true }) + field('销量', b.sold, prefix + '.sold', { num: true }) + field('状态', b.status, prefix + '.status', { select: [{v:'online',l:'在售'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'}] }) + '</div>' + field('组合说明', b.desc || '', prefix + '.desc', { area: true, rows: 3 }) + '<div class="meal-macros"><div><b>¥' + b.price + '</b><span>组合价</span></div><div><b>¥' + b.settle + '</b><span>结算价</span></div><div><b>¥' + b.cost + '</b><span>成本</span></div><div><b>' + margin + '%</b><span>毛利率</span></div></div>') +
+        panel('包含服务', '点击选择或移除', mealPickChips('', data.employee.products, b.services || [], (p) => p.name, 'toggleBundleService', 'data-bundle="' + esc(b.id) + '"')) +
+        '<div class="notice">' + ic('info') + '<span>组合内服务仍按单项履约；组合只用于报价与售卖。H5 暂无组合购买入口。</span></div></div>';
+    } });
+  }
+  function createNewBundle() {
+    const b = { id: uid('bundle'), name: '新服务组合', code: 'PKG-' + String(Date.now()).slice(-4), type: 'bundle', status: 'draft', price: 0, settle: 0, cost: 0, audience: '企业员工', services: [], sold: 0, owner: '企康运营', desc: '', imageUrl: '' };
+    ops().bundles.unshift(b);
+    commit('新建服务组合');
+    openBundleDrawer(b.id);
+  }
+
+  function openModuleDrawer(id) {
+    const m = data.employee.modules.find((x) => x.id === id);
+    if (!m) return;
+    const i = data.employee.modules.indexOf(m);
+    const prefix = 'employee.modules.' + i;
+    const iconOptions = [['scan','筛查'],['pulse','慢病'],['hospital','就医'],['heart','心理'],['shield','安全'],['bowl','营养'],['walk','运动'],['sleep','睡眠'],['chat','咨询'],['star','五好'],['package','服务']];
+    openDrawer({ title: '服务模块 · ' + m.name, sub: m.stab + ' · 首页第 ' + (m.order || i + 1) + ' 位', save: true, saveLabel: '模块配置', extra: function () {
+      return '<button class="btn danger" data-act="deleteModule" data-id="' + esc(m.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      const count = data.employee.products.filter((p) => p.mod === m.id).length;
+      return '<div class="stack">' +
+        panel('宫格预览', '职工端首页第一屏', '<div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:12px;background:linear-gradient(135deg,' + esc(m.tint || '#fff1e7') + ',' + esc(m.tint || '#fff1e7') + '99)"><span class="avatar square" style="width:48px;height:48px;background:#fff;color:' + esc(m.ink || '#e5540b') + '">' + ic(m.icon || 'package', 24) + '</span><div><b style="font-size:15px;color:' + esc(m.ink || '#e5540b') + '">' + esc(m.name) + '</b><div class="tiny" style="margin-top:3px;color:#5b6b7d">' + esc(m.stab + ' · ' + m.sub) + '</div></div><span class="right-auto">' + pill(m.on !== false ? '启用' : '停用', m.on !== false ? 'green' : '') + '</span></div>') +
+        panel('模块信息', '', '<div class="form-grid two">' + field('模块名称', m.name, prefix + '.name') + field('首页短名', m.stab, prefix + '.stab', { hint: '建议 2 个字' }) + field('排序值', m.order, prefix + '.order', { num: true, hint: '数字越小越靠前' }) + field('图标', m.icon || 'package', prefix + '.icon', { select: iconOptions.map((x) => ({ v: x[0], l: x[1] + ' · ' + x[0] })) }) + field('浅色底', m.tint || '#fff1e7', prefix + '.tint') + field('强调色', m.ink || '#e5540b', prefix + '.ink') + '</div>' + field('一句话说明', m.sub || '', prefix + '.sub') + field('模块说明', m.desc || '', prefix + '.desc', { area: true, rows: 3 })) +
+        panel('关联服务', '当前 ' + count + ' 项服务归在此模块', '<div class="chips">' + data.employee.products.filter((p) => p.mod === m.id).map((p) => pill(p.name, 'outline')).join('') + '</div><button class="btn sm" data-go="e-services" style="margin-top:12px">去服务目录管理</button>') +
+        panel('展示与保护', '', switchRow('首页启用', '关闭后不出现在五宫格', prefix + '.on', m.on !== false) + '<div class="notice warm" style="margin-top:12px">' + ic('shield') + '<span>删除模块前请先迁移其下服务。模块有服务或历史预约时，建议只停用不删除。</span></div>') +
+        '</div>';
+    } });
+  }
+  function createNewModule() {
+    const m = { id: uid('mod'), name: '新服务模块', stab: '新模块', sub: '一句话说明', icon: 'package', tint: '#fff1e7', ink: '#e5540b', order: data.employee.modules.length + 1, on: false, desc: '' };
+    data.employee.modules.push(m);
+    commit('新增服务模块');
+    openModuleDrawer(m.id);
+  }
+
+  function openHealthProfileDrawer(id) {
+    const p = healthProfileById(id);
+    if (!p) return;
+    const i = ops().health.profiles.indexOf(p);
+    const prefix = 'ops.health.profiles.' + i;
+    const m = p.metrics || {};
+    const plan = carePlanFor(p.id);
+    openDrawer({ title: '健康画像 · ' + p.name, sub: p.company + ' / ' + p.dept + ' · ' + riskInfo(p.risk).label, save: true, saveLabel: '健康画像', extra: '<button class="btn" data-act="newHealthFollow" data-profile="' + esc(p.id) + '">' + ic('phone') + '新建随访</button>', body: function () {
+      return '<div class="stack">' + panel('关键指标', '最近一次记录', '<div class="meal-macros"><div><b>' + (m.bpSys || '-') + '/' + (m.bpDia || '-') + '</b><span>血压</span></div><div><b>' + (m.glucose || '-') + '</b><span>空腹血糖</span></div><div><b>' + (m.bmi || '-') + '</b><span>BMI</span></div><div><b>' + (m.sleep || '-') + ' h</b><span>睡眠</span></div></div><div class="meal-macros compact" style="margin-top:8px"><div><b>' + (m.ldl || '-') + '</b><span>LDL-C</span></div><div><b>' + (m.uric || '-') + '</b><span>尿酸</span></div><div><b>' + (m.mood || '-') + '</b><span>情绪</span></div><div><b>' + (m.steps || '-') + '</b><span>日均步数</span></div></div>') +
+        panel('基础信息', '', '<div class="form-grid two">' + field('姓名', p.name) + field('手机号', p.phone) + field('企业', p.company) + field('部门', p.dept) + field('风险分层', p.risk, prefix + '.risk', { select: [{v:'high',l:'高风险'},{v:'medium',l:'中风险'},{v:'low',l:'低风险'}] }) + field('健康分', p.score, prefix + '.score', { num: true }) + field('负责人', p.owner, prefix + '.owner') + field('最近联系', p.lastContact, prefix + '.lastContact') + '</div>' + field('风险标签', (p.tags || []).join('、'), prefix + '.tagsText') + field('生活方式', p.lifestyle || '', prefix + '.lifestyle', { area: true, rows: 3 })) +
+        panel('最近体检', p.exam ? p.exam.date + ' · ' + p.exam.org : '暂无体检', (p.exam ? '<div class="chips">' + (p.exam.abnormal || []).map((x) => pill(x, 'amber')).join('') + '</div><div class="tiny muted" style="margin-top:9px;line-height:1.7">' + esc(p.exam.summary) + '</div>' : '<div class="tiny muted">该画像尚未关联体检报告。</div>') + '<div class="split-line"></div><div class="tiny muted">用药：' + esc((p.meds || []).join('、') || '无') + ' · 过敏：' + esc((p.allergies || []).join('、') || '无') + '</div>') +
+        (plan ? panel('健康计划', '执行中的共管计划', '<div class="row-flex"><div><b style="font-size:12px">' + esc(plan.name) + '</b><div class="tiny muted" style="margin-top:4px">' + esc(plan.goal) + '</div></div><button class="btn sm right-auto" data-act="editCarePlan" data-id="' + esc(plan.id) + '">编辑计划</button></div>') : '') +
+        '</div>';
+    } });
+  }
+
+  function openCarePlanDrawer(id) {
+    const c = ops().health.carePlans.find((x) => x.id === id);
+    if (!c) return;
+    const i = ops().health.carePlans.indexOf(c);
+    const prefix = 'ops.health.carePlans.' + i;
+    openDrawer({ title: '健康计划 · ' + c.name, sub: '目标 / 周期 / 复测节点', save: true, saveLabel: '健康计划', extra: function () {
+      return '<button class="btn danger" data-act="deleteCarePlan" data-id="' + esc(c.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('计划信息', '', '<div class="form-grid two">' + field('计划名称', c.name, prefix + '.name') + field('管理对象', c.profileId, prefix + '.profileId', { select: ops().health.profiles.map((p) => ({ v: p.id, l: p.name + ' · ' + riskInfo(p.risk).label })) }) + field('负责人', c.owner, prefix + '.owner') + field('关联服务', c.service, prefix + '.service', { select: data.employee.products.map((p) => ({ v: p.id, l: p.name })) }) + field('开始日期', c.start, prefix + '.start') + field('结束日期', c.end, prefix + '.end') + field('当前周', c.week, prefix + '.week', { num: true }) + field('依从性 %', c.adherence, prefix + '.adherence', { num: true }) + field('状态', c.status, prefix + '.status', { select: [{v:'active',l:'执行中'},{v:'draft',l:'草稿'},{v:'completed',l:'已完成'},{v:'paused',l:'暂停'}] }) + field('下次复评', c.nextReview, prefix + '.nextReview') + '</div>' + field('计划目标', c.goal, prefix + '.goal', { area: true, rows: 3 })) +
+        panel('里程碑', '点击切换完成状态', '<div class="stack tight">' + (c.milestones || []).map((m, k) => '<div class="row-flex" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-badge">第 ' + m.w + ' 周</span><span>' + esc(m.t) + '</span><button class="switch-btn ' + (m.done ? 'on' : '') + '" data-act="toggleMilestone" data-id="' + esc(c.id) + '" data-idx="' + k + '"></button></div>').join('') + '</div>') +
+        '<div class="notice">' + ic('target') + '<span>健康计划不是诊断或处方。目标与复测由医生确认，后台只做管理与提醒。</span></div></div>';
+    } });
+  }
+  function createNewCarePlan() {
+    const t = ops().health.planTemplates[0] || {};
+    const c = { id: uid('cp'), profileId: (ops().health.profiles[0] || {}).id || '', name: t.name || '新健康计划', templateId: t.id || '', goal: t.goal || '请填写可量化目标', owner: '健康管家', start: today(), end: addDays(today(), 84), week: 1, status: 'draft', adherence: 0, nextReview: addDays(today(), 14), service: 'fivehigh', milestones: [{ w: 1, t: '入组评估', done: false }, { w: 4, t: '指标复测', done: false }, { w: 8, t: '方案调整', done: false }, { w: 12, t: '结案评估', done: false }] };
+    ops().health.carePlans.unshift(c);
+    commit('新建健康计划');
+    openCarePlanDrawer(c.id);
+  }
+
+  function openProgramDrawer(id) {
+    const p = ops().health.programs.find((x) => x.id === id);
+    if (!p) return;
+    const i = ops().health.programs.indexOf(p);
+    const prefix = 'ops.health.programs.' + i;
+    const members = ops().health.enrollments.filter((e) => e.programId === p.id);
+    openDrawer({ title: '干预项目 · ' + p.name, sub: p.owner + ' · 第 ' + p.week + ' / ' + p.weeks + ' 周', save: true, saveLabel: '项目配置', extra: function () {
+      return '<button class="btn" data-act="newEnrollment" data-program="' + esc(p.id) + '">' + ic('plus') + '安排入组</button><button class="btn danger" data-act="deleteProgram" data-id="' + esc(p.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' +
+        panel('项目概览', '进度与风险', '<div class="meal-macros"><div><b>' + p.enrolled + '</b><span>入组</span></div><div><b>' + p.active + '</b><span>在组</span></div><div><b>' + p.adherence + '%</b><span>依从性</span></div><div><b>' + p.riskCount + '</b><span>高风险</span></div></div>' + progress(p.adherence, '#5b4bc4')) +
+        panel('项目信息', '', '<div class="form-grid two">' + field('项目名称', p.name, prefix + '.name') + field('关联服务', p.serviceId, prefix + '.serviceId', { select: data.employee.products.map((x) => ({ v: x.id, l: x.name })) }) + field('目标人数', p.cohort, prefix + '.cohort', { num: true }) + field('已入组', p.enrolled, prefix + '.enrolled', { num: true }) + field('在组人数', p.active, prefix + '.active', { num: true }) + field('当前周', p.week, prefix + '.week', { num: true }) + field('总周数', p.weeks, prefix + '.weeks', { num: true }) + field('负责人', p.owner, prefix + '.owner') + field('开始日期', p.start, prefix + '.start') + field('结束日期', p.end, prefix + '.end') + field('依从性 %', p.adherence, prefix + '.adherence', { num: true }) + field('高风险人数', p.riskCount, prefix + '.riskCount', { num: true }) + field('状态', p.status, prefix + '.status', { select: [{v:'running',l:'进行中'},{v:'draft',l:'草稿'},{v:'paused',l:'暂停'},{v:'completed',l:'已完成'}] }) + '</div>') +
+        panel('在组名单', members.length + ' 人', '<div class="stack tight">' + (members.length ? members.map((e) => { const h = healthProfileById(e.profileId) || {}; return '<div class="rowlink" data-act="editEnrollment" data-id="' + esc(e.id) + '"><span class="avatar square" style="width:28px;height:28px">' + esc((h.name || '?').slice(0, 1)) + '</span><div class="main-tx"><b>' + esc(h.name || '未知') + '</b><span>第 ' + e.week + ' 周 · 依从性 ' + e.adherence + '% · ' + e.coach + '</span></div><span class="tail">' + pill(e.status === 'active' ? '在组' : '完成', e.status === 'active' ? 'green' : '') + '</span></div>'; }).join('') : '<div class="tiny muted">暂无在组人员。</div>') + '</div>') +
+        '<div class="notice">' + ic('activity') + '<span>项目是管理队列，不等于课程或服务订单；服务履约仍在预约记录与履约台完成。</span></div></div>';
+    } });
+  }
+  function createNewProgram() {
+    const p = { id: uid('pg'), name: '新干预项目', type: 'chronic', serviceId: 'fivehigh', cohort: 20, enrolled: 0, active: 0, week: 1, weeks: 12, start: today(), end: addDays(today(), 84), owner: '健康管理部', status: 'draft', adherence: 0, riskCount: 0, completion: 0 };
+    ops().health.programs.unshift(p);
+    commit('新建干预项目');
+    openProgramDrawer(p.id);
+  }
+
+  function openEnrollmentDrawer(id) {
+    const e = ops().health.enrollments.find((x) => x.id === id);
+    if (!e) return;
+    const i = ops().health.enrollments.indexOf(e);
+    const prefix = 'ops.health.enrollments.' + i;
+    openDrawer({ title: '项目入组 · ' + ((healthProfileById(e.profileId) || {}).name || '成员'), sub: (ops().health.programs.find((p) => p.id === e.programId) || {}).name || '', save: true, saveLabel: '入组记录', extra: function () {
+      return '<button class="btn danger" data-act="deleteEnrollment" data-id="' + esc(e.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('入组信息', '', '<div class="form-grid two">' + field('项目', e.programId, prefix + '.programId', { select: ops().health.programs.map((p) => ({ v: p.id, l: p.name })) }) + field('健康画像', e.profileId, prefix + '.profileId', { select: ops().health.profiles.map((p) => ({ v: p.id, l: p.name + ' · ' + riskInfo(p.risk).label })) }) + field('当前周', e.week, prefix + '.week', { num: true }) + field('依从性 %', e.adherence, prefix + '.adherence', { num: true }) + field('风险', e.risk, prefix + '.risk', { select: [{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}] }) + field('负责人', e.coach, prefix + '.coach') + field('状态', e.status, prefix + '.status', { select: [{v:'active',l:'在组'},{v:'completed',l:'已完成'},{v:'paused',l:'暂停'}] }) + '</div>') + '<div class="notice">' + ic('users') + '<span>入组只建立管理关系，不会自动生成预约或收费。</span></div></div>';
+    } });
+  }
+  function createNewEnrollment(programId) {
+    const e = { id: uid('en'), programId: programId || (ops().health.programs[0] || {}).id || '', profileId: (ops().health.profiles[0] || {}).id || '', week: 1, status: 'active', adherence: 0, risk: 'medium', coach: '健康管家' };
+    ops().health.enrollments.unshift(e);
+    commit('安排项目入组');
+    openEnrollmentDrawer(e.id);
+  }
+
+  function openOutcomeDrawer(id) {
+    const o = ops().health.outcomes.find((x) => x.id === id);
+    if (!o) return;
+    const i = ops().health.outcomes.indexOf(o);
+    const prefix = 'ops.health.outcomes.' + i;
+    const good = o.direction === 'down' ? Number(o.current) <= Number(o.baseline) : o.direction === 'up' ? Number(o.current) >= Number(o.baseline) : true;
+    openDrawer({ title: '结果指标 · ' + o.metric, sub: (healthProfileById(o.profileId) || {}).name || '', save: true, saveLabel: '结果指标', extra: function () {
+      return '<button class="btn danger" data-act="deleteOutcome" data-id="' + esc(o.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' +
+        panel('当前结果', '基线 → 当前 → 目标', '<div class="meal-macros"><div><b>' + o.baseline + '</b><span>基线</span></div><div><b>' + o.current + '</b><span>当前</span></div><div><b>' + o.target + '</b><span>目标</span></div><div><b style="color:' + (good ? 'var(--green)' : 'var(--red)') + '">' + (good ? '改善' : '需关注') + '</b><span>方向</span></div></div>') +
+        panel('指标信息', '', '<div class="form-grid two">' + field('健康画像', o.profileId, prefix + '.profileId', { select: ops().health.profiles.map((p) => ({ v: p.id, l: p.name })) }) + field('指标名称', o.metric, prefix + '.metric') + field('基线值', o.baseline, prefix + '.baseline', { num: true }) + field('当前值', o.current, prefix + '.current', { num: true }) + field('目标值', o.target, prefix + '.target', { num: true }) + field('单位', o.unit || '', prefix + '.unit') + field('方向', o.direction, prefix + '.direction', { select: [{v:'down',l:'越低越好'},{v:'up',l:'越高越好'},{v:'stable',l:'保持稳定'}] }) + field('复测日期', o.at, prefix + '.at') + field('状态', o.status, prefix + '.status', { select: [{v:'improving',l:'改善中'},{v:'reached',l:'已达标'},{v:'watch',l:'需关注'}] }) + '</div>') +
+        '<div class="notice warm">' + ic('chart') + '<span>结果指标是管理评估，不是诊断结论；单次异常需结合复测与医生判断。</span></div></div>';
+    } });
+  }
+  function createNewOutcome() {
+    const o = { id: uid('oc'), profileId: (ops().health.profiles[0] || {}).id || '', metric: '新结果指标', baseline: 0, current: 0, target: 0, unit: '', direction: 'down', at: today(), status: 'watch' };
+    ops().health.outcomes.unshift(o);
+    commit('新增结果指标');
+    openOutcomeDrawer(o.id);
+  }
+
+  function exportHealthReport() {
+    exportCsv('企业健康经营报告_2026-11.csv', ['维度', '数值'], [
+      ['在管人群', ops().health.profiles.length],
+      ['高风险', ops().health.profiles.filter((p) => p.risk === 'high').length],
+      ['干预项目', ops().health.programs.length],
+      ['项目在组', ops().health.enrollments.filter((e) => e.status === 'active').length],
+      ['结果指标', ops().health.outcomes.length],
+      ['已达标', ops().health.outcomes.filter((o) => o.status === 'reached').length],
+      ['改善中', ops().health.outcomes.filter((o) => o.status === 'improving').length]
+    ]);
+  }
+
+  function openHealthFollowDrawer(id) {
+    const f = healthFollowById(id);
+    if (!f) return;
+    const i = ops().health.followups.indexOf(f);
+    const prefix = 'ops.health.followups.' + i;
+    openDrawer({ title: '随访 · ' + f.type, sub: (healthProfileById(f.profileId) || {}).name + ' · ' + f.due, save: true, saveLabel: '随访记录', extra: function () {
+      return f.status === 'completed' ? '' : '<button class="btn primary" data-act="completeHealthFollow" data-id="' + esc(f.id) + '">' + ic('check') + '完成随访</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('随访任务', '', '<div class="form-grid two">' + field('随访对象', f.profileId, prefix + '.profileId', { select: ops().health.profiles.map((p) => ({ v: p.id, l: p.name + ' · ' + riskInfo(p.risk).label })) }) + field('随访类型', f.type, prefix + '.type') + field('计划日期', f.due, prefix + '.due') + field('计划时间', f.time, prefix + '.time') + field('优先级', f.priority, prefix + '.priority', { select: [{v:'high',l:'优先'},{v:'normal',l:'常规'}] }) + field('负责人', f.owner, prefix + '.owner') + field('渠道', f.channel, prefix + '.channel', { select: [{v:'电话人工',l:'电话人工'},{v:'线下随访',l:'线下随访'},{v:'线上视频',l:'线上视频'}] }) + field('状态', f.status, prefix + '.status', { select: [{v:'due',l:'待随访'},{v:'overdue',l:'已逾期'},{v:'upcoming',l:'待开始'},{v:'completed',l:'已完成'}] }) + '</div>' + field('随访原因', f.note || '', prefix + '.note', { area: true, rows: 3 }) + field('随访结果', f.result || '', prefix + '.result', { area: true, rows: 4 })) +
+        '<div class="notice">' + ic('phone') + '<span>随访只做人工电话/线下记录，不发送企业微信或短信。完成后请补充结果与下一步。</span></div></div>';
+    } });
+  }
+  function createNewHealthFollow(profileId) {
+    const p = healthProfileById(profileId) || ops().health.profiles[0] || {};
+    const f = { id: uid('fu'), profileId: p.id || '', planId: (carePlanFor(p.id) || {}).id || '', type: '体检异常复核', due: today(), time: '10:00', channel: '电话人工', owner: p.owner || '健康管家', status: 'due', priority: p.risk === 'high' ? 'high' : 'normal', note: '请确认最近指标、用药与复查安排。', result: '' };
+    ops().health.followups.unshift(f);
+    commit('新建随访');
+    openHealthFollowDrawer(f.id);
+  }
+
+  function openServiceCaseDrawer(id) {
+    const c = ops().health.serviceCases.find((x) => x.id === id);
+    if (!c) return;
+    const i = ops().health.serviceCases.indexOf(c);
+    const prefix = 'ops.health.serviceCases.' + i;
+    const ex = ops().health.exceptions.filter((x) => x.caseId === c.id);
+    openDrawer({ title: '履约案例 · ' + c.person, sub: c.service + ' / ' + c.stage, save: true, saveLabel: '履约案例', body: function () {
+      return '<div class="stack">' + panel('案例信息', '', '<div class="form-grid two">' + field('职工', c.person, prefix + '.person') + field('服务', c.service, prefix + '.service') + field('阶段', c.stage, prefix + '.stage', { select: ['已预约','待确认','已签到','履约中','已结算','报告待解读','已转管理'].map((x) => ({ v: x, l: x })) }) + field('负责人', c.owner, prefix + '.owner') + field('计划时间', c.due, prefix + '.due') + field('风险', c.risk, prefix + '.risk', { select: [{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}] }) + field('权益', c.benefit, prefix + '.benefit') + field('金额', c.amount, prefix + '.amount', { num: true }) + '</div>' + field('下一步', c.next || '', prefix + '.next', { area: true, rows: 2 })) +
+        panel('履约异常', ex.length + ' 条关联异常', '<div class="stack tight">' + (ex.length ? ex.map((x) => '<div class="row-flex" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span>' + pill(x.type, x.severity === 'high' ? 'red' : 'amber') + '</span><span>' + esc(x.desc) + '</span>' + (x.status === 'done' ? '<span class="right-auto">' + pill('已处理', 'green') + '</span>' : '<button class="btn sm right-auto" data-act="resolveException" data-id="' + esc(x.id) + '">标记处理</button>') + '</div>').join('') : '<div class="tiny muted">没有关联异常。</div>') + '</div>') +
+        '<div class="notice">' + ic('activity') + '<span>阶段推进只更新后台履约台账；H5 预约状态不会自动同步。</span></div></div>';
+    } });
+  }
+
+  function openMovePlanDrawer(id) {
+    const p = ops().exercisePlans.find((x) => x.id === id);
+    if (!p) return;
+    const i = ops().exercisePlans.indexOf(p);
+    const prefix = 'ops.exercisePlans.' + i;
+    openDrawer({ title: '运动计划 · ' + p.name, sub: p.level + ' / ' + p.freq, save: true, saveLabel: '运动计划', extra: function () {
+      return '<button class="btn danger" data-act="deleteMovePlan" data-id="' + esc(p.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('计划信息', '', '<div class="form-grid two">' + field('计划名称', p.name, prefix + '.name') + field('等级', p.level, prefix + '.level', { select: [{v:'L1',l:'L1 入门'},{v:'L2',l:'L2 进阶'},{v:'L3',l:'L3 高强度'}] }) + field('目标', p.goal, prefix + '.goal') + field('频率', p.freq, prefix + '.freq') + field('关节要求', p.joints, prefix + '.joints') + field('参与人数', p.joined, prefix + '.joined', { num: true }) + '</div>' + field('动作清单', (p.items || []).join('、'), prefix + '.itemsText') + switchRow('开放计划', '关闭后不用于新处方', prefix + '.on', p.on !== false)) +
+        '<div class="notice">' + ic('walk') + '<span>运动计划需结合关节与心血管风险评估；后台不自动生成运动处方。</span></div></div>';
+    } });
+  }
+  function createNewMovePlan() {
+    const p = { id: uid('ep'), name: '新运动计划', level: 'L1', goal: '建立习惯', freq: '每周 3 次 × 20 分钟', items: ['快走'], joints: '常规', on: false, joined: 0 };
+    ops().exercisePlans.unshift(p);
+    commit('新建运动计划');
+    openMovePlanDrawer(p.id);
+  }
+
+  function openSleepRuleDrawer(id) {
+    const r = ops().sleepRules.find((x) => x.id === id);
+    if (!r) return;
+    const i = ops().sleepRules.indexOf(r);
+    const prefix = 'ops.sleepRules.' + i;
+    openDrawer({ title: '睡眠规则 · ' + r.name, sub: '触发条件与干预动作', save: true, saveLabel: '睡眠规则', extra: function () {
+      return '<button class="btn danger" data-act="deleteSleepRule" data-id="' + esc(r.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('规则信息', '', '<div class="form-grid two">' + field('规则名称', r.name, prefix + '.name') + field('关联服务', r.svc, prefix + '.svc', { select: data.employee.products.map((p) => ({ v: p.id, l: p.name })) }) + '</div>' + field('触发条件', r.when, prefix + '.when', { area: true, rows: 3 }) + field('干预动作', r.then, prefix + '.then', { area: true, rows: 3 }) + switchRow('启用规则', '', prefix + '.on', r.on !== false)) + '<div class="notice">' + ic('sleep') + '<span>睡眠规则只做服务转介与内容建议，不提供诊断或药物建议。</span></div></div>';
+    } });
+  }
+  function createNewSleepRule() {
+    const r = { id: uid('sr'), name: '新睡眠规则', when: '请填写触发条件', then: '请填写干预动作', svc: 'sleep', on: false };
+    ops().sleepRules.unshift(r);
+    commit('新建睡眠规则');
+    openSleepRuleDrawer(r.id);
+  }
+  function openMindRuleDrawer(id) {
+    const r = ops().mindRules.find((x) => x.id === id);
+    if (!r) return;
+    const i = ops().mindRules.indexOf(r);
+    const prefix = 'ops.mindRules.' + i;
+    openDrawer({ title: '心理规则 · ' + r.name, sub: '只做关怀与转介', save: true, saveLabel: '心理规则', extra: function () {
+      return '<button class="btn danger" data-act="deleteMindRule" data-id="' + esc(r.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('规则信息', '', '<div class="form-grid two">' + field('规则名称', r.name, prefix + '.name') + field('关联服务', r.svc, prefix + '.svc', { select: data.employee.products.map((p) => ({ v: p.id, l: p.name })) }) + '</div>' + field('触发条件', r.when, prefix + '.when', { area: true, rows: 3 }) + field('关怀动作', r.then, prefix + '.then', { area: true, rows: 3 }) + switchRow('启用规则', '', prefix + '.on', r.on !== false) + switchRow('优先处理', '高风险信号需尽快联系', prefix + '.urgent', !!r.urgent)) +
+        '<div class="notice warm">' + ic('shield') + '<span>心理数据只对本人和授权咨询师可见。后台不做诊断，不把量表结果提供给企业人事。</span></div></div>';
+    } });
+  }
+  function createNewMindRule() {
+    const r = { id: uid('mr'), name: '新心理规则', when: '请填写触发条件', then: '转介 EAP 或健康讲座', svc: 'eap', on: false, urgent: false };
+    ops().mindRules.unshift(r);
+    commit('新建心理规则');
+    openMindRuleDrawer(r.id);
+  }
+
+  function openFiveMemberDrawer(id) {
+    const F = ops().fivegood;
+    const m = F.memberProfiles.find((x) => x.id === id);
+    if (!m) return;
+    const i = F.memberProfiles.indexOf(m);
+    const prefix = 'ops.fivegood.memberProfiles.' + i;
+    const score = F.members.find((x) => x.id === m.memberId);
+    openDrawer({ title: '五好会员 · ' + m.name, sub: m.tier + ' / ' + m.stage + ' · 连续 ' + m.streak + ' 天', save: true, saveLabel: '会员档案', extra: function () {
+      return '<button class="btn danger" data-act="deleteFiveMember" data-id="' + esc(m.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' +
+        panel('会员概览', '', '<div class="meal-macros"><div><b>' + (score ? score.score : '—') + '</b><span>五好总分</span></div><div><b>' + m.tasksDone + '/' + m.tasksDue + '</b><span>任务完成</span></div><div><b>' + m.streak + '</b><span>连续天数</span></div><div><b>' + esc(m.tier) + '</b><span>会员档位</span></div></div>' + (score ? '<div class="chips" style="margin-top:12px">' + F.dims.map((d) => pill(d.name + ' ' + (score.dims[d.key] || 0), 'outline')).join('') + '</div>' : '')) +
+        panel('会员信息', '', '<div class="form-grid two">' + field('姓名', m.name, prefix + '.name') + field('档位', m.tier, prefix + '.tier', { select: [{v:'基础版',l:'基础版'},{v:'进阶版',l:'进阶版'},{v:'尊享版',l:'尊享版'}] }) + field('阶段', m.stage, prefix + '.stage', { select: [{v:'待入组',l:'待入组'},{v:'执行中',l:'执行中'},{v:'需干预',l:'需干预'},{v:'已续费',l:'已续费'}] }) + field('负责人', m.coach, prefix + '.coach') + field('风险', m.risk, prefix + '.risk', { select: [{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}] }) + field('授权', m.consent, prefix + '.consent', { select: [{v:'signed',l:'已签署'},{v:'pending',l:'待签署'},{v:'revoked',l:'已撤回'}] }) + field('已完成任务', m.tasksDone, prefix + '.tasksDone', { num: true }) + field('应完成任务', m.tasksDue, prefix + '.tasksDue', { num: true }) + field('连续打卡天数', m.streak, prefix + '.streak', { num: true }) + field('最近活跃', m.lastActive, prefix + '.lastActive') + field('加入日期', m.joined, prefix + '.joined') + field('下一步', m.next, prefix + '.next') + '</div>') +
+        panel('会员动作', '只做健康管理，不做营销触达', '<div class="stack tight">' + [['e-five-ops','查看主题任务','leaf'],['e-risk','建立健康计划','shield'],['e-followup','安排电话随访','phone'],['e-five-members','查看授权','shield']].map((x) => '<div class="rowlink" data-go="' + x[0] + '"><span class="avatar square" style="width:28px;height:28px">' + ic(x[2]) + '</span><div class="main-tx"><b>' + x[1] + '</b></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div>') +
+        '<div class="notice warm">' + ic('shield') + '<span>会员电话只用于健康服务联系，不用于营销；撤回授权后停止新增采集。</span></div></div>';
+    } });
+  }
+  function createNewFiveMember() {
+    const F = ops().fivegood;
+    const m = { id: uid('fmp'), memberId: '', name: '新会员', tier: '基础版', stage: '待入组', coach: '健康管家', consent: 'pending', risk: 'medium', tasksDone: 0, tasksDue: 0, streak: 0, lastActive: today(), next: '完成入组评估', joined: today() };
+    F.memberProfiles.unshift(m);
+    commit('新增五好会员');
+    openFiveMemberDrawer(m.id);
+  }
+
+  function openFiveConsentDrawer(id) {
+    const F = ops().fivegood;
+    const c = F.consents.find((x) => x.id === id);
+    if (!c) return;
+    const i = F.consents.indexOf(c);
+    const prefix = 'ops.fivegood.consents.' + i;
+    openDrawer({ title: '授权 · ' + c.name, sub: c.status === 'signed' ? '已签署 ' + c.version : '待处理', save: true, saveLabel: '授权记录', body: function () {
+      return '<div class="stack">' +
+        panel('授权状态', '', '<div class="form-grid two">' + field('会员', c.name, prefix + '.name') + field('状态', c.status, prefix + '.status', { select: [{v:'signed',l:'已签署'},{v:'pending',l:'待签署'},{v:'revoked',l:'已撤回'}] }) + field('版本', c.version, prefix + '.version') + field('签署时间', c.at, prefix + '.at') + '</div>') +
+        panel('数据范围', '每项单独授权', '<div class="stack">' + switchRow('健康档案', '体检、随访、用药与指标', prefix + '.scopes.health', c.scopes.health) + switchRow('服务记录', '预约、履约、报告与权益', prefix + '.scopes.service', c.scopes.service) + switchRow('心理数据', '仅本人与咨询师可见，不进企业报告', prefix + '.scopes.mind', c.scopes.mind) + switchRow('企业报告', '匿名汇总使用', prefix + '.scopes.report', c.scopes.report) + '</div>') +
+        '<div class="notice warm">' + ic('shield') + '<span>心理数据默认不授权；撤回授权只停止新增采集，历史服务记录按合规要求保留。</span></div></div>';
+    } });
+  }
+
+  function reviewCheckin(id, result) {
+    const c = ops().fivegood.checkins.find((x) => x.id === id);
+    if (!c) return;
+    c.status = result === 'pass' ? 'approved' : 'rejected';
+    c.reviewedAt = nowTime();
+    const mt = ops().fivegood.memberTasks.find((x) => x.id === c.taskId);
+    if (mt) mt.reviewed = result === 'pass';
+    commit(result === 'pass' ? '通过五好打卡' : '退回五好打卡');
+    render(true);
+  }
+
+  function generateFiveReport() {
+    const F = ops().fivegood;
+    const month = today().slice(0, 7);
+    let r = F.reports.find((x) => x.month === month);
+    if (!r) {
+      r = { id: uid('fr'), month: month, members: F.members.length, avgScore: F.members.length ? Number((F.members.reduce((n, m) => n + Number(m.score || 0), 0) / F.members.length).toFixed(1)) : 0, reached: F.members.filter((m) => Number(m.score) >= Number(F.scoreRule.pass || 70)).length, generatedAt: nowTime(), status: 'ready' };
+      F.reports.unshift(r);
+    }
+    commit('生成五好月度报告');
+    toast('本月五好报告已生成');
+    render(true);
+    openFiveReportDrawer(r.id);
+  }
+  function openFiveReportDrawer(id) {
+    const r = ops().fivegood.reports.find((x) => x.id === id);
+    if (!r) return;
+    openDrawer({ title: '五好月报 · ' + r.month, sub: '会员 ' + r.members + ' 人 · 平均 ' + r.avgScore + ' 分', save: false, extra: '<button class="btn primary" data-act="exportFiveReport" data-id="' + esc(r.id) + '">' + ic('download') + '导出 CSV</button>', body: function () {
+      return '<div class="stack">' + panel('报告摘要', '', '<div class="meal-macros"><div><b>' + r.members + '</b><span>会员</span></div><div><b>' + r.avgScore + '</b><span>平均分</span></div><div><b>' + r.reached + '</b><span>达标人数</span></div><div><b>' + esc(r.generatedAt.slice(0, 10)) + '</b><span>生成日期</span></div></div>') + panel('下月建议', '从数据到行动', '<div class="stack tight">' + ['对低于及格线的会员降低任务门槛，先恢复连续打卡', '睡眠与心理维度低分会员转健康管理或 EAP，不做营销推送', '任务审核在 24 小时内完成，避免会员失去反馈', '企业报告只展示匿名汇总，不展示个人心理内容'].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill blue">建议</span><span>' + esc(x) + '</span></div>').join('') + '</div>') + '<div class="notice warm">' + ic('info') + '<span>月报用于运营复盘，不作为员工绩效评价。</span></div></div>';
+    } });
+  }
+  function exportFiveReport(id) {
+    const r = ops().fivegood.reports.find((x) => x.id === id);
+    if (!r) return;
+    exportCsv('五好月报_' + r.month + '.csv', ['指标', '数值'], [['会员数', r.members], ['平均分', r.avgScore], ['达标人数', r.reached], ['生成时间', r.generatedAt]]);
+  }
+
+  function openFiveTaskDrawer(id) {
+    const t = ops().fivegood.tasks.find((x) => x.id === id);
+    if (!t) return;
+    const i = ops().fivegood.tasks.indexOf(t);
+    const prefix = 'ops.fivegood.tasks.' + i;
+    openDrawer({ title: '五好任务 · ' + t.title, sub: '第 ' + t.week + ' 周 / ' + t.points + ' 积分', save: true, saveLabel: '五好任务', extra: function () {
+      return '<button class="btn danger" data-act="deleteFiveTask" data-id="' + esc(t.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('任务信息', '', '<div class="form-grid two">' + field('任务标题', t.title, prefix + '.title') + field('维度', t.dim, prefix + '.dim', { select: ops().fivegood.dims.map((d) => ({ v: d.key, l: d.name })) }) + field('周次', t.week, prefix + '.week', { num: true }) + field('类型', t.type, prefix + '.type', { select: ['打卡','学习','测评','到院'].map((x) => ({ v: x, l: x })) }) + field('积分', t.points, prefix + '.points', { num: true }) + '</div>' + switchRow('启用任务', '', prefix + '.on', t.on !== false)) + '<div class="notice">' + ic('star') + '<span>任务会进入周计划；H5 当前只展示五好入口，不读取后台任务。</span></div></div>';
+    } });
+  }
+  function createNewFiveTask() {
+    const t = { id: uid('ft'), dim: 'eat', week: 1, title: '新五好任务', type: '打卡', points: 10, on: false };
+    ops().fivegood.tasks.unshift(t);
+    commit('新建五好任务');
+    openFiveTaskDrawer(t.id);
+  }
+
+  function openSettleDrawer(id) {
+    const r = settleById(id);
+    if (!r) return;
+    const i = ops().settle.records.indexOf(r);
+    const prefix = 'ops.settle.records.' + i;
+    openDrawer({ title: '对账单 · ' + r.id, sub: r.partner + ' / ' + r.period, save: true, saveLabel: '对账单', extra: function () {
+      return '<button class="btn danger" data-act="deleteSettle" data-id="' + esc(r.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('对账信息', '', '<div class="form-grid two">' + field('合作方', r.partner, prefix + '.partner', { select: ops().settle.partners.map((p) => ({ v: p.name, l: p.name })) }) + field('账期', r.period, prefix + '.period') + field('订单数', r.orders, prefix + '.orders', { num: true }) + field('应收金额', r.amount, prefix + '.amount', { num: true }) + field('结算金额', r.settleAmount, prefix + '.settleAmount', { num: true }) + field('毛利率 %', r.margin, prefix + '.margin', { num: true }) + field('状态', r.status, prefix + '.status', { select: [{v:'pending',l:'待对账'},{v:'invoiced',l:'已开票'},{v:'settled',l:'已结清'}] }) + field('到期日', r.due, prefix + '.due') + '</div>') + '<div class="notice">' + ic('coins') + '<span>对账单只记录业务金额，不触发开票或打款。</span></div></div>';
+    } });
+  }
+  function createNewSettle() {
+    const p = ops().settle.partners[0] || { name: '' };
+    const r = { id: 'ST' + String(Date.now()).slice(-8), partner: p.name, period: today().slice(0, 7), orders: 0, amount: 0, settleAmount: 0, margin: 0, status: 'pending', due: addDays(today(), 30) };
+    ops().settle.records.unshift(r);
+    commit('生成对账单');
+    openSettleDrawer(r.id);
+  }
+
+  function openQaDrawer(id) {
+    const x = qaById(id);
+    if (!x) return;
+    const i = ops().qa.indexOf(x);
+    const prefix = 'ops.qa.' + i;
+    openDrawer({ title: '问答 · ' + x.q.slice(0, 18), sub: x.cat + ' / 命中 ' + x.hits, save: true, saveLabel: '问答', extra: function () {
+      return '<button class="btn danger" data-act="deleteQa" data-id="' + esc(x.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('问题与答案', '', '<div class="form-grid two">' + field('分类', x.cat, prefix + '.cat', { select: ['体检解读','慢病管理','运动康复','营养','权益说明','服务流程','心理健康'].map((c) => ({ v: c, l: c })) }) + field('累计命中', x.hits, prefix + '.hits', { num: true }) + '</div>' + field('问题', x.q, prefix + '.q', { area: true, rows: 2 }) + field('标准答案', x.answer, prefix + '.answer', { area: true, rows: 7 }) + switchRow('发布状态', '关闭后进入待审核', prefix + '.on', x.on !== false)) +
+        '<div class="notice warm">' + ic('shield') + '<span>答案必须写清边界：涉及诊断、用药、手术的内容应引导到医生面诊，不做自动诊断。</span></div></div>';
+    } });
+  }
+  function createNewQa() {
+    const x = { id: uid('qa'), q: '新问题', cat: '体检解读', hits: 0, on: false, answer: '请填写标准答案，并注明需要医生面诊的边界。' };
+    ops().qa.unshift(x);
+    commit('新增健康问答');
+    openQaDrawer(x.id);
+  }
+  function convertQa(id) {
+    const u = ops().qaUnmatched.find((x) => x.id === id);
+    if (!u) return;
+    const x = { id: uid('qa'), q: u.q, cat: u.cat, hits: u.hits || 0, on: false, answer: '请根据临床规范补充标准答案，并标注需要医生面诊的边界。' };
+    ops().qa.unshift(x);
+    ops().qaUnmatched.splice(ops().qaUnmatched.indexOf(u), 1);
+    commit('未命中问题转为问答');
+    openQaDrawer(x.id);
   }
 
   function openTierDrawer(id) {
@@ -2442,6 +3357,8 @@
     const id = el.dataset.id;
     if (act === 'closeDrawer') return closeDrawer();
     if (act === 'toggleNav') { state.navOpen = !state.navOpen; document.body.classList.toggle('nav-open', state.navOpen); return; }
+    if (act === 'toggleGroup') { const g = el.dataset.group; state.openGroup = state.openGroup === g ? null : g; render(true); return; }
+    if (act === 'goHome') return navigate('home');
     if (act === 'save') { commit(el.dataset.label || '改动'); render(true); return; }
     if (act === 'commitDrawer') { const label = el.dataset.label || '改动'; state.drawer = null; commit(label); render(true); return; }
     if (act === 'openSearch') return openSearchDrawer();
@@ -2454,6 +3371,11 @@
     if (act === 'newMealDay') return createNewMealDay();
     if (act === 'copyMealDay') return copyMealDay(id);
     if (act === 'previewMealDay') return previewMealDay(id);
+    if (act === 'applyMealPairGoal') return applyMealPairGoal();
+    if (act === 'createPairedMeal') return createPairedMeal();
+    if (act === 'editMealRule') return openMealRuleDrawer(id);
+    if (act === 'newMealRule') return createNewMealRule();
+    if (act === 'deleteMealRule') { const arr = mealData().rules; const x = arr.find((v) => v.id === id); if (x && confirm('删除推荐规则「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除推荐规则'); render(true); } return; }
     if (act === 'deleteMealDay') { const arr = mealData().dayPlans; const x = arr.find((v) => v.id === id); if (x && confirm('删除食谱「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除全天食谱'); render(true); } return; }
     if (act === 'mealRecalcDay') { const d = mealData().dayPlans.find((v) => v.id === id); if (d) { const t = mealDayTotals(d); d.kcal = t.kcal; d.p = t.p; d.c = t.c; d.f = t.f; commit('按模板重算食谱'); render(true); } return; }
     if (act === 'editMealTpl') return openMealTplDrawer(id);
@@ -2471,6 +3393,63 @@
     if (act === 'editMealSup') return openMealSupDrawer(id);
     if (act === 'newMealSup') return createNewMealSup();
     if (act === 'deleteMealSup') { const arr = mealData().supplements; const x = arr.find((v) => v.id === id); if (x && confirm('删除补剂「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除营养补剂'); render(true); } return; }
+    if (act === 'editHealthProfile') return openHealthProfileDrawer(id);
+    if (act === 'editCarePlan') return openCarePlanDrawer(id);
+    if (act === 'newCarePlan') return createNewCarePlan();
+    if (act === 'deleteCarePlan') { const arr = ops().health.carePlans; const x = arr.find((v) => v.id === id); if (x && confirm('删除健康计划「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除健康计划'); render(true); } return; }
+    if (act === 'editProgram') return openProgramDrawer(id);
+    if (act === 'newProgram') return createNewProgram();
+    if (act === 'deleteProgram') { const arr = ops().health.programs; const x = arr.find((v) => v.id === id); if (x && confirm('删除干预项目「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除干预项目'); render(true); } return; }
+    if (act === 'editEnrollment') return openEnrollmentDrawer(id);
+    if (act === 'newEnrollment') return createNewEnrollment(el.dataset.program);
+    if (act === 'deleteEnrollment') { const arr = ops().health.enrollments; const x = arr.find((v) => v.id === id); if (x && confirm('移除该成员的入组记录？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('移除项目入组'); render(true); } return; }
+    if (act === 'editOutcome') return openOutcomeDrawer(id);
+    if (act === 'newOutcome') return createNewOutcome();
+    if (act === 'deleteOutcome') { const arr = ops().health.outcomes; const x = arr.find((v) => v.id === id); if (x && confirm('删除该结果指标？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除结果指标'); render(true); } return; }
+    if (act === 'exportHealthReport') return exportHealthReport();
+    if (act === 'toggleMilestone') { const c = ops().health.carePlans.find((v) => v.id === id); if (c && c.milestones && c.milestones[Number(el.dataset.idx)]) { c.milestones[Number(el.dataset.idx)].done = !c.milestones[Number(el.dataset.idx)].done; state.dirty += 1; saveStore(); render(true); } return; }
+    if (act === 'editHealthFollow') return openHealthFollowDrawer(id);
+    if (act === 'newHealthFollow') return createNewHealthFollow(el.dataset.profile);
+    if (act === 'completeHealthFollow') { const f = healthFollowById(id); if (f) { f.status = 'completed'; f.result = f.result || '电话已联系，结果待补充'; commit('完成随访'); render(true); } return; }
+    if (act === 'editServiceCase') return openServiceCaseDrawer(id);
+    if (act === 'resolveException') { const x = ops().health.exceptions.find((v) => v.id === id); if (x) { x.status = 'done'; commit('处理履约异常'); render(true); } return; }
+    if (act === 'editMovePlan') return openMovePlanDrawer(id);
+    if (act === 'newMovePlan') return createNewMovePlan();
+    if (act === 'deleteMovePlan') { const arr = ops().exercisePlans; const x = arr.find((v) => v.id === id); if (x && confirm('删除运动计划「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除运动计划'); render(true); } return; }
+    if (act === 'editSleepRule') return openSleepRuleDrawer(id);
+    if (act === 'newSleepRule') return createNewSleepRule();
+    if (act === 'deleteSleepRule') { const arr = ops().sleepRules; const x = arr.find((v) => v.id === id); if (x && confirm('删除睡眠规则「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除睡眠规则'); render(true); } return; }
+    if (act === 'editMindRule') return openMindRuleDrawer(id);
+    if (act === 'newMindRule') return createNewMindRule();
+    if (act === 'deleteMindRule') { const arr = ops().mindRules; const x = arr.find((v) => v.id === id); if (x && confirm('删除心理规则「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除心理规则'); render(true); } return; }
+    if (act === 'editFiveMember') return openFiveMemberDrawer(id);
+    if (act === 'newFiveMember') return createNewFiveMember();
+    if (act === 'deleteFiveMember') { const arr = ops().fivegood.memberProfiles; const x = arr.find((v) => v.id === id); if (x && confirm('删除五好会员「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除五好会员'); render(true); } return; }
+    if (act === 'editFiveConsent') return openFiveConsentDrawer(id);
+    if (act === 'reviewCheckin') return reviewCheckin(id, el.dataset.result);
+    if (act === 'generateFiveReport') return generateFiveReport();
+    if (act === 'openFiveReport') return openFiveReportDrawer(id);
+    if (act === 'exportFiveReport') return exportFiveReport(id);
+    if (act === 'editFiveTask') return openFiveTaskDrawer(id);
+    if (act === 'newFiveTask') return createNewFiveTask();
+    if (act === 'deleteFiveTask') { const arr = ops().fivegood.tasks; const x = arr.find((v) => v.id === id); if (x && confirm('删除五好任务「' + x.title + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除五好任务'); render(true); } return; }
+    if (act === 'resolveEscalation') { const e = ops().fivegood.escalations.find((v) => v.id === id); if (e) { e.status = 'done'; commit('处理五好升级'); render(true); } return; }
+    if (act === 'editPricing') return openPricingDrawer(id);
+    if (act === 'editBundle') return openBundleDrawer(id);
+    if (act === 'newBundle') return createNewBundle();
+    if (act === 'deleteBundle') { const arr = ops().bundles; const x = arr.find((v) => v.id === id); if (x && confirm('删除服务组合「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除服务组合'); render(true); } return; }
+    if (act === 'toggleBundleService') { const b = bundleById(el.dataset.bundle); if (b) { b.services = b.services || []; const k = b.services.indexOf(id); if (k >= 0) b.services.splice(k, 1); else b.services.push(id); state.dirty += 1; saveStore(); render(true); } return; }
+    if (act === 'editModule') return openModuleDrawer(id);
+    if (act === 'newModule') return createNewModule();
+    if (act === 'deleteModule') { const arr = data.employee.modules; const x = arr.find((v) => v.id === id); if (!x) return; if (data.employee.products.some((p) => p.mod === id)) { toast('该模块下仍有服务，请先迁移服务再删除'); return; } if (confirm('删除模块「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除服务模块'); render(true); } return; }
+    if (act === 'editSettle') return openSettleDrawer(id);
+    if (act === 'newSettle') return createNewSettle();
+    if (act === 'deleteSettle') { const arr = ops().settle.records; const x = arr.find((v) => v.id === id); if (x && confirm('删除对账单「' + x.id + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除对账单'); render(true); } return; }
+    if (act === 'editQa') return openQaDrawer(id);
+    if (act === 'newQa') return createNewQa();
+    if (act === 'deleteQa') { const arr = ops().qa; const x = arr.find((v) => v.id === id); if (x && confirm('删除问答「' + x.q + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除健康问答'); render(true); } return; }
+    if (act === 'convertQa') return convertQa(id);
+    if (act === 'openTradeOrder') { const kind = el.dataset.kind; if (kind === 'booking') return openOrderDrawer(id); if (kind === 'claim') return openFulfillDrawer(id, 'claim'); if (kind === 'exchange') return openFulfillDrawer(id, 'exchange'); return; }
     if (act === 'editPackage') return openPackageDrawer(id);
     if (act === 'newPackage') return createNewPackage();
     if (act === 'editServicePlan') return openServicePlanDrawer(id);
@@ -2605,6 +3584,7 @@
 
   document.addEventListener('change', function (e) {
     const t = e.target;
+    if (t.matches('[data-ui-select]')) { state.ui[t.dataset.uiSelect] = t.value; render(true); return; }
     if (t.matches('[data-upload]')) { applyUpload(t); return; }
     if (t.matches('[data-rich-upload]')) {
       const file = t.files && t.files[0]; if (!file) return;
