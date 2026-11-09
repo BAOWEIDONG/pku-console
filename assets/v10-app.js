@@ -230,6 +230,15 @@
       { id: 'fu2', customerId: 'C1003', customer: '张伟', phone: '13800000003', reason: '连续 3 天未打卡，营养师电话唤醒', owner: '王营养师', due: '2026-11-09 15:00', status: 'open', channel: '电话人工跟进' },
       { id: 'fu3', customerId: 'C1010', customer: '孙悟空', phone: '13800000010', reason: '积分兑换已到货，确认领取方式', owner: '履约运营', due: '2026-11-10 11:00', status: 'done', channel: '电话人工跟进' }
     ];
+    const mealSeed = window.V10_MEAL_SEED || {};
+    data.meal = data.meal || {};
+    ['ingredients', 'dishes', 'mealTemplates', 'dayPlans', 'supplements'].forEach((k) => {
+      if (!Array.isArray(data.meal[k])) data.meal[k] = clone(mealSeed[k] || []);
+    });
+    data.meal.dayPlans.forEach((d) => { d.imageUrl = d.imageUrl || ''; d.tags = d.tags || []; d.meals = d.meals || {}; d.on = d.on !== false; });
+    data.meal.dishes.forEach((d) => { d.imageUrl = d.imageUrl || ''; d.tags = d.tags || []; d.allerg = d.allerg || []; d.ing = d.ing || []; d.on = d.on !== false; });
+    data.meal.mealTemplates.forEach((t) => { t.dishes = t.dishes || []; t.tags = t.tags || []; t.on = t.on !== false; });
+    data.meal.supplements.forEach((s) => { s.imageUrl = s.imageUrl || ''; s.avoid = s.avoid || []; s.on = s.on !== false; });
   }
   normalizeData();
   function saveStore() {
@@ -304,6 +313,7 @@
     'v-metrics': { label: '健康指标', group: '健康训练营', desc: '健康档案中展示的 30 项体检指标' },
     'v-badges': { label: '徽章体系', group: '健康训练营', desc: '里程碑、成就与活动徽章' },
     'v-points': { label: '积分与排行', group: '健康训练营', desc: '积分获取规则与学员排行榜' },
+    'v-meal': { label: '食谱工程', group: '健康训练营', desc: '全天食谱、餐次模板、菜品、食材与营养补剂' },
     'v-tiers': { label: '连续打卡奖励', group: '健康训练营', desc: '连续天数、库存、图片和领取方式' },
     'v-mall': { label: '积分商城商品', group: '健康训练营', desc: '商品主图、图集、图文详情、积分与库存' },
     'v-fulfill': { label: '发放与核销', group: '健康训练营', desc: '连续打卡奖品与积分兑换的发货、线下领取' },
@@ -449,6 +459,9 @@
           { r: 'v-records', l: '打卡与批注', i: 'activity', badge: () => pendingComments(data) },
           { r: 'v-metrics', l: '健康指标', i: 'stethoscope' },
           { r: 'v-badges', l: '徽章体系', i: 'badge' }
+        ] },
+        { section: '营养与食谱', items: [
+          { r: 'v-meal', l: '食谱工程', i: 'bowl' }
         ] },
         { section: '激励与商城', items: [
           { r: 'v-points', l: '积分与排行', i: 'chart' },
@@ -825,6 +838,85 @@
     return '<div class="page wide">' + pageHead('连续打卡奖励', '真实奖励档位：运动毛巾、水杯、瑜伽垫、体脂秤。图片、连续天数、库存和领取方式都可维护。', '<button class="btn primary" data-act="newTier">' + ic('plus') + '<span>新增奖励</span></button>', 'VERSIONALL / 奖励配置') +
       purpose('设置达到连续打卡天数后可领取的实物奖励，并管理库存与履约方式。', '学员端「我的奖励」与领取条件；H5 静态状态只在本机演示。', '营养师') +
       panel('奖励档位', '连续打卡天数按档位递增 · 同一营期不可重复', '<div class="grid three">' + data.camp.rewardTiers.map((t) => '<div class="panel" style="cursor:pointer" data-act="editTier" data-id="' + esc(t.id) + '"><div style="height:146px;background:#f4f7f9;overflow:hidden;position:relative"><img src="' + esc(t.imageUrl || '') + '" style="width:100%;height:100%;object-fit:cover" alt=""><span style="position:absolute;left:11px;top:11px">' + pill('连续 ' + t.requiredDays + ' 天', 'orange') + '</span><span style="position:absolute;right:11px;top:11px">' + (t.active === false ? pill('已下架', '') : pill('上架中', 'green')) + '</span></div><div style="padding:15px 16px 16px"><div class="row-flex"><b style="font-size:13px">' + esc(t.name) + '</b><span class="tiny muted right-auto">' + esc(campName(t.campId)) + '</span></div><div class="tiny muted" style="margin-top:5px;height:28px;line-height:1.6;overflow:hidden">' + esc(t.description || '') + '</div><div class="row-flex" style="margin-top:13px"><span class="tiny muted">库存 ' + t.stock + ' 件</span><span class="tiny muted right-auto">' + (t.deliveryMethods || []).map((x) => x === 'shipped' ? '邮寄' : '线下领取').join(' / ') + '</span></div><div style="display:flex;gap:6px;margin-top:13px"><button class="btn sm" data-act="editTier" data-id="' + esc(t.id) + '">编辑档位</button><button class="switch-btn ' + (t.active !== false ? 'on' : '') + '" data-switch="camp.rewardTiers.' + data.camp.rewardTiers.indexOf(t) + '.active" style="margin-left:auto"></button></div></div></div>').join('') + '</div>', '<span class="pill">含图片与库存</span>', false) + '</div>';
+  };
+
+  /* ----------------------------------------------------------- 吃好 · 食谱工程 */
+  const MEAL_SLOTS = ['早餐', '午餐', '晚餐', '加餐'];
+  function mealData() { return data.meal || { ingredients: [], dishes: [], mealTemplates: [], dayPlans: [], supplements: [] }; }
+  function mealDishById(id) { return mealData().dishes.find((x) => x.id === id); }
+  function mealTplById(id) { return mealData().mealTemplates.find((x) => x.id === id); }
+  function mealIngById(id) { return mealData().ingredients.find((x) => x.id === id); }
+  function mealSupById(id) { return mealData().supplements.find((x) => x.id === id); }
+  function mealTplDishes(t) { return (t.dishes || []).map(mealDishById).filter(Boolean); }
+  function mealTplTotals(t) {
+    const ds = mealTplDishes(t);
+    return { kcal: ds.reduce((n, d) => n + Number(d.kcal || 0), 0), p: ds.reduce((n, d) => n + Number(d.p || 0), 0), c: ds.reduce((n, d) => n + Number(d.c || 0), 0), f: ds.reduce((n, d) => n + Number(d.f || 0), 0) };
+  }
+  function mealOnPill(on) { return on === false ? pill('草稿', 'amber') : pill('在架', 'green'); }
+  function mealDayTotals(d) {
+    const ts = MEAL_SLOTS.map((m) => mealTplById((d.meals || {})[m])).filter(Boolean);
+    return { kcal: ts.reduce((n, t) => n + Number(t.kcal || 0), 0), p: ts.reduce((n, t) => n + Number(t.p || 0), 0), c: ts.reduce((n, t) => n + Number(t.c || 0), 0), f: ts.reduce((n, t) => n + Number(t.f || 0), 0) };
+  }
+  function mealCoverStyle(seed) {
+    const pal = [['#173f63', '#2c8aa8'], ['#7a3f19', '#f07a43'], ['#3e4a8a', '#8c7ae8'], ['#1c5a4a', '#41a67e'], ['#6b3b52', '#c46a8e']];
+    const p = pal[String(seed || '').split('').reduce((n, c) => n + c.charCodeAt(0), 0) % pal.length];
+    return 'linear-gradient(135deg,' + p[0] + ',' + p[1] + ')';
+  }
+  function mealDishThumb(d, size) {
+    return '<div class="dish-thumb" style="' + (size ? 'width:' + size + 'px;height:' + size + 'px;' : '') + 'background:' + (d.imageUrl ? '#eef3f7' : mealCoverStyle(d.id)) + '">' + (d.imageUrl ? '<img src="' + esc(d.imageUrl) + '" alt="">' : ic('bowl', size ? 18 : 24)) + '</div>';
+  }
+  function mealPickChips(path, all, selected, labelFn, dataName, extraAttr) {
+    return '<div class="chip-pick">' + all.map((x) => {
+      const on = (selected || []).indexOf(x.id) >= 0;
+      return '<button class="pick ' + (on ? 'on' : '') + '" data-act="' + esc(dataName) + '" ' + (extraAttr || '') + ' data-id="' + esc(x.id) + '">' + (on ? '✓ ' : '') + esc(labelFn(x)) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  PAGES['v-meal'] = function () {
+    const M = mealData();
+    const tab = state.ui.mealTab || 'day';
+    const q = (state.ui.mealQ || '').trim();
+    const totalUsed = M.dayPlans.reduce((n, d) => n + Number(d.used || 0), 0);
+    const tabs = [
+      { id: 'day', label: '全天食谱 ' + M.dayPlans.length },
+      { id: 'tpl', label: '餐次模板 ' + M.mealTemplates.length },
+      { id: 'dish', label: '菜品库 ' + M.dishes.length },
+      { id: 'ing', label: '食材库 ' + M.ingredients.length },
+      { id: 'sup', label: '营养补剂 ' + M.supplements.length }
+    ];
+    const match = (x) => !q || (x.name + (x.audience || '') + (x.tags || []).join('') + (x.cat || '') + (x.slot || '')).indexOf(q) >= 0;
+    let body = '';
+    if (tab === 'day') {
+      const rows = M.dayPlans.filter(match);
+      body = '<div class="meal-grid">' + (rows.length ? rows.map((d) => {
+        const tpls = MEAL_SLOTS.map((m) => ({ m: m, t: mealTplById((d.meals || {})[m]) }));
+        return '<div class="panel meal-card" data-act="editMealDay" data-id="' + esc(d.id) + '"><div class="meal-cover" style="background:' + (d.imageUrl ? '#eef3f7' : mealCoverStyle(d.id)) + '">' + (d.imageUrl ? '<img src="' + esc(d.imageUrl) + '" alt="">' : '<div class="mc-orb"></div>') + '<div class="mc-top"><span class="tag">全天食谱</span>' + mealOnPill(d.on) + '</div><div class="mc-title"><b>' + esc(d.name) + '</b><span>' + esc(d.audience || '普通职工') + '</span></div><div class="mc-kcal"><b>' + (d.kcal || 0) + '</b><span>kcal</span></div></div><div class="meal-body"><div class="meal-macros"><div><b>' + (d.p || 0) + 'g</b><span>蛋白</span></div><div><b>' + (d.c || 0) + 'g</b><span>碳水</span></div><div><b>' + (d.f || 0) + 'g</b><span>脂肪</span></div></div><div class="meal-slots">' + tpls.map(({ m, t }) => '<div class="meal-slot"><span class="slot">' + m + '</span><div><b>' + esc(t ? t.name : '未配置') + '</b><i>' + esc(t ? mealTplDishes(t).map((x) => x.name).join(' · ') : '点击配置餐次模板') + '</i></div></div>').join('') + '</div><div class="meal-foot"><span class="tiny muted">' + esc(d.owner || '营养师') + ' · 采纳 ' + (d.used || 0) + ' 人</span><div class="row-flex" style="gap:5px"><button class="btn sm" data-act="previewMealDay" data-id="' + esc(d.id) + '">预览</button><button class="btn sm" data-act="copyMealDay" data-id="' + esc(d.id) + '">复制</button></div></div></div></div>';
+      }).join('') : empty('没有匹配的全天食谱')) + '</div>';
+    }
+    if (tab === 'tpl') {
+      const rows = M.mealTemplates.filter(match);
+      body = panel('餐次模板', '一餐 = 主食 + 蛋白 + 蔬菜 + 汤；模板可以被全天食谱复用', rows.length ? '<div class="grid two">' + rows.map((t) => '<div class="meal-tpl-card" data-act="editMealTpl" data-id="' + esc(t.id) + '"><div class="row-flex"><span class="meal-badge">' + esc(t.meal) + '</span><b>' + esc(t.name) + '</b><div class="right-auto">' + mealOnPill(t.on) + '</div></div><div class="chips" style="margin-top:9px">' + mealTplDishes(t).slice(0, 6).map((d) => pill(d.name, 'outline')).join('') + '</div><div class="meal-macros compact"><div><b>' + (t.kcal || 0) + '</b><span>kcal</span></div><div><b>' + (t.p || 0) + 'g</b><span>蛋白</span></div><div><b>' + (t.c || 0) + 'g</b><span>碳水</span></div><div><b>' + (t.f || 0) + 'g</b><span>脂肪</span></div></div><div class="meal-foot"><span class="tiny muted">采纳 ' + (t.used || 0) + ' 次</span><button class="btn sm" data-act="editMealTpl" data-id="' + esc(t.id) + '">编辑模板</button></div></div>').join('') + '</div>' : empty('没有匹配的餐次模板'), '<button class="btn sm" data-act="newMealTpl">' + ic('plus') + '新增模板</button>', true);
+    }
+    if (tab === 'dish') {
+      const rows = M.dishes.filter(match);
+      body = '<div class="toolbar" style="padding:0 0 12px"><div class="searchbar">' + ic('search') + '<input class="input" data-ui-input="mealQ" placeholder="菜品 / 槽位 / 标签" value="' + esc(q) + '"></div><span class="tiny muted">共 ' + rows.length + ' 道 · 过敏原已在卡片标注</span><button class="btn sm right-auto" data-act="newMealDish">' + ic('plus') + '新增菜品</button></div><div class="dish-grid">' + (rows.length ? rows.map((d) => '<div class="dish-card" data-act="editMealDish" data-id="' + esc(d.id) + '">' + mealDishThumb(d) + '<div class="dc-body"><div class="row-flex"><b>' + esc(d.name) + '</b><span class="right-auto">' + mealOnPill(d.on) + '</span></div><div class="tiny muted" style="margin-top:3px">' + esc((d.meal || []).join(' / ')) + ' · ' + (d.kcal || 0) + ' kcal</div><div class="chips" style="margin-top:8px">' + pill(d.slot || '未分类', 'outline') + (d.allerg || []).map((a) => pill('过敏 ' + a, 'amber')).join('') + '</div></div></div>').join('') : empty('没有匹配的菜品')) + '</div>';
+    }
+    if (tab === 'ing') {
+      const rows = M.ingredients.filter(match);
+      body = panel('食材库', '每 100g 营养口径；菜品热量与过敏原由食材计算', '<div class="toolbar" style="padding:0 0 10px"><div class="searchbar">' + ic('search') + '<input class="input" data-ui-input="mealQ" placeholder="食材 / 分类" value="' + esc(q) + '"></div><button class="btn sm right-auto" data-act="newMealIng">' + ic('plus') + '新增食材</button></div><div class="table-wrap"><table class="table"><thead><tr><th>食材</th><th>分类</th><th>热量</th><th>蛋白</th><th>碳水</th><th>脂肪</th><th>过敏原</th><th>参考价</th></tr></thead><tbody>' + (rows.length ? rows.map((i) => '<tr class="click" data-act="editMealIng" data-id="' + esc(i.id) + '"><td><b style="font-size:11.5px">' + esc(i.name) + '</b><div class="sub">' + esc((i.tags || []).join(' · ')) + '</div></td><td>' + pill(i.cat || '未分类', 'outline') + '</td><td>' + i.kcal + ' kcal</td><td>' + i.p + 'g</td><td>' + i.c + 'g</td><td>' + i.f + 'g</td><td>' + ((i.allerg || []).length ? (i.allerg || []).map((a) => pill(a, 'amber')).join(' ') : '<span class="muted">无</span>') + '</td><td class="muted">¥' + i.price + '</td></tr>').join('') : '<tr><td colspan="8">' + empty('没有匹配的食材') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 种</span>', true);
+    }
+    if (tab === 'sup') {
+      const rows = M.supplements.filter(match);
+      body = panel('营养补剂', '适用人群与禁忌必须写清楚；当前只做后台商品配置', '<div class="grid three">' + (rows.length ? rows.map((s) => '<div class="panel pkg-card" style="box-shadow:none" data-act="editMealSup" data-id="' + esc(s.id) + '"><div class="meal-cover" style="height:108px;background:' + (s.imageUrl ? '#eef3f7' : mealCoverStyle(s.id)) + '">' + (s.imageUrl ? '<img src="' + esc(s.imageUrl) + '" alt="">' : '<div class="mc-orb"></div>') + '<div class="mc-top"><span class="tag">' + esc(s.cat || '营养补剂') + '</span>' + mealOnPill(s.on) + '</div><div class="mc-title"><b>' + esc(s.name) + '</b><span>已售 ' + (s.sold || 0) + ' · 库存 ' + (s.stock || 0) + '</span></div></div><div class="panel-body"><div class="row-flex"><b style="font-size:18px;color:#c75311">¥' + s.price + '</b><span class="tiny muted right-auto">结算 ¥' + s.settle + '</span></div><div class="tiny muted" style="margin-top:8px;line-height:1.6">' + esc(s.fit || '') + '</div>' + ((s.avoid || []).length ? '<div class="chips" style="margin-top:8px">' + s.avoid.map((a) => pill('忌 ' + a, 'red')).join('') + '</div>' : '') + '<button class="btn sm w-full" style="margin-top:11px" data-act="editMealSup" data-id="' + esc(s.id) + '">编辑补剂</button></div></div>').join('') : empty('没有匹配的补剂')) + '</div>', '<button class="btn sm" data-act="newMealSup">' + ic('plus') + '新增补剂</button>', true);
+    }
+    return '<div class="page wide">' + pageHead('吃好 · 食谱工程', '从食材、菜品到餐次模板和全天食谱，把营养师的经验做成可复用、可采纳、可追踪的产品。', '<button class="btn" data-act="newMealIng">' + ic('leaf') + '<span>新增食材</span></button><button class="btn" data-act="newMealDish">' + ic('bowl') + '<span>新增菜品</span></button><button class="btn primary" data-act="newMealDay">' + ic('plus') + '<span>新建全天食谱</span></button>', 'VERSIONALL / 食谱工程') +
+      purpose('把「一餐怎么搭、一天怎么吃」配置成标准食谱，减少营养师重复答疑，也让学员更容易坚持。', '后台食谱库、餐次组合与菜品营养；当前 H5 只展示饮食打卡，食谱需要后续增加学员端入口。', '营养师 / 企康内容运营') +
+      '<div class="kpi-grid">' + kpi('全天食谱', M.dayPlans.length, '套', '在架 ' + M.dayPlans.filter((d) => d.on !== false).length + ' 套', 'bowl', ['#fff1e7','#e5540b']) + kpi('菜品 / 食材', M.dishes.length + ' / ' + M.ingredients.length, '', '可自由组合', 'layers', ['#e9f7f1','#0c7c59']) + kpi('累计采纳', totalUsed, '人次', '按食谱使用记录', 'users', ['#edf3ff','#1f4fd1']) + kpi('营养补剂', M.supplements.length, '件', '在售 ' + M.supplements.filter((s) => s.on !== false).length + ' 件', 'gift', ['#fff6e0','#a86a06']) + '</div>' +
+      '<div class="panel"><div class="panel-head"><div class="ph"><h2>食谱工作台</h2><p>全天食谱 / 餐次模板 / 菜品 / 食材 / 补剂，点击整卡或整行编辑</p></div><span class="actions">' + seg(tabs, tab, 'mealTab') + '</span></div><div class="panel-body">' + body + '</div></div>' +
+      '<div class="grid two section-space">' +
+        panel('一套食谱怎么被用起来', '从配置到学员采纳', '<div class="stack tight">' + [['1', '食材入菜品', '每种食材标注每 100g 营养与过敏原'], ['2', '菜品进餐次', '按主食 / 蛋白 / 蔬菜 / 汤组成一餐'], ['3', '餐次组全天', '早餐 + 午餐 + 晚餐 + 加餐 = 全天食谱'], ['4', '学员采纳', '按人群推荐，记录采纳与饮食打卡']].map((x) => '<div class="row-flex small" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="meal-step">' + x[0] + '</span><div><b>' + x[1] + '</b><div class="tiny muted" style="margin-top:2px">' + x[2] + '</div></div></div>').join('') + '</div>') +
+        panel('与打卡、客户联动', '不是孤立食谱库', '<div class="stack tight">' + [['v-records', '查看饮食打卡与营养师批注', 'activity'], ['crm', '客户 360 查看学员使用痕迹', 'users'], ['e-fivegood', '五好生活 · 好好吃饭主题', 'star']].map((x) => '<div class="rowlink" data-go="' + x[0] + '"><span class="avatar square" style="width:28px;height:28px">' + ic(x[2]) + '</span><div class="main-tx"><b>' + x[1] + '</b></div><span class="chev">' + ic('chevron') + '</span></div>').join('') + '</div><div class="notice warm" style="margin-top:12px">' + ic('info') + '<span>食谱、菜品与补剂目前保存在后台。静态 H5 没有食谱详情页与购买接口，发布不会自动上线；需要先补学员端入口和后端订单。</span></div>') +
+      '</div></div>';
   };
 
   PAGES['v-mall'] = function () {
@@ -1253,10 +1345,10 @@
     const q = (state.ui.planQ || '').trim();
     const services = data.planning.services.map((s) => ({ s, p: productById(s.serviceId) })).filter((x) => x.p && (!q || (x.p.name + x.s.owner + x.s.target + x.s.goal).indexOf(q) >= 0));
     const goods = data.planning.goods.map((g) => ({ g, p: data.camp.pointProducts.find((x) => x.id === g.productId) })).filter((x) => x.p && (!q || (x.p.name + x.g.supplier + x.g.campaign).indexOf(q) >= 0));
-    return '<div class="page wide">' + pageHead('服务与商品规划', '28 项职工服务与 6 件积分商品放在同一张运营计划里：负责人、上线时间、目标、补货节奏一目了然。', '', '运营规划 / 服务与商品') +
+    return '<div class="page wide">' + pageHead('服务与商品规划', '28 项职工服务与 6 件积分商品放在同一张运营计划里：负责人、上线时间、目标、补货节奏一目了然。', '<button class="btn" data-act="newProduct">' + ic('gift') + '<span>新增商品</span></button><button class="btn primary" data-act="newService">' + ic('plus') + '<span>新增服务</span></button>', '运营规划 / 服务与商品') +
       purpose('先做运营计划，再进入服务 / 商品详情做内容配置。', '后台计划台账；不会自动改写 H5 的服务目录、商品卡或库存。', '企康运营 / 履约运营') +
       '<div class="kpi-grid">' + kpi('服务计划', services.length, '项', '5 大模块', 'package', ['#f1efff', '#5b4bc4']) + kpi('商品计划', goods.length, '件', '积分商城实物', 'gift', ['#fff1e7', '#e5540b']) + kpi('本月上线', data.planning.services.filter((s) => String(s.launchDate).slice(0, 7) === today().slice(0, 7)).length, '项', '按上线日期', 'calendar', ['#e9f7f1', '#0c7c59']) + kpi('库存预警', goods.filter((x) => Number(x.p.stock) <= Number(x.g.stockWarning)).length, '件', '低于补货线', 'truck', ['#fff6e0', '#a86a06']) + '</div>' +
-      panel('计划清单', '点击整行 / 整卡进入计划编辑', '<div class="toolbar" style="padding:10px 0 7px">' + seg([{ id: 'service', label: '服务计划' }, { id: 'goods', label: '商品计划' }], tab, 'planTab') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="planQ" placeholder="名称 / 负责人 / 目标 / 供应商" value="' + esc(q) + '"></div></div>' +
+      panel('计划清单', '点击整行 / 整卡进入计划编辑；新增服务或商品会自动生成一条计划', '<div class="toolbar" style="padding:10px 0 7px">' + seg([{ id: 'service', label: '服务计划' }, { id: 'goods', label: '商品计划' }], tab, 'planTab') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="planQ" placeholder="名称 / 负责人 / 目标 / 供应商" value="' + esc(q) + '"></div></div>' +
         (tab === 'service' ? '<div class="table-wrap"><table class="table"><thead><tr><th>服务</th><th>模块</th><th>负责人</th><th>上线日期</th><th>目标</th><th>状态</th><th>操作</th></tr></thead><tbody>' + (services.length ? services.map(({ s, p }) => { const m = moduleMeta(p.mod); return '<tr class="click" data-act="editServicePlan" data-id="' + esc(s.id) + '"><td><div class="row-main">' + '<span class="avatar square" style="width:32px;height:32px;background:' + m.tint + ';color:' + m.ink + '">' + ic(m.icon) + '</span><div><div class="name">' + esc(p.name) + '</div><div class="sub">' + esc(p.en || '') + '</div></div></div></td><td>' + esc(m.name) + '</td><td>' + esc(s.owner) + '</td><td class="muted">' + esc(s.launchDate) + '</td><td style="max-width:260px">' + esc(s.goal) + '</td><td>' + planStatePill(s.status) + '</td><td class="actions"><button class="btn sm">编辑计划</button></td></tr>'; }).join('') : '<tr><td colspan="7">' + empty('没有匹配的服务计划') + '</td></tr>') + '</tbody></table></div>' :
           '<div class="grid three">' + (goods.length ? goods.map(({ g, p }) => '<div class="panel pkg-card" style="box-shadow:none" data-act="editGoodsPlan" data-id="' + esc(g.id) + '"><div style="height:126px;background:#f4f7f9;position:relative;overflow:hidden">' + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" alt="">' : empty('暂无商品图', 'image')) + '<span style="position:absolute;left:10px;top:10px">' + planStatePill(g.status) + '</span></div><div class="panel-body"><div class="row-flex"><b style="font-size:12px">' + esc(p.name) + '</b><span class="right-auto tiny muted">库存 ' + p.stock + '</span></div><div class="tiny muted" style="margin-top:4px">' + esc(g.supplier) + ' · 成本 ¥' + g.cost + '</div><div class="pkg-meta"><div><b>' + p.stock + '</b><span>当前库存</span></div><div><b>' + g.stockWarning + '</b><span>补货线</span></div><div><b>' + esc(g.restockDate.slice(5)) + '</b><span>计划补货</span></div></div><div class="chips" style="margin-top:10px">' + pill(g.campaign, 'outline') + pill('积分 ' + p.pointsRequired, 'orange') + '</div><div style="margin-top:11px"><button class="btn sm w-full" data-act="editGoodsPlan" data-id="' + esc(g.id) + '">编辑商品计划</button></div></div></div>').join('') : empty('没有匹配的商品计划')) + '</div>') +
       '', '<span class="pill">' + (tab === 'service' ? services.length + ' 项' : goods.length + ' 件') + '</span>') +
@@ -1577,6 +1669,25 @@
     data.brand.camp.roster.forEach((r) => {
       if (r.tagsText != null) { r.tags = splitList(r.tagsText); delete r.tagsText; }
     });
+    const meal = data.meal || {};
+    (meal.dayPlans || []).forEach((d) => {
+      if (d.tagsText != null) { d.tags = splitList(d.tagsText); delete d.tagsText; }
+    });
+    (meal.mealTemplates || []).forEach((t) => {
+      if (t.tagsText != null) { t.tags = splitList(t.tagsText); delete t.tagsText; }
+    });
+    (meal.dishes || []).forEach((d) => {
+      if (d.tagsText != null) { d.tags = splitList(d.tagsText); delete d.tagsText; }
+      if (d.allergText != null) { d.allerg = splitList(d.allergText); delete d.allergText; }
+      if (d.mealText != null) { d.meal = splitList(d.mealText); delete d.mealText; }
+    });
+    (meal.ingredients || []).forEach((g) => {
+      if (g.tagsText != null) { g.tags = splitList(g.tagsText); delete g.tagsText; }
+      if (g.allergText != null) { g.allerg = splitList(g.allergText); delete g.allergText; }
+    });
+    (meal.supplements || []).forEach((s) => {
+      if (s.avoidText != null) { s.avoid = splitList(s.avoidText); delete s.avoidText; }
+    });
   }
 
   /* ----------------------------------------------------------- 抽屉 */
@@ -1596,6 +1707,130 @@
         panel('图文详情', '支持上传图片与富文本', richEditor('camp.pointProducts.' + i + '.detailHtml', p.detailHtml, '输入商品材质、规格、使用说明…')) +
         '</div>';
     } });
+  }
+
+  function openMealDayDrawer(id) {
+    const d = mealData().dayPlans.find((x) => x.id === id);
+    if (!d) return;
+    const i = mealData().dayPlans.indexOf(d);
+    const prefix = 'meal.dayPlans.' + i;
+    openDrawer({ title: '全天食谱 · ' + d.name, sub: '四餐组合 / 封面 / 营养目标', save: true, saveLabel: '全天食谱', extra: function () {
+      return '<button class="btn" data-act="previewMealDay" data-id="' + esc(d.id) + '">' + ic('eye') + '预览</button><button class="btn danger" data-act="deleteMealDay" data-id="' + esc(d.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      const totals = mealDayTotals(d);
+      const tplOptions = (m) => mealData().mealTemplates.filter((t) => t.meal === m).map((t) => ({ v: t.id, l: t.name + ' · ' + t.kcal + ' kcal' }));
+      return '<div class="stack">' +
+        panel('封面与定位', '学员端食谱卡', uploadBox(prefix + '.imageUrl', d.imageUrl, false, 'cover') + '<div class="form-grid two">' + field('食谱名称', d.name, prefix + '.name') + field('适用人群', d.audience || '', prefix + '.audience') + field('负责人', d.owner || '', prefix + '.owner') + field('标签', (d.tags || []).join('、'), prefix + '.tagsText', { hint: '例如 均衡、低GI、高蛋白，用顿号分隔' }) + '</div>' + switchRow('上架状态', '关闭后仅作为后台草稿', prefix + '.on', d.on !== false)) +
+        panel('营养目标', '可从四餐模板自动重算，也可以手动微调', '<div class="form-grid four">' + field('热量 kcal', d.kcal, prefix + '.kcal', { num: true }) + field('蛋白 g', d.p, prefix + '.p', { num: true }) + field('碳水 g', d.c, prefix + '.c', { num: true }) + field('脂肪 g', d.f, prefix + '.f', { num: true }) + '</div><div class="row-flex" style="margin-top:10px"><span class="tiny muted">当前四餐合计：' + totals.kcal + ' kcal · 蛋白 ' + totals.p + 'g · 碳水 ' + totals.c + 'g · 脂肪 ' + totals.f + 'g</span><button class="btn sm right-auto" data-act="mealRecalcDay" data-id="' + esc(d.id) + '">' + ic('refresh') + '按模板重算</button></div>') +
+        panel('四餐结构', '每餐选择一个餐次模板', '<div class="form-grid two">' + MEAL_SLOTS.map((m) => field(m, (d.meals || {})[m] || '', prefix + '.meals.' + m, { select: tplOptions(m) })).join('') + '</div>') +
+        panel('组合预览', '学员看到的四餐内容', '<div class="meal-preview">' + MEAL_SLOTS.map((m) => { const t = mealTplById((d.meals || {})[m]); return '<div class="mp-row"><span class="slot">' + m + '</span><div><b>' + esc(t ? t.name : '未配置') + '</b><div class="chips" style="margin-top:5px">' + (t ? mealTplDishes(t).map((x) => pill(x.name, 'outline')).join('') : '<span class="tiny muted">从上方选择一个模板</span>') + '</div></div><span class="tiny muted right-auto">' + (t ? t.kcal + ' kcal' : '') + '</span></div>'; }).join('') + '</div>') +
+        '<div class="notice">' + ic('info') + '<span>食谱配置只保存在后台。当前 H5 有饮食打卡，但没有食谱详情与采纳入口；要让学员真正看到，需要先补 H5 食谱页。</span></div></div>';
+    } });
+  }
+  function createNewMealDay() {
+    const first = (m) => (mealData().mealTemplates.find((t) => t.meal === m) || {}).id || '';
+    const d = { id: uid('dp'), name: '新全天食谱', audience: '普通职工', kcal: 1800, p: 110, c: 180, f: 55, meals: { 早餐: first('早餐'), 午餐: first('午餐'), 晚餐: first('晚餐'), 加餐: first('加餐') }, tags: ['均衡'], on: false, used: 0, owner: '营养师', imageUrl: '' };
+    mealData().dayPlans.unshift(d);
+    commit('新建全天食谱');
+    openMealDayDrawer(d.id);
+  }
+  function copyMealDay(id) {
+    const d = mealData().dayPlans.find((x) => x.id === id);
+    if (!d) return;
+    const copy = Object.assign(clone(d), { id: uid('dp'), name: d.name + '（副本）', used: 0, on: false });
+    mealData().dayPlans.unshift(copy);
+    commit('复制全天食谱');
+    openMealDayDrawer(copy.id);
+  }
+  function previewMealDay(id) {
+    const d = mealData().dayPlans.find((x) => x.id === id);
+    if (!d) return;
+    openDrawer({ title: '食谱预览 · ' + d.name, sub: d.audience + ' · ' + d.kcal + ' kcal', save: false, body: function () {
+      return '<div class="stack">' + panel('四餐组合', '营养师配置口径', '<div class="meal-preview">' + MEAL_SLOTS.map((m) => { const t = mealTplById((d.meals || {})[m]); return '<div class="mp-row"><span class="slot">' + m + '</span><div><b>' + esc(t ? t.name : '未配置') + '</b><div class="chips" style="margin-top:6px">' + (t ? mealTplDishes(t).map((x) => pill(x.name, 'outline')).join('') : '<span class="tiny muted">未配置</span>') + '</div></div><span class="tiny muted right-auto">' + (t ? t.kcal + ' kcal' : '') + '</span></div>'; }).join('') + '</div>') + panel('营养合计', '', '<div class="meal-macros"><div><b>' + d.kcal + '</b><span>kcal</span></div><div><b>' + d.p + 'g</b><span>蛋白</span></div><div><b>' + d.c + 'g</b><span>碳水</span></div><div><b>' + d.f + 'g</b><span>脂肪</span></div></div>') + '<div class="notice">' + ic('eye') + '<span>这是后台预览，不是 H5 实际页面；当前静态 H5 尚未接入食谱详情。</span></div></div>';
+    } });
+  }
+
+  function openMealTplDrawer(id) {
+    const t = mealData().mealTemplates.find((x) => x.id === id);
+    if (!t) return;
+    const i = mealData().mealTemplates.indexOf(t);
+    const prefix = 'meal.mealTemplates.' + i;
+    const candidates = mealData().dishes.filter((d) => !(d.meal || []).length || (d.meal || []).indexOf(t.meal) >= 0);
+    openDrawer({ title: '餐次模板 · ' + t.name, sub: t.meal + ' / ' + (t.dishes || []).length + ' 道菜', save: true, saveLabel: '餐次模板', extra: function () {
+      return '<button class="btn danger" data-act="deleteMealTpl" data-id="' + esc(t.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      const totals = mealTplTotals(t);
+      return '<div class="stack">' +
+        panel('模板信息', '', '<div class="form-grid two">' + field('模板名称', t.name, prefix + '.name') + field('餐次', t.meal, prefix + '.meal', { select: MEAL_SLOTS.map((m) => ({ v: m, l: m })) }) + field('标签', (t.tags || []).join('、'), prefix + '.tagsText', { hint: '顿号分隔' }) + field('采纳次数', t.used || 0, prefix + '.used', { num: true }) + '</div>' + switchRow('启用模板', '关闭后不参与全天食谱选择', prefix + '.on', t.on !== false)) +
+        panel('选择菜品', '只显示适合「' + t.meal + '」的菜品；点击切换', mealPickChips('', candidates, t.dishes || [], (d) => d.name + ' · ' + d.kcal + 'kcal', 'toggleMealTplDish', 'data-tpl="' + esc(t.id) + '"') + '<div class="row-flex" style="margin-top:12px"><span class="tiny muted">当前 ' + (t.dishes || []).length + ' 道 · ' + totals.kcal + ' kcal · 蛋白 ' + totals.p + 'g · 碳水 ' + totals.c + 'g · 脂肪 ' + totals.f + 'g</span><button class="btn sm right-auto" data-act="mealRecalcTpl" data-id="' + esc(t.id) + '">' + ic('refresh') + '按菜品重算</button></div>') +
+        '<div class="notice">' + ic('info') + '<span>模板热量由菜品自动汇总。H5 目前只展示饮食打卡，不读取餐次模板。</span></div></div>';
+    } });
+  }
+  function createNewMealTpl() {
+    const t = { id: uid('mt'), name: '新餐次模板', meal: '午餐', dishes: [], kcal: 0, p: 0, c: 0, f: 0, tags: [], on: false, used: 0 };
+    mealData().mealTemplates.unshift(t);
+    commit('新建餐次模板');
+    openMealTplDrawer(t.id);
+  }
+
+  function openMealDishDrawer(id) {
+    const d = mealData().dishes.find((x) => x.id === id);
+    if (!d) return;
+    const i = mealData().dishes.indexOf(d);
+    const prefix = 'meal.dishes.' + i;
+    openDrawer({ title: '菜品 · ' + d.name, sub: d.slot + ' / ' + d.kcal + ' kcal', save: true, saveLabel: '菜品', extra: function () {
+      return '<button class="btn danger" data-act="deleteMealDish" data-id="' + esc(d.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' +
+        panel('菜品图片', '菜品库与食谱预览使用', uploadBox(prefix + '.imageUrl', d.imageUrl, false, 'cover')) +
+        panel('菜品信息', '', '<div class="form-grid two">' + field('菜品名称', d.name, prefix + '.name') + field('槽位', d.slot, prefix + '.slot', { select: ['主食', '蛋白', '蔬菜', '汤', '乳品', '蔬果', '加餐'].map((x) => ({ v: x, l: x })) }) + field('适用餐次', (d.meal || []).join('、'), prefix + '.mealText', { hint: '早餐、午餐、晚餐、加餐，用顿号分隔' }) + field('标签', (d.tags || []).join('、'), prefix + '.tagsText') + field('热量 kcal', d.kcal, prefix + '.kcal', { num: true }) + field('蛋白 g', d.p, prefix + '.p', { num: true }) + field('碳水 g', d.c, prefix + '.c', { num: true }) + field('脂肪 g', d.f, prefix + '.f', { num: true }) + field('过敏原', (d.allerg || []).join('、'), prefix + '.allergText', { hint: '没有就留空' }) + '</div>' + switchRow('上架菜品', '下架后不出现在餐次候选', prefix + '.on', d.on !== false)) +
+        panel('食材组成', '点击食材加入或移除；当前按每 100g 估算', mealPickChips('', mealData().ingredients, (d.ing || []).map((x) => x[0]), (x) => x.name + ' · ' + x.kcal + 'kcal', 'toggleMealDishIng', 'data-dish="' + esc(d.id) + '"') + '<div class="chips" style="margin-top:12px">' + ((d.ing || []).length ? d.ing.map((x) => { const ing = mealIngById(x[0]); return ing ? pill(ing.name + ' ' + x[1] + 'g', 'outline') : ''; }).join('') : '<span class="tiny muted">还没有选择食材</span>') + '</div>') +
+        '<div class="notice">' + ic('info') + '<span>营养值可以手动修正；过敏原会显示在菜品卡片上，避免推荐给不适合的人群。</span></div></div>';
+    } });
+  }
+  function createNewMealDish() {
+    const d = { id: uid('dish'), name: '新菜品', imageUrl: '', meal: ['午餐'], slot: '蛋白', ing: [], kcal: 180, p: 15, c: 10, f: 8, tags: [], allerg: [], on: false };
+    mealData().dishes.unshift(d);
+    commit('新建菜品');
+    openMealDishDrawer(d.id);
+  }
+
+  function openMealIngDrawer(id) {
+    const g = mealData().ingredients.find((x) => x.id === id);
+    if (!g) return;
+    const i = mealData().ingredients.indexOf(g);
+    const prefix = 'meal.ingredients.' + i;
+    openDrawer({ title: '食材 · ' + g.name, sub: '每 100g 营养口径', save: true, saveLabel: '食材', extra: function () {
+      return '<button class="btn danger" data-act="deleteMealIng" data-id="' + esc(g.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('食材信息', '', '<div class="form-grid two">' + field('食材名称', g.name, prefix + '.name') + field('分类', g.cat || '', prefix + '.cat', { select: ['蛋白', '主食', '蔬菜', '水果', '乳制品', '坚果', '油脂', '调味'].map((x) => ({ v: x, l: x })) }) + field('热量 kcal', g.kcal, prefix + '.kcal', { num: true }) + field('蛋白 g', g.p, prefix + '.p', { num: true }) + field('碳水 g', g.c, prefix + '.c', { num: true }) + field('脂肪 g', g.f, prefix + '.f', { num: true }) + field('参考价（元 / 100g）', g.price, prefix + '.price', { num: true }) + field('营养标签', (g.tags || []).join('、'), prefix + '.tagsText') + field('过敏原', (g.allerg || []).join('、'), prefix + '.allergText', { hint: '例如 海鲜、乳、坚果' }) + '</div>') + '<div class="notice">' + ic('leaf') + '<span>食材是菜品营养计算的基础。修改食材不会自动重算已保存菜品，需要在菜品里点击按食材重算。</span></div></div>';
+    } });
+  }
+  function createNewMealIng() {
+    const g = { id: uid('ing'), name: '新食材', cat: '蔬菜', kcal: 0, p: 0, c: 0, f: 0, unit: '100g', tags: [], allerg: [], price: 0 };
+    mealData().ingredients.unshift(g);
+    commit('新建食材');
+    openMealIngDrawer(g.id);
+  }
+
+  function openMealSupDrawer(id) {
+    const s = mealData().supplements.find((x) => x.id === id);
+    if (!s) return;
+    const i = mealData().supplements.indexOf(s);
+    const prefix = 'meal.supplements.' + i;
+    openDrawer({ title: '营养补剂 · ' + s.name, sub: '售价 / 库存 / 适用与禁忌', save: true, saveLabel: '营养补剂', extra: function () {
+      return '<button class="btn danger" data-act="deleteMealSup" data-id="' + esc(s.id) + '">' + ic('trash') + '删除</button>';
+    }, body: function () {
+      return '<div class="stack">' + panel('补剂图片', '', uploadBox(prefix + '.imageUrl', s.imageUrl, false, 'cover')) +
+        panel('商品信息', '', '<div class="form-grid two">' + field('补剂名称', s.name, prefix + '.name') + field('分类', s.cat || '', prefix + '.cat') + field('售价（元）', s.price, prefix + '.price', { num: true }) + field('结算价（元）', s.settle, prefix + '.settle', { num: true }) + field('成本（元）', s.cost, prefix + '.cost', { num: true }) + field('库存', s.stock, prefix + '.stock', { num: true }) + field('已售', s.sold || 0, prefix + '.sold', { num: true }) + field('关联服务 ID', s.svc || '', prefix + '.svc') + '</div>' + field('适用人群', s.fit || '', prefix + '.fit', { area: true, rows: 3 }) + field('禁忌 / 慎用', (s.avoid || []).join('、'), prefix + '.avoidText', { hint: '顿号分隔；必须写清楚' }) + switchRow('上架状态', '关闭后不在补剂列表展示', prefix + '.on', s.on !== false)) +
+        '<div class="notice warm">' + ic('shield') + '<span>营养补剂不是药品，必须标注适用人群与禁忌。当前后台只做商品配置，不包含支付、处方或物流接口。</span></div></div>';
+    } });
+  }
+  function createNewMealSup() {
+    const s = { id: uid('sup'), name: '新营养补剂', cat: '蛋白补充', price: 0, settle: 0, cost: 0, stock: 0, on: false, fit: '', avoid: [], sold: 0, svc: '', imageUrl: '' };
+    mealData().supplements.unshift(s);
+    commit('新建营养补剂');
+    openMealSupDrawer(s.id);
   }
 
   function openTierDrawer(id) {
@@ -2124,6 +2359,8 @@
   function createNewProduct() {
     const p = { id: uid('pp'), name: '新商品', imageUrl: '', gallery: [], description: '请填写商品描述', pointsRequired: 30, stock: 0, active: true, deliveryOptions: ['shipped'], maxExchange: 1, campId: data.camp.camps[0].id, detailHtml: '<p>请填写图文详情。</p>' };
     data.camp.pointProducts.unshift(p);
+    data.planning.goods.unshift({ id: uid('gp'), productId: p.id, supplier: '待填写', cost: 0, stockWarning: 8, restockDate: addDays(today(), 7), campaign: '积分商城上新', status: 'draft', note: '' });
+    commit('新增商品并生成商品计划');
     openProductDrawer(p.id);
   }
   function createNewTier() {
@@ -2159,6 +2396,8 @@
   function createNewService() {
     const p = { id: uid('svc'), mod: 'screen', name: '新服务', en: '', scope: '属地履约', payer: [], payerText: '', tags: [], tagsText: '', intro: '请填写服务简介', includes: [], notice: [], flow: [], orgs: [], duration: '', resp: '', active: true, recommended: false, imageUrl: '', gallery: [], detailHtml: '<p>请填写图文详情。</p>' };
     data.employee.products.push(p);
+    data.planning.services.push({ id: uid('sp'), serviceId: p.id, owner: '企康运营', launchDate: today(), target: '有需求职工', goal: '完成服务上线与首批预约', status: 'draft', note: '' });
+    commit('新增服务并生成服务计划');
     navigate('e-service', { id: p.id });
   }
   function createNewArticle() {
@@ -2210,6 +2449,28 @@
     if (act === 'openPublish') return openPublishDrawer();
     if (act === 'editProduct') return openProductDrawer(id);
     if (act === 'newProduct') return createNewProduct();
+    if (act === 'newService') return createNewService();
+    if (act === 'editMealDay') return openMealDayDrawer(id);
+    if (act === 'newMealDay') return createNewMealDay();
+    if (act === 'copyMealDay') return copyMealDay(id);
+    if (act === 'previewMealDay') return previewMealDay(id);
+    if (act === 'deleteMealDay') { const arr = mealData().dayPlans; const x = arr.find((v) => v.id === id); if (x && confirm('删除食谱「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除全天食谱'); render(true); } return; }
+    if (act === 'mealRecalcDay') { const d = mealData().dayPlans.find((v) => v.id === id); if (d) { const t = mealDayTotals(d); d.kcal = t.kcal; d.p = t.p; d.c = t.c; d.f = t.f; commit('按模板重算食谱'); render(true); } return; }
+    if (act === 'editMealTpl') return openMealTplDrawer(id);
+    if (act === 'newMealTpl') return createNewMealTpl();
+    if (act === 'deleteMealTpl') { const arr = mealData().mealTemplates; const x = arr.find((v) => v.id === id); if (x && confirm('删除模板「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除餐次模板'); render(true); } return; }
+    if (act === 'toggleMealTplDish') { const t = mealData().mealTemplates.find((v) => v.id === el.dataset.tpl); if (t) { t.dishes = t.dishes || []; const k = t.dishes.indexOf(id); if (k >= 0) t.dishes.splice(k, 1); else t.dishes.push(id); state.dirty += 1; saveStore(); render(true); } return; }
+    if (act === 'mealRecalcTpl') { const t = mealData().mealTemplates.find((v) => v.id === id); if (t) { const n = mealTplTotals(t); t.kcal = n.kcal; t.p = n.p; t.c = n.c; t.f = n.f; commit('按菜品重算模板'); render(true); } return; }
+    if (act === 'editMealDish') return openMealDishDrawer(id);
+    if (act === 'newMealDish') return createNewMealDish();
+    if (act === 'deleteMealDish') { const arr = mealData().dishes; const x = arr.find((v) => v.id === id); if (x && confirm('删除菜品「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除菜品'); render(true); } return; }
+    if (act === 'toggleMealDishIng') { const d = mealData().dishes.find((v) => v.id === el.dataset.dish); if (d) { d.ing = d.ing || []; const k = d.ing.findIndex((x) => x[0] === id); if (k >= 0) d.ing.splice(k, 1); else d.ing.push([id, 100]); state.dirty += 1; saveStore(); render(true); } return; }
+    if (act === 'editMealIng') return openMealIngDrawer(id);
+    if (act === 'newMealIng') return createNewMealIng();
+    if (act === 'deleteMealIng') { const arr = mealData().ingredients; const x = arr.find((v) => v.id === id); if (x && confirm('删除食材「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除食材'); render(true); } return; }
+    if (act === 'editMealSup') return openMealSupDrawer(id);
+    if (act === 'newMealSup') return createNewMealSup();
+    if (act === 'deleteMealSup') { const arr = mealData().supplements; const x = arr.find((v) => v.id === id); if (x && confirm('删除补剂「' + x.name + '」？')) { arr.splice(arr.indexOf(x), 1); state.drawer = null; commit('删除营养补剂'); render(true); } return; }
     if (act === 'editPackage') return openPackageDrawer(id);
     if (act === 'newPackage') return createNewPackage();
     if (act === 'editServicePlan') return openServicePlanDrawer(id);
