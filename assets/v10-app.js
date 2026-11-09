@@ -1003,7 +1003,7 @@
     const status = state.ui.eServiceStatus || 'all';
     const rows = data.employee.products.filter((p) => (mod === 'all' || p.mod === mod) && (status === 'all' || (status === 'online' ? p.active : !p.active)) && (!q || (p.name + p.intro + (p.tags || []).join('')).indexOf(q) >= 0));
     return '<div class="page wide">' + pageHead('服务目录', '5 大模块、28 项真实服务。点击任意服务整卡进入详情编辑，不再只能点最右箭头。', '<button class="btn primary" data-act="newService">' + ic('plus') + '<span>新增服务</span></button>', 'PKU-EMPLOYEE-HEALTH / 服务') +
-      purpose('维护职工健康服务的名称、介绍、范围、支付来源与上下架。', 'H5「选服务」列表与服务详情；名称/介绍/上下架会被 bridge 读取。', '企康产品运营') +
+      purpose('维护职工健康服务的名称、介绍、范围、支付来源与上下架。', 'H5「选服务」列表与服务详情；上下架由 bridge 读取，名称与介绍只保存后台。', '企康产品运营') +
       '<div class="kpi-grid">' + kpi('全部服务', data.employee.products.length, '项', '5 大模块', 'package', ['#fff1e7','#e5540b']) + kpi('已上架', data.employee.products.filter((p) => p.active).length, '项', '职工端可见', 'check', ['#e9f7f1','#0c7c59']) + kpi('首页推荐', data.employee.products.filter((p) => p.recommended).length, '项', '热门服务口径', 'spark', ['#edf3ff','#1f4fd1']) + kpi('待完善', data.employee.products.filter((p) => !p.imageUrl).length, '项', '尚无主图', 'image', ['#fff6e0','#a86a06']) + '</div>' +
       panel('服务卡片', '整卡可点击进入详情配置', '<div class="toolbar" style="padding:10px 0 7px">' + seg([{id:'all',label:'全部'}].concat(data.employee.modules.map((m) => ({id:m.id,label:m.stab}))), mod, 'eMod') + seg([{id:'all',label:'全部状态'},{id:'online',label:'上架'},{id:'offline',label:'下架'}], status, 'eServiceStatus') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="eServiceQ" placeholder="服务名 / 介绍 / 标签" value="' + esc(q) + '"></div></div>' +
         '<div class="service-grid">' + (rows.length ? rows.map((p) => {
