@@ -8,6 +8,12 @@
 
   const K = {
     head(title, desc, actions, eyebrow) {
+      if (window.__FUSION_EMBED__) {
+        return '<div class="fusion-viewline"><div class="fv-title"><b>' + E(title) + '</b>' +
+          (desc ? '<span>' + E(desc) + '</span>' : '') + '</div>' +
+          (window.__FUSION_VIEWS__ || '') +
+          (actions ? '<div class="fv-actions">' + actions + '</div>' : '') + '</div>';
+      }
       const help = window.PAGE_HELP && window.App && window.PAGE_HELP[App.route];
       return '<div class="page-head"><div class="t">' +
         (eyebrow ? '<div class="crumb" style="margin-bottom:7px">' + eyebrow + '</div>' : '') +

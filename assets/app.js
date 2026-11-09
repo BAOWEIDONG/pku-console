@@ -8,6 +8,8 @@
   /* ---------------------------------------------------------- 路由 → 权限模块 */
   const G = {
     workbench: 'v.ops',
+    'fuse-command': 'v.report', 'fuse-customer': 'v.ops', 'fuse-catalog': 'e.services',
+    'fuse-health': 'v.ops', 'fuse-program': 'v.ops', 'fuse-content': 'b.content', 'fuse-platform': 'shared.content',
     'g-coverage': 'v.report',
     'g-insights': 'v.report',
     'g-impact': 'logs',
@@ -52,85 +54,43 @@
 
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
-    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '经营 · 洞察 · 发布' },
-    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'hub-customer', desc: '客户 · 交易 · 履约 · 结算' },
-    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'hub-catalog', desc: '服务 · 商品 · 价格 · 履约' },
-    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '履约 · 档案 · 计划 · 随访 · 结果' },
-    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'hub-fivegood', desc: '五好生活 · 减重营 · 激励' },
-    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'hub-content-brand', desc: '品牌站 · 职工端 · 公共素材' },
-    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'hub-platform-commons', desc: '公共资源 · 权限 · 发布' }
+    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'fuse-command', title: '指挥中心', desc: '经营 · 洞察 · 发布' },
+    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'fuse-customer', title: '客户中心', desc: '客户 · 交易 · 履约 · 结算' },
+    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'fuse-catalog', title: '商品中心', desc: '服务 · 商品 · 价格 · 履约' },
+    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'fuse-health', title: '健康管理', desc: '履约 · 档案 · 计划 · 随访 · 结果' },
+    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fuse-program', title: '项目中心', desc: '五好生活 · 减重营 · 激励' },
+    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'fuse-content', title: '内容中心', desc: '品牌站 · 职工端 · 公共素材' },
+    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'fuse-platform', title: '平台中心', desc: '公共资源 · 权限 · 发布' }
   ];
 
   const NAV_OF = {
     command: [
-      { group: '今天', items: [
-        { id: 'workbench', label: '指挥中心', icon: 'grid' },
-        { id: 's-publish', label: '发布中心', icon: 'send' },
-        { id: 'g-impact', label: '变更影响', icon: 'activity' }
-      ] },
-      { group: '经营洞察', items: [
-        { id: 'hub-command-insight', label: '经营洞察', icon: 'chart' }
-      ] }
-    ],
-    growth: [
-      { group: '内容工作台', items: [
-        { id: 'hub-content-brand', label: '品牌站', icon: 'layout' },
-        { id: 'hub-content-employee', label: '职工端', icon: 'stethoscope' },
-        { id: 'hub-content-assets', label: '内容与素材', icon: 'image' }
-      ] }
-    ],
-    catalog: [
-      { group: '商品工作台', items: [
-        { id: 'hub-catalog', label: '服务与商品', icon: 'package' },
-        { id: 'hub-catalog-fulfill', label: '价格与履约', icon: 'target' }
-      ] }
+      { group: '工作区', items: [{ id: 'fuse-command', label: '指挥中心', icon: 'grid' }] }
     ],
     customer: [
-      { group: '客户工作台', items: [
-        { id: 'hub-customer', label: '客户中心', icon: 'users' },
-        { id: 'hub-customer-trade', label: '交易与履约', icon: 'file' },
-        { id: 'hub-customer-settle', label: '结算中心', icon: 'chart' }
-      ] }
+      { group: '工作区', items: [{ id: 'fuse-customer', label: '客户中心', icon: 'users' }] }
+    ],
+    catalog: [
+      { group: '工作区', items: [{ id: 'fuse-catalog', label: '商品中心', icon: 'package' }] }
     ],
     health: [
-      { group: '健管工作台', items: [
-        { id: 'h-overview', label: '健康管理总览', icon: 'grid' },
-        { id: 'h-service-flow', label: '服务履约台', icon: 'stethoscope' },
-        { id: 'hub-health', label: '健康管理', icon: 'user' },
-        { id: 'h-enterprise', label: '企业健康报告', icon: 'building' }
-      ] }
+      { group: '工作区', items: [{ id: 'fuse-health', label: '健康管理', icon: 'stethoscope' }] }
     ],
     program: [
-      { group: '项目工作台', items: [
-        { id: 'hub-fivegood', label: '五好生活', icon: 'spark' },
-        { id: 'hub-camp', label: '减重营', icon: 'activity' },
-        { id: 'hub-program-rules', label: '规则与激励', icon: 'sliders' },
-        { id: 'hub-program-report', label: '报告与复盘', icon: 'chart' }
-      ] }
+      { group: '工作区', items: [{ id: 'fuse-program', label: '项目中心', icon: 'layers' }] }
+    ],
+    growth: [
+      { group: '工作区', items: [{ id: 'fuse-content', label: '内容中心', icon: 'spark' }] }
     ],
     platform: [
-      { group: '发布与治理', items: [
-        { id: 's-publish', label: '发布中心', icon: 'send' },
-        { id: 's-logs', label: '操作日志', icon: 'clock' }
-      ] },
-      { group: '公共资源', items: [
-        { id: 'hub-platform-commons', label: '公共模块', icon: 'link' }
-      ] },
-      { group: '权限与设置', items: [
-        { id: 'hub-platform-access', label: '权限与设置', icon: 'lock' }
-      ] }
+      { group: '工作区', items: [{ id: 'fuse-platform', label: '平台中心', icon: 'settings' }] }
     ]
   };
 
   const ROUTE_WB = {};
   Object.keys(NAV_OF).forEach((wb) => NAV_OF[wb].forEach((g) => g.items.forEach((it) => { ROUTE_WB[it.id] = wb; })));
   ROUTE_WB.workbench = 'command';
-  ROUTE_WB['g-impact'] = 'command';
-  ROUTE_WB['s-publish'] = 'command';
-  ROUTE_WB['s-logs'] = 'platform';
-  ROUTE_WB['g-coverage'] = 'command';
-  ROUTE_WB['g-insights'] = 'command';
-  const wbOf = (route) => ROUTE_WB[route] || 'command';
+  const wbOf = (route) => ROUTE_WB[route] || (window.Fusion && Fusion.roomOf(route)) || 'command';
   /* 这些是跨工作区的公共页：从哪儿点进来，就留在哪儿，不强行切换侧栏 */
   const GLOBAL_ROUTES = {
     'g-impact': 1, 'g-coverage': 1, 'g-insights': 1,
@@ -149,7 +109,7 @@
   }
 
   const state = {
-    route: 'workbench', ctx: {}, app: 'command', openGroups: {},
+    route: 'fuse-command', ctx: {}, app: 'command', openGroups: {},
     previewOpen: false, previewMode: 'live',
     previewApp: 'pku', previewScreen: 'pku-home', previewCtx: {},
     history: [], autoMocked: false, origin: null, navOpen: false
@@ -159,41 +119,26 @@
 
   function subnavHTML() {
     const space = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
-    const nav = NAV_OF[state.app] || NAV_OF.platform;
-    const navOpen = state.openGroups[state.app] || nav.map((g) => g.group || '_top');
     return '<div class="side-brand">' +
         '<span class="side-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>' +
         '<span class="side-name"><b>北大医疗</b><em>超级管理后台</em></span>' +
       '</div>' +
       '<div class="ws-picker">' +
-        '<div class="ws-picker-h"><span>工作区</span><em>点击直接切换</em>' +
-          '<button class="subnav-new" data-act="quickNew">' + I('plus', 13) + '新建</button></div>' +
-        '<div class="ws-grid">' + WORKBENCHES.map((w) =>
-          '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.desc) + '">' +
-            '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 13) + '</span>' +
-            '<b>' + E(w.label) + '</b>' +
-          '</button>').join('') + '</div>' +
-        '<div class="ws-desc"><span style="background:' + space.dot + '"></span>' + E(space.desc) + '</div>' +
+        '<div class="ws-picker-h"><span>工作区</span><em>直接点选</em></div>' +
+        '<div class="ws-grid">' + WORKBENCHES.map((w) => {
+          return '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.title) + '">' +
+            '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 11) + '</span><b>' + E(w.label) + '</b>' +
+            '</button>';
+        }).join('') + '</div>' +
+        '<div class="ws-context">' +
+          '<div class="ws-context-t"><b>' + E(space.title) + '</b><span>' + E(space.desc) + '</span></div>' +
+          '<button class="subnav-new" data-act="quickNew">' + I('plus', 12) + '新建</button>' +
+        '</div>' +
       '</div>' +
       '<div class="subnav-search" data-act="cmd">' + I('search', 14) + '<span>搜索 ' + E(space.label) + ' 内页面</span><kbd>⌘K</kbd></div>' +
-      '<nav class="nav">' + nav.map((g) => {
-        const items = g.items.filter((it) => visible(it.id));
-        if (!items.length) return '';
-        const key = g.group || '_top';
-        const cl = g.group ? navOpen.indexOf(key) < 0 : false;
-        return '<div class="navgrp ' + (cl ? 'collapsed' : '') + '">' +
-          (g.group ? '<button class="navgrp-h" data-collapse="' + key + '">' + E(g.group) +
-            '<span class="navgrp-n">' + items.length + '</span>' +
-            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="margin-left:auto;opacity:.45;transition:transform .18s;' + (cl ? 'transform:rotate(-90deg)' : '') + '"><path d="m6 9 6 6 6-6"/></svg></button>' : '') +
-          items.map((it) => {
-            const cnt = navCount(it.id);
-            const lvl = Store.can(groupOf(it.id), 2);
-            return '<button class="navitem ' + (it.id === state.route ? 'on' : '') + '" data-nav="' + it.id + '" title="' + E(it.label) + '">' +
-              I(it.icon, 16) + '<span>' + E(it.label) + '</span>' +
-              (cnt ? '<span class="count ' + (it.hot ? 'hot' : '') + '">' + cnt + '</span>' : '') +
-              (lvl ? '' : '<span class="nav-ro">只读</span>') + '</button>';
-          }).join('') + '</div>';
-      }).join('') + '</nav>' +
+      '<div class="nav ws-nav-note">' +
+        '<div class="ws-note"><b>一个工作区，一套业务</b><span>客户、商品、健康、项目、内容、平台都在各自页内完成，不再拆成多个左侧入口。</span></div>' +
+      '</div>' +
       '<div class="subnav-foot">' +
         '<div class="side-global">' +
           '<button data-nav="g-impact" title="查看未发布改动会影响哪些页面">' + I('activity', 12) + '变更影响</button>' +
@@ -207,6 +152,7 @@
   }
   function dot(c) { return c === 'green' ? '#0aa39a' : c === 'violet' ? '#8b7cf6' : c === 'amber' ? '#c8871a' : c === 'grey' ? '#94a7c0' : '#3f8cff'; }
   function navCount(route) {
+    if (window.Fusion && Fusion.ownerOf(route)) return Fusion.navCount(Fusion.roomOf(route));
     if (route === 'v-annotations') return Store.db.versionall.records.exercise.filter((r) => !r.comments || !r.comments.length).length;
     if (route === 'v-claims') return Store.db.versionall.claims.filter((c) => c.status === 'pending').length;
     if (route === 'e-bookings') return Store.db.employee.bookings.filter((b) => b.status === 'pending').length;
@@ -221,13 +167,15 @@
   function topbarHTML() {
     const page = currentPage();
     const wb = WORKBENCHES.find((x) => x.id === state.app) || WORKBENCHES[0];
+    const ftab = window.Fusion && Fusion.tabOf(state.app);
     const dirty = Store.dirtyCount;
     return '<div class="tb-left"><button class="tb-menu" data-act="toggleNav" title="展开菜单" aria-label="展开菜单">' +
         '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
       '<button class="tb-back" data-act="back" title="返回">' + I('chevron', 15) + '</button>' +
-      (state.route === 'workbench' ? '' : '<button class="tb-home" data-act="home">' + I('grid', 14) + '<span>指挥中心</span></button>') +
+      (state.route === 'fuse-command' ? '' : '<button class="tb-home" data-act="home">' + I('grid', 14) + '<span>指挥中心</span></button>') +
       '<div class="crumb"><span class="crumb-space"><i style="background:' + wb.dot + '"></i>' + E(wb.label) + '</span>' +
-      '<span class="sep">/</span><b>' + E(page.title || '') + '</b>' +
+      '<span class="sep sep-space">/</span><b>' + E(page.title || '') + '</b>' +
+      (ftab && ftab.label && ftab.label !== page.title ? '<span class="sep sep-tab">/</span><span class="crumb-tab">' + E(ftab.label) + '</span>' : '') +
       (state.origin && state.origin.route !== state.route ? '<button class="tb-restore" data-act="restore">' + I('undo', 11) + '回到 ' + E(state.origin.label) + '</button>' : '') +
       (Store.role.perms === 'ALL' ? '' : '<span class="pill grey">' + E(Store.role.name) + '</span>') + '</div></div>' +
       '<div class="top-actions">' +
@@ -235,7 +183,7 @@
       '<span class="tb-live"><i></i>3 端在线</span>' +
       (dirty ? '<button class="tb-dirty" data-act="goPublish"><i></i>' + dirty + ' 项待发布</button>' : '') +
       (page.preview ? '<button class="iconbtn" data-act="togglePreview" title="实时预览" style="' + (state.previewOpen ? 'background:var(--brand-wash);color:var(--brand)' : '') + '">' + I('eye', 17) + '</button>' : '') +
-      '<button class="tb-publish" data-act="publish"' + (Store.canPublish ? '' : ' disabled title="当前角色无发布权限"') + '>' + I('send', 14) + '发布</button>' +
+      '<button class="tb-publish" data-act="publish" title="发布"' + (Store.canPublish ? '' : ' disabled title="当前角色无发布权限"') + '>' + I('send', 14) + '<span>发布</span></button>' +
       '<button class="tb-user" data-act="roleMenu"><span class="ava">' + E(Store.role.name.slice(0, 1)) + '</span>' +
       '<span class="tb-user-t">' + E(Store.role.name) + '</span>' + I('down', 11) + '</button>' +
       '</div>';
@@ -361,10 +309,44 @@
   /* ---------------------------------------------------------- router */
   const App = {
     go(route, ctx, opts) {
-      if (!PAGES[route]) return;
+      const fusionOwner = window.Fusion && Fusion.ownerOf(route);
+      if (!PAGES[route] && !fusionOwner) return;
+      if (fusionOwner) {
+        if (!visible(fusionOwner)) { UI.toast('当前角色无权访问该模块'); return; }
+        opts = opts || {};
+        const from = {
+          route: state.route, ctx: state.ctx, app: state.app, origin: state.origin,
+          fstate: window.Fusion.snapshot()
+        };
+        state.history.push(from);
+        if (state.history.length > 30) state.history.shift();
+        if (route === fusionOwner && !opts.keepView) {
+          Fusion.reset(Fusion.roomOf(fusionOwner), ctx || {});
+        } else {
+          Fusion.activate(route, ctx || {});
+        }
+        state.route = fusionOwner;
+        state.ctx = {};
+        state.app = wbOf(fusionOwner);
+        state.origin = null;
+        state.navOpen = false;
+        document.body.classList.remove('nav-open');
+        const fusionState = Fusion.current() || {};
+        const fq = { view: fusionState.view || '' };
+        Object.keys(ctx || {}).forEach((k) => { fq[k] = ctx[k]; });
+        location.hash = '#/' + fusionOwner + '?' + Object.keys(fq).filter((k) => fq[k] !== '').map((k) => k + '=' + encodeURIComponent(fq[k])).join('&');
+        state.autoMocked = false;
+        render();
+        const sc = document.querySelector('.scrollarea');
+        if (sc) sc.scrollTop = 0;
+        return;
+      }
       if (!visible(route)) { UI.toast('当前角色无权访问该模块'); return; }
       opts = opts || {};
-      const from = { route: state.route, ctx: state.ctx, app: state.app, origin: state.origin };
+      const from = {
+        route: state.route, ctx: state.ctx, app: state.app, origin: state.origin,
+        fstate: window.Fusion ? Fusion.snapshot() : null
+      };
       state.history.push(from);
       if (state.history.length > 30) state.history.shift();
       if (route === 'workbench') { state.app = 'command'; state.origin = null; }
@@ -401,11 +383,14 @@
     },
     back() {
       const prev = state.history.pop();
-      if (!prev) return this.go('workbench');
+      if (!prev) return this.go('fuse-command');
       state.route = prev.route; state.ctx = prev.ctx;
       if (prev.app) state.app = prev.app;
       state.origin = prev.origin || null;
-      location.hash = '#/' + prev.route; render();
+      if (prev.fstate && window.Fusion) Fusion.restore(prev.fstate);
+      const fview = window.Fusion && Fusion.current() ? Fusion.current().view : '';
+      location.hash = '#/' + prev.route + (fview && prev.route.indexOf('fuse-') === 0 ? '?view=' + encodeURIComponent(fview) : '');
+      render();
     },
     refresh(keep) { render(keep); },
     get route() { return state.route; },
@@ -706,7 +691,7 @@
     if (name === 'cmdk') { App.cmdOpen(); return; }
     if (name === 'cmd') { App.cmdOpen(); return; }
     if (name === 'back') { App.back(); return; }
-    if (name === 'home') { App.go('workbench', null, { keepApp: true }); return; }
+    if (name === 'home') { App.go('fuse-command'); return; }
     if (name === 'go' && act.dataset.id) { App.go(act.dataset.id); return; }
     if (name === 'impact') { App.go('g-impact'); return; }
     if (name === 'toggleNav') {
@@ -735,6 +720,7 @@
     const page = currentPage();
     const fn = page.actions && page.actions[name];
     if (fn) { fn(act.dataset, act); return; }
+    if (window.Fusion && Fusion.action(name, act.dataset)) return;
     UI.toast('该操作在演示环境中为占位');
   });
 
@@ -781,12 +767,23 @@
     const h = location.hash.replace(/^#\/?/, '');
     if (!h) return;
     const [route, qs] = h.split('?');
-    if (PAGES[route]) {
-      state.route = route; state.app = wbOf(route); state.ctx = {};
+    if (PAGES[route] || (window.Fusion && Fusion.ownerOf(route))) {
+      const params = {};
       (qs || '').split('&').filter(Boolean).forEach((kv) => {
         const [k, v] = kv.split('=');
-        state.ctx[decodeURIComponent(k)] = decodeURIComponent(v || '');
+        params[decodeURIComponent(k)] = decodeURIComponent(v || '');
       });
+      const owner = window.Fusion && Fusion.ownerOf(route);
+      const view = params.view;
+      delete params.view;
+      if (owner) {
+        state.route = owner;
+        state.app = wbOf(owner);
+        state.ctx = {};
+        Fusion.activate(route === owner && view ? view : route, params);
+        return;
+      }
+      state.route = route; state.app = wbOf(route); state.ctx = params;
       const page = currentPage();
       const app = page.papp || (page.app && page.app !== 'all' ? page.app : state.previewApp);
       if (Preview.SCREENS[app]) {
@@ -813,11 +810,27 @@
   parseHash();
   render();
   window.addEventListener('hashchange', () => {
-    const h = location.hash.replace(/^#\/?/, '').split('?')[0];
+    const raw = location.hash.replace(/^#\/?/, '');
+    const h = raw.split('?')[0];
+    const owner = window.Fusion && Fusion.ownerOf(h);
+    if (owner) {
+      const params = {};
+      (raw.split('?')[1] || '').split('&').filter(Boolean).forEach((kv) => {
+        const [k, v] = kv.split('=');
+        params[decodeURIComponent(k)] = decodeURIComponent(v || '');
+      });
+      const view = params.view;
+      delete params.view;
+      Fusion.activate(h === owner && view ? view : h, params);
+      state.route = owner;
+      state.app = wbOf(owner);
+      state.ctx = {};
+      render();
+      return;
+    }
     if (h && PAGES[h] && h !== state.route) {
       state.route = h;
-      const inNav = h === 'workbench' || (NAV_OF[state.app] || []).some((g) => g.items.some((it) => it.id === h));
-      if (!inNav) state.app = wbOf(h);
+      state.app = wbOf(h);
       render();
     }
   });

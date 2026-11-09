@@ -47,7 +47,7 @@
           { label: '状态', render: (s) => stPill(s) },
           { label: '更新', w: '64px', render: (s) => '<span class="small tnum muted nw">' + E(s.updatedAt.slice(5, 10)) + '</span>' },
           { label: '', align: 'right', render: (s) => '<div class="rowact"><button data-act="openSvc" data-id="' + s.id + '">' + I('chevron', 14) + '</button></div>' }
-        ], rows.map((s) => Object.assign({ _id: s.id }, s))) }) +
+        ], rows.map((s) => Object.assign({ _id: s.id, _act: 'openSvc' }, s))) }) +
         '<div style="height:14px"></div><div class="panel" style="padding:14px 16px"><div class="row">' +
         '<div class="ava a" style="border-radius:10px">' + I('gift', 16) + '</div>' +
         '<div style="flex:1"><b style="font-size:12.5px">实物商品：补剂、耗材与器械</b><div class="small mut" style="margin-top:2px">实物商品与补剂共用一套价格、库存与上下架规则</div></div>' +

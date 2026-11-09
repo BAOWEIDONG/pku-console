@@ -83,7 +83,7 @@
           { label: '在架', render: (s) => '<button class="switch ' + (s.on ? 'on' : '') + '" data-toggle="employee.services.' + UI.ix(h.services, s) + '.on"></button>' },
           { label: '预约量', align: 'right', render: (s) => '<span class="tnum">' + s.sold + '</span>' },
           { label: '', align: 'right', render: (s) => '<div class="rowact"><button data-act="editSvc" data-id="' + s.id + '">' + I('edit', 14) + '</button></div>' }
-        ], list.map((s) => Object.assign({ _id: s.id }, s))) });
+        ], list.map((s) => Object.assign({ _id: s.id, _act: 'editSvc' }, s))) });
     },
     actions: {
       newSvc() {

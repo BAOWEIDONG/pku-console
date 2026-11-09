@@ -377,8 +377,18 @@
       const fus = h.followups.filter((f) => f.profileId === sel.id).slice(0, 4);
       const outs = h.outcomes.filter((o) => o.profileId === sel.id).slice(0, 6);
       const m = sel.metrics || {};
+      const high = h.profiles.filter((p) => p.risk === 'high' || p.risk === 'critical').length;
+      const due = h.followups.filter((f) => f.status === 'due' || f.status === 'overdue').length;
+      const active = h.carePlans.filter((p) => p.status === 'active');
+      const adherence = Math.round(active.reduce((a, b) => a + b.adherence, 0) / (active.length || 1));
       return K.head('健康档案', h.profiles.length + ' 份在管档案 · ' + riskCount('high') + ' 人高风险', 
         K.btn('新增档案', 'newProfile', { icon: 'plus', cls: 'primary' }), 'HEALTH / PROFILE') +
+        K.kpis([
+          { k: '在管人群', v: h.profiles.length, unit: '人', d: '覆盖 6 个部门', icon: 'users' },
+          { k: '高风险', v: high, unit: '人', d: '24h 内首次联系', tone: 'down', icon: 'activity' },
+          { k: '待随访', v: due, unit: '项', d: '含逾期与今日到期', tone: due ? 'down' : 'up', icon: 'clock' },
+          { k: '计划达成', v: adherence, unit: '%', d: active.length + ' 个计划执行中', tone: 'up', icon: 'target' }
+        ]) +
         '<div class="hn-profile-layout">' +
           '<div class="hn-people">' +
             '<div class="hn-people-head">' + K.seg([{ id: 'all', label: '全部' }, { id: 'high', label: '高风险' }, { id: 'medium', label: '中风险' }, { id: 'low', label: '低风险' }], st.filter, 'filterPeople') + '<span>' + list.length + ' 人</span></div>' +
@@ -630,7 +640,7 @@
         '<div class="hn-followboard">' + cols.map((c) => '<div class="hn-fcol ' + c.tone + '"><header><b>' + c.label + '</b><em>' + c.items.length + '</em></header>' +
           c.items.map((f) => {
             const p = profileOf(f.profileId);
-            return '<div class="hn-fcard ' + (f.priority === 'high' ? 'high' : '') + '"><div class="row"><b>' + E(f.type) + '</b><em>' + E(f.due) + '</em></div><span>' + E(p.name || '—') + ' · ' + E(p.dept || '') + ' · ' + E(f.owner) + '</span><p>' + E(f.note || '') + '</p><footer><button data-act="openFollow" data-id="' + f.id + '">' + (f.status === 'completed' ? '查看' : '处理') + '</button></footer></div>';
+            return '<div class="hn-fcard ' + (f.priority === 'high' ? 'high' : '') + '" data-act="openFollow" data-id="' + f.id + '"><div class="row"><b>' + E(f.type) + '</b><em>' + E(f.due) + '</em></div><span>' + E(p.name || '—') + ' · ' + E(p.dept || '') + ' · ' + E(f.owner) + '</span><p>' + E(f.note || '') + '</p><footer><button data-act="openFollow" data-id="' + f.id + '">' + (f.status === 'completed' ? '查看' : '处理') + '</button></footer></div>';
           }).join('') + (!c.items.length ? '<div class="hn-empty">暂无</div>' : '') + '</div>').join('') + '</div>' +
         '<div class="note teal" style="margin-top:14px">' + I('shield', 15) + '<span>心理类随访只记录「是否完成、下次时间」，不记录咨询内容；企业报告只看聚合指标。</span></div>';
     },
@@ -705,7 +715,7 @@
             { label: '风险', render: (e) => riskPill(e.risk) },
             { label: '教练', render: (e) => E(e.coach) },
             { label: '', align: 'right', render: (e) => '<div class="rowact"><button data-act="enrollPlan" data-id="' + e.profileId + '">' + I('target', 14) + '</button><button data-act="enrollProfile" data-id="' + e.profileId + '">' + I('chevron', 14) + '</button></div>' }
-          ], h.enrollments.map((e) => Object.assign({ _id: e.id }, e))) });
+          ], h.enrollments.map((e) => Object.assign({ _id: e.id, _act: 'enrollProfile' }, e))) });
     },
     actions: {
       newProg() {
@@ -847,12 +857,21 @@
   /* ============================================================ 五好会员 */
   P['fg-members'] = {
     app: 'all', grp: 'v.ops', papp: 'employee', title: '五好会员运营', sub: '会员不是一个名单，是五维执行、任务、风险与续约',
+    state: { selected: '', filter: 'all' },
     render() {
       const fg = FG();
       const members = fg.memberProfiles || [];
+      const st = P['fg-members'].state;
       const active = members.filter((m) => m.stage !== '风险暂停' && m.stage !== '低活跃');
       const risk = members.filter((m) => m.risk === 'high');
-      return K.head('五好会员运营', members.length + ' 位会员 · ' + active.length + ' 位活跃 · ' + risk.length + ' 位高风险', 
+      const list = members.filter((m) => st.filter === 'all' || (st.filter === 'active' ? m.stage !== '风险暂停' && m.stage !== '低活跃' : m.risk === 'high'));
+      const sel = members.find((m) => m.id === st.selected) || list[0] || members[0] || {};
+      const score = sel.id ? memberScore(sel.memberId) : 0;
+      const dims = sel.id ? memberDims(sel.memberId) : { eat: 0, sleep: 0, move: 0, mind: 0, check: 0 };
+      const tasks = fg.memberTasks.filter((t) => t.memberId === sel.id).slice(0, 5);
+      const signal = fg.escalations.find((e) => e.memberId === sel.memberId && e.status === 'open');
+      const consent = fg.consents.find((c) => c.memberId === sel.memberId);
+      return K.head('五好会员运营', members.length + ' 位会员 · ' + active.length + ' 位活跃 · ' + risk.length + ' 位高风险',
         K.btn('邀请入会', 'enrollMember', { icon: 'plus', cls: 'primary' }), 'FIVE-GOOD / MEMBER') +
         K.kpis([
           { k: '会员', v: members.length, unit: '人', d: '尊享 1 / 进阶 3 / 基础 2' },
@@ -861,20 +880,43 @@
           { k: '风险', v: risk.length, unit: '人', d: '需健康管理介入', tone: 'down' },
           { k: '续约意向', v: '82', unit: '%', d: '季度调研' }
         ]) +
-        K.panel({ title: '会员台账', sub: '五维分数、任务、授权与下一步动作', flush: true,
-          actions: K.btn('批量提醒', 'batchNudge', { cls: 'ghost sm' }),
-          body: UI.table([
-            { label: '会员', render: (m) => '<div class="cellflex">' + UI.avatar(m.name) + '<div><div class="strong">' + E(m.name) + '</div><div class="small muted">' + E(m.tier) + ' · 教练 ' + E(m.coach) + '</div></div></div>' },
-            { label: '五维', render: (m) => { const d = memberDims(m.memberId); return '<div class="hn-minidims">' + ['eat', 'sleep', 'move', 'mind', 'check'].map((k) => '<i class="' + k + '" style="height:' + Math.max(12, d[k] || 0) + '%"></i>').join('') + '</div>'; } },
-            { label: '总分', align: 'right', render: (m) => '<b class="tnum">' + memberScore(m.memberId) + '</b>' },
-            { label: '任务', render: (m) => '<span class="tnum">' + m.tasksDone + '/' + m.tasksDue + '</span>' },
-            { label: '连续', render: (m) => '<span class="tnum">' + m.streak + ' 天</span>' },
-            { label: '状态', render: (m) => UI.pill(m.stage, m.stage === '优秀' ? 'green' : m.stage === '风险暂停' ? 'red' : m.stage === '低活跃' ? 'amber' : 'blue') },
-            { label: '授权', render: (m) => UI.pill(m.consent === 'signed' ? '已签署' : '待签署', m.consent === 'signed' ? 'green' : 'amber') },
-            { label: '', align: 'right', render: (m) => '<div class="rowact"><button data-act="nudgeMember" data-id="' + m.id + '" title="提醒">' + I('send', 14) + '</button><button data-act="openMember" data-id="' + m.id + '" title="详情">' + I('chevron', 14) + '</button></div>' }
-          ], members.map((m) => Object.assign({ _id: m.id }, m))) });
+        '<div class="hn-profile-layout">' +
+          '<div class="hn-people">' +
+            '<div class="hn-people-head">' + K.seg([{ id: 'all', label: '全部' }, { id: 'active', label: '活跃' }, { id: 'risk', label: '风险' }], st.filter, 'filterMembers') + '<span>' + list.length + ' 人</span></div>' +
+            list.map((m) => '<button class="hn-person ' + (sel.id === m.id ? 'on' : '') + '" data-act="selectMember" data-id="' + m.id + '">' + UI.avatar(m.name) +
+              '<div><b>' + E(m.name) + '</b><span>' + E(m.tier) + ' · ' + E(m.coach) + '</span><em>' + E(m.stage) + ' · 连续 ' + m.streak + ' 天</em></div>' +
+              UI.pill(m.risk === 'high' ? '风险' : m.stage, m.risk === 'high' ? 'red' : m.stage === '优秀' ? 'green' : m.stage === '低活跃' ? 'amber' : 'blue') + '</button>').join('') +
+            (!list.length ? K.empty('没有匹配会员', '切换筛选条件后再看') : '') +
+          '</div>' +
+          '<div class="hn-profile-main">' +
+            '<div class="hn-ph-hero"><div><span class="hn-ph-tag">' + E(sel.tier || '会员') + '</span><h2>' + E(sel.name || '—') + '</h2>' +
+              '<p>' + E(sel.coach || '—') + ' · ' + E(sel.stage || '—') + ' · 最近活跃 ' + E(sel.lastActive || '—') + ' · 入会 ' + E(sel.joined || '—') + '</p>' +
+              '<div class="vchips"><span>' + E(sel.next || '补下一步计划') + '</span><span>' + (consent && consent.status === 'signed' ? '授权已签署' : '授权待签署') + '</span></div></div>' +
+              '<div class="hn-ph-score"><b>' + score + '</b><span>五好指数</span>' + UI.pill(sel.risk === 'high' ? '需干预' : '执行中', sel.risk === 'high' ? 'red' : 'green') + '</div></div>' +
+            '<div class="hn-kv"><div><span>本周任务</span><b>' + sel.tasksDone + ' / ' + sel.tasksDue + '</b></div><div><span>连续打卡</span><b>' + sel.streak + ' 天</b></div><div><span>教练</span><b>' + E(sel.coach) + '</b></div><div><span>会员档位</span><b>' + E(sel.tier) + '</b></div></div>' +
+            '<div class="grid g-2" style="margin-top:14px">' +
+              K.panel({ title: '五维表现', sub: '短板决定下一步任务', body: '<div class="stack" style="gap:9px">' +
+                ['eat', 'sleep', 'move', 'mind', 'check'].map((k) => '<div class="hn-dimrow"><span>' + ({ eat: '吃好', sleep: '睡好', move: '动好', mind: '心好', check: '查好' }[k]) + '</span><div class="progress"><b style="width:' + (dims[k] || 0) + '%"></b></div><b class="tnum">' + (dims[k] || 0) + '</b></div>').join('') + '</div>' }) +
+              K.panel({ title: '本周任务', sub: tasks.length + ' 条', flush: true, body: tasks.length
+                ? '<div style="padding:4px 18px 12px">' + tasks.map((t) => '<div class="listrow"><div class="meta"><b>' + E(t.title) + '</b><span>' + E(t.type) + ' · 截止 ' + E(t.due) + ' · +' + t.points + ' 积分</span></div>' +
+                  UI.pill(t.status === 'done' ? '已完成' : t.status === 'due' ? '待完成' : '已错过', t.status === 'done' ? 'green' : t.status === 'due' ? 'amber' : 'red') + '</div>').join('') + '</div>'
+                : K.empty('本周任务尚未发布', '在会员与任务中发布本周任务') }) +
+            '</div>' +
+            '<div class="grid g-2" style="margin-top:14px">' +
+              K.panel({ title: '风险与下一步', body: signal
+                ? '<div class="note warn"><b>' + E(signal.from) + '信号</b><br>' + E(signal.signal) + '</div><div class="small mut" style="margin-top:8px">建议动作：' + E(signal.action) + '</div>'
+                : '<div class="note teal">当前未命中高风险信号。保持任务节奏，月度报告后回看五维变化。</div>' }) +
+              K.panel({ title: '授权与报告', body: '<div class="hn-kv"><div><span>健康数据</span><b>' + (consent && consent.scopes && consent.scopes.health ? '已授权' : '未授权') + '</b></div><div><span>心理数据</span><b>' + (consent && consent.scopes && consent.scopes.mind ? '已授权' : '未授权') + '</b></div><div><span>企业报告</span><b>' + (consent && consent.scopes && consent.scopes.report ? '可纳入' : '不纳入') + '</b></div><div><span>授权版本</span><b>' + E((consent && consent.version) || '—') + '</b></div></div><div class="note" style="margin-top:10px">心理数据默认不进入企业报告；撤回授权后停止后续采集。</div>' }) +
+            '</div>' +
+            '<div class="hn-ph-actions"><button class="btn primary" data-act="nudgeMember" data-id="' + sel.id + '">' + I('send', 15) + '记录电话回访</button>' +
+              '<button class="btn" data-act="convertPlan" data-id="' + sel.id + '">' + I('target', 15) + '转健康计划</button>' +
+              '<button class="btn" data-act="viewCrm" data-id="' + sel.id + '">' + I('user', 15) + '客户 360</button>' +
+              '<button class="btn ghost" data-act="batchNudge">' + I('users', 15) + '低活跃批量回访</button></div>' +
+          '</div></div>';
     },
     actions: {
+      selectMember(d) { P['fg-members'].state.selected = d.id; App.refresh(true); },
+      filterMembers(d) { P['fg-members'].state.filter = d.id; P['fg-members'].state.selected = ''; App.refresh(); },
       batchNudge() {
         const fg = FG();
         fg.memberProfiles.filter((m) => m.stage === '低活跃').forEach((m) => touch(m.name, '电话', '五好回访', '已记录'));
@@ -882,18 +924,23 @@
       },
       nudgeMember(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
+        if (!m) return;
         touch(m.name, '电话', '五好任务提醒', '已记录');
         UI.toast('已记录对 ' + m.name + ' 的电话提醒'); App.refresh();
       },
-      openMember(d) {
+      openMember(d) { P['fg-members'].actions.selectMember(d); },
+      convertPlan(d) {
         const m = FG().memberProfiles.find((x) => x.id === d.id);
-        const score = memberScore(m.memberId), dims = memberDims(m.memberId);
-        UI.drawer({ title: m.name + ' · 五好会员', sub: m.tier + ' · 教练 ' + m.coach + ' · ' + m.stage, icon: 'user', width: 600,
-          body: '<div class="hn-kv"><div><span>五好总分</span><b>' + score + '</b></div><div><span>本周任务</span><b>' + m.tasksDone + '/' + m.tasksDue + '</b></div><div><span>连续</span><b>' + m.streak + ' 天</b></div><div><span>最近活跃</span><b>' + m.lastActive + '</b></div></div>' +
-            '<div class="formsec"><h4>五维表现</h4>' + ['eat', 'sleep', 'move', 'mind', 'check'].map((k) => '<div class="hn-dimrow"><span>' + ({ eat: '吃好', sleep: '睡好', move: '动好', mind: '心好', check: '查好' }[k]) + '</span><div class="progress"><b style="width:' + (dims[k] || 0) + '%"></b></div><b class="tnum">' + (dims[k] || 0) + '</b></div>').join('') + '</div>' +
-            '<div class="note ' + (m.risk === 'high' ? 'warn' : 'teal') + '">' + (m.risk === 'high' ? '该会员已命中健康风险，建议转健康管理计划并暂停非必要提醒。' : '继续按当前节奏执行；月度报告已生成，可电话告知查看。') + '</div>',
-          extra: '<button class="btn" data-member-plan>转健康计划</button>',
-          mount(n) { const b = n.querySelector('[data-member-plan]'); if (b) b.addEventListener('click', () => { UI.closeOverlay(); P['fg-escalation'].actions.convert({ id: (FG().escalations.find((e) => e.memberId === m.memberId) || {}).id || '' }); }); } });
+        if (!m) return;
+        const signal = FG().escalations.find((e) => e.memberId === m.memberId && e.status === 'open');
+        if (!signal) { UI.toast('当前没有待处理的升级信号，可直接在健康档案建立计划'); return; }
+        P['fg-escalation'].actions.convert({ id: signal.id });
+      },
+      viewCrm(d) {
+        const m = FG().memberProfiles.find((x) => x.id === d.id);
+        if (!m) return;
+        const c = ((Store.db.crm || {}).customers || []).find((x) => x.name === m.name);
+        App.go('crm-360', c ? { id: c.id } : {});
       },
       enrollMember() {
         UI.formDrawer({ title: '邀请入会', sub: '从在管人群中选择，授权后生效', icon: 'users',

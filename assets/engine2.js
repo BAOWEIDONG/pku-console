@@ -137,7 +137,23 @@
           { key: 'svc', label: '服务', type: 'select', options: Store.db.employee.services.slice(0, 6).map((s) => ({ v: s.id, l: s.name })) },
           { key: 'cap', label: '容量', type: 'num', value: 6 }],
         onSave(v) { const k = EN.slotKey(v.date, v.time, v.svc); Store.db.quota[k] = { cap: v.cap, used: 0 }; Store.mark('quota', '放号'); UI.toast('已放号 ' + v.cap + ' 个'); App.refresh(); } }); },
-      editSlot(d) { const k = d.id; const q = Store.db.quota[k]; Store.db.quota[k] = { cap: q.cap + 2, used: q.used }; Store.mark('quota', '加号'); UI.toast('已加 2 个号源'); App.refresh(); }
+      editSlot(d) {
+        const k = d.id;
+        const q = Store.db.quota[k];
+        if (!q) return;
+        const [date, time, svc] = k.split('|');
+        const name = (Store.db.employee.services.find((s) => s.id === svc) || {}).name || svc;
+        UI.formDrawer({ title: '编辑号源', sub: date + ' · ' + time + ' · ' + name, icon: 'calendar',
+          fields: [
+            { key: 'cap', label: '容量', type: 'num', value: q.cap, hint: '该时段最多可预约的人数' },
+            { key: 'used', label: '已占号', type: 'num', value: q.used, hint: '取消订单会自动释放占号' }
+          ],
+          onSave(v) {
+            Store.db.quota[k] = { cap: Math.max(0, Number(v.cap) || 0), used: Math.max(0, Math.min(Number(v.used) || 0, Number(v.cap) || 0)) };
+            Store.mark('quota', '编辑号源');
+            UI.toast('号源已更新'); App.refresh();
+          } });
+      }
     }
   };
 

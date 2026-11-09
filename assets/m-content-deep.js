@@ -132,7 +132,7 @@
         '<div class="bn-grid"><div class="stack">' +
           K.panel({ title: '轮播列表', sub: '拖动排序暂未开放，用上下箭头调整', flush: true, body:
             list.length ? '<div class="bn-list" style="padding:12px 14px">' + list.map((b, i) =>
-            '<div class="bn-card ' + (b.on === false ? 'off' : '') + '">' +
+            '<div class="bn-card ' + (b.on === false ? 'off' : '') + '" data-act="bnEdit" data-id="' + b.id + '">' +
               '<div class="bn-thumb"><img src="' + E(b.image || '') + '" alt=""><span class="n">' + (b.order || i + 1) + '</span></div>' +
               '<div class="bn-info"><b>' + E(b.title) + '</b><span>' + E(b.sub || '未填副标题') + '</span>' +
                 '<div class="bn-meta"><span class="pill ' + (b.on === false ? 'grey' : 'green') + '">' + (b.on === false ? '未上线' : '投放中') + '</span>' +

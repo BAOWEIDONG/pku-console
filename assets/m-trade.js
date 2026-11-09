@@ -67,7 +67,7 @@
           { label: '状态', render: (r) => stPill(r.status) },
           { label: '时间', render: (r) => '<span class="small tnum muted">' + E(r.at.slice(0, 10)) + '</span>' },
           { label: '', align: 'right', render: (r) => '<div class="rowact"><button data-act="openOrder" data-id="' + r.id + '">' + I('chevron', 14) + '</button></div>' }
-        ], rows.map((r) => Object.assign({ _id: r.id }, r)), { emptyTitle: '没有符合条件的订单' }) });
+        ], rows.map((r) => Object.assign({ _id: r.id, _act: 'openOrder' }, r)), { emptyTitle: '没有符合条件的订单' }) });
     },
     actions: {
       kindTab(d) { P['trd-orders'].state.kind = d.id; App.refresh(); },

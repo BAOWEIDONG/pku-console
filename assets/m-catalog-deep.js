@@ -76,7 +76,7 @@
   function openEditor(g) {
     ensure();
     const isNew = !g.id;
-    let images = (g.images || []).slice();
+    let images = (g.images && g.images.length ? g.images : ['']).slice();
     let detail = JSON.parse(JSON.stringify(g.detail || []));
     let on = g.on !== false;
     const cats = ['蛋白补充', '基础营养', '心血管', '肠道', '骨骼', '睡眠', '女性营养', '实物'];
@@ -235,7 +235,7 @@
         K.toolbar(K.tabs(cats.map((c) => ({ id: c, label: c, n: c === '全部' ? all.length : all.filter((g) => g.cat === c).length })), st.cat, 'gdCat'),
           '<div class="minisearch">' + I('search', 13) + '<input placeholder="搜索商品名称 / 编码" data-live-filter="goods"></div>') +
         '<div class="gd-grid">' + list.map((g) =>
-          '<article class="gd-card" data-filter-item="goods" data-text="' + E(g.name + ' ' + (g.code || '') + ' ' + (g.cat || '')) + '">' +
+          '<article class="gd-card" data-filter-item="goods" data-text="' + E(g.name + ' ' + (g.code || '') + ' ' + (g.cat || '')) + '" data-act="gdEdit" data-id="' + g.id + '">' +
             '<div class="gd-cover"><img src="' + E((g.images || [])[0] || '') + '" alt="">' +
               '<span class="gd-state"><span class="pill ' + (g.on ? 'green' : 'grey') + '">' + (g.on ? '在售' : '下架') + '</span></span>' +
               '<span class="gd-count">' + ((g.images || []).length) + ' 张图 · ' + ((g.specs || []).length || 1) + ' 规格</span></div>' +

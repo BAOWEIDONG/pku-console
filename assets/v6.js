@@ -242,7 +242,7 @@
   /* ============================================================== MESSAGES */
   P['lib-messages'] = {
     app: 'all', title: '消息模板', sub: '短信、企微、站内信统一文案与变量',
-    grp: 'shared.content', papp: 'employee', preview: 'emp-home',
+    grp: 'shared.content', papp: 'employee', preview: 'emp-home', hideNav: true,
     state: { id: 'mt1' },
     render() {
       ensure();
@@ -333,7 +333,7 @@
   /* ============================================================== JOURNEYS */
   P['lib-journeys'] = {
     app: 'all', title: '触达旅程', sub: '按人群与事件自动编排，多步触达不再手工群发',
-    grp: 'shared.content', papp: 'employee', preview: 'emp-home',
+    grp: 'shared.content', papp: 'employee', preview: 'emp-home', hideNav: true,
     render() {
       ensure();
       const list = dbx().shared.journeys;

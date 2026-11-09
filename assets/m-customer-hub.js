@@ -390,27 +390,50 @@
     }
   };
 
-  /* ================================================================ 客户 360 */
+  /* ================================================================ 客户中心（总览 + 列表 + 360 同屏） */
   P['crm-360'] = {
-    app: 'all', title: '客户 360', sub: '一个人在所有渠道、所有服务里的完整使用痕迹',
-    grp: 'v.ops', state: { sel: '', tab: 'overview' },
+    app: 'all', title: '客户中心', sub: '总览、客户列表与 360 档案同屏；选中一个人，直接看服务、健康、权益与时间线',
+    grp: 'v.ops', state: { sel: '', tab: 'overview', source: '', life: '', owner: '' },
     render(ctx) {
       ensure();
       const st = P['crm-360'].state;
       if (ctx && ctx.id) st.sel = ctx.id;
-      const list = ensure().customers;
-      const sel = customerOf(st.sel || list[0].id);
+      const all = ensure().customers;
+      const active = all.filter((c) => c.lifecycle === 'active' || c.lifecycle === 'highvalue');
+      const high = all.filter((c) => c.lifecycle === 'highvalue');
+      const risk = all.filter((c) => c.lifecycle === 'risk' || c.lifecycle === 'dormant');
+      const pendingBookings = (((db().employee || {}).bookings) || []).filter((b) => b.status === 'pending');
+      const owners = Array.from(new Set(all.map((c) => c.owner))).filter(Boolean);
+      const allowed = all.filter((c) => (!st.source || (c.channels || [c.source]).indexOf(st.source) >= 0) && (!st.life || c.lifecycle === st.life) && (!st.owner || c.owner === st.owner));
+      const list = allowed.length ? allowed : all;
+      const sel = list.find((c) => c.id === st.sel || c.name === st.sel) || list[0];
       st.sel = sel.id;
       const traces = tracesOf(sel);
       const stt = statOf(sel);
       const tab = st.tab || 'overview';
       const tabs = [['overview', '概览'], ['profile', '个人资料'], ['service', '服务与预约'], ['health', '健康管理'], ['trade', '订单与权益'], ['content', '内容与互动'], ['timeline', '全部时间线']];
-      return K.head('客户 360', '服务、体检、计划、随访、权益、订单与内容互动，都回到同一个人',
-        K.btn('返回客户列表', 'go', { id: 'crm-customer', icon: 'users' }) +
-        K.btn('导出客户档案', 'crmExport', { icon: 'download', cls: 'primary' }), 'CUSTOMER / 360') +
+      const sourceCounts = SOURCES.map((s) => ({ s, n: all.filter((c) => (c.channels || [c.source]).indexOf(s.id) >= 0).length }));
+      return K.head('客户中心', '总览、客户列表与 360 档案同屏；选中一个人，直接看服务、健康、权益与时间线',
+        K.btn('新建客户', 'crmNew', { icon: 'plus' }) + K.btn('导出客户', 'crmExport', { icon: 'download', cls: 'primary' }), 'CUSTOMER / CENTER') +
+        K.kpis([
+          { k: '客户总数', v: all.length, unit: '人', d: '本月新增 ' + all.filter((c) => c.firstAt >= '2026-11-01').length + ' 人', icon: 'users' },
+          { k: '活跃 / 高价值', v: active.length, unit: '人', d: '高价值 ' + high.length + ' 人', icon: 'activity', tone: 'up' },
+          { k: '沉默 / 风险', v: risk.length, unit: '人', d: '建议安排人工回访', icon: 'clock', tone: 'down' },
+          { k: '待确认预约', v: pendingBookings.length, unit: '单', d: '需尽快确认时段与机构', icon: 'calendar', tone: 'down' }
+        ]) +
+        '<div class="crm-filterbar crm-fuse-filter">' +
+          '<div class="crm-source-tabs"><button class="' + (!st.source ? 'on' : '') + '" data-act="crmSource" data-id="">全部 ' + all.length + '</button>' +
+            sourceCounts.map((x) => '<button class="' + (st.source === x.s.id ? 'on' : '') + '" data-act="crmSource" data-id="' + x.s.id + '"><i style="background:' + x.s.color + '"></i>' + x.s.short + ' ' + x.n + '</button>').join('') +
+          '</div>' +
+          '<div class="crm-filter-right">' + K.seg([{ id: '', label: '全部阶段' }].concat(LIFE.map((l) => ({ id: l.id, label: l.label }))), st.life, 'crmLifeCenter') + '</div>' +
+        '</div>' +
+        '<div class="crm-owner-line"><span>负责人</span>' +
+          '<button class="' + (!st.owner ? 'on' : '') + '" data-act="crmOwnerCenter" data-id="">全部</button>' +
+          owners.map((o) => '<button class="' + (st.owner === o ? 'on' : '') + '" data-act="crmOwnerCenter" data-id="' + E(o) + '">' + E(o) + '</button>').join('') +
+          '<em>当前显示 ' + list.length + ' / ' + all.length + ' 位</em></div>' +
         '<div class="crm360">' +
         '<aside class="crm360-side"><div class="crm360-search">' + I('search', 14) + '<input placeholder="搜索姓名 / 手机 / 企业" data-live-filter="c360x"></div>' +
-          '<div class="crm360-count">' + list.length + ' 位客户 · 全部渠道</div>' +
+          '<div class="crm360-count">' + list.length + ' 位客户 · ' + (st.source ? src(st.source).label : '全部来源') + '</div>' +
           '<div class="crm360-list">' + list.slice().sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1)).map((c) =>
             '<button class="crm-list-item ' + (c.id === sel.id ? 'on' : '') + '" data-act="crmPick" data-id="' + E(c.name) + '" data-filter-item="c360x" data-text="' + E(c.name + ' ' + c.phone + ' ' + c.company + ' ' + c.dept) + '">' +
               UI.avatar(c.name) + '<div class="ci-main"><b>' + E(c.name) + '</b><span>' + E(c.company || '') + ' · ' + E(c.dept || '—') + '</span></div>' +
@@ -437,9 +460,13 @@
     actions: {
       crmPick(d) { P['crm-360'].state.sel = d.id; P['crm-360'].state.tab = 'overview'; App.refresh(); },
       crmTab(d) { P['crm-360'].state.tab = d.id; App.refresh(); },
+      crmSource(d) { P['crm-360'].state.source = d.id; P['crm-360'].state.sel = ''; App.refresh(); },
+      crmLifeCenter(d) { P['crm-360'].state.life = d.id; P['crm-360'].state.sel = ''; App.refresh(); },
+      crmOwnerCenter(d) { P['crm-360'].state.owner = d.id; P['crm-360'].state.sel = ''; App.refresh(); },
       crmGrant() { grantTo(customerOf(P['crm-360'].state.sel)); },
       crmPlan() { planFor(customerOf(P['crm-360'].state.sel)); },
       crmFollow() { followFor(customerOf(P['crm-360'].state.sel)); },
+      crmNew() { P['crm-customer'].actions.crmNew(); },
       crmExport() { P['crm-customer'].actions.crmExport(); }
     }
   };

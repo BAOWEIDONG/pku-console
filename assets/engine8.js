@@ -133,7 +133,7 @@
 
   /* ---------------- 触达中心 ---------------- */
   P['msg-center'] = {
-    app: 'all', grp: 'shared.content', papp: 'employee', title: '触达中心', sub: '企微 / 短信 / 站内信统一编排', preview: 'emp-home',
+    app: 'all', grp: 'shared.content', papp: 'employee', title: '触达中心', sub: '企微 / 短信 / 站内信统一编排', preview: 'emp-home', hideNav: true,
     render() {
       EN.ensureOps2();
       const list = Store.db.campaigns;

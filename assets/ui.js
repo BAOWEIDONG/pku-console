@@ -228,13 +228,19 @@
     cols.forEach((c) => { h += '<th style="' + (c.w ? 'width:' + c.w + ';' : '') + (c.align ? 'text-align:' + c.align : '') + '">' + c.label + '</th>'; });
     h += '</tr></thead><tbody>';
     rows.forEach((r) => {
-      h += '<tr' + (r._id ? ' data-row="' + r._id + '"' : '') +
-        (r._act ? ' data-act="' + r._act + '" data-id="' + r._id + '" class="row-click"' : '') + '>';
-      cols.forEach((c) => {
+      const rid = r._id || r.id;
+      const cells = cols.map((c) => {
         const v = typeof c.render === 'function' ? c.render(r) : r[c.key];
-        h += '<td style="' + (c.align ? 'text-align:' + c.align : '') + '">' + (v == null ? '' : v) + '</td>';
+        return '<td style="' + (c.align ? 'text-align:' + c.align : '') + '">' + (v == null ? '' : v) + '</td>';
       });
-      h += '</tr>';
+      let rowAct = r._act;
+      if (!rowAct && rid) {
+        const acts = [...(cells[cells.length - 1] || '').matchAll(/data-act="([^"]+)"/g)].map((m) => m[1]);
+        rowAct = acts.find((a) => /^(view|open|detail|edit|show|manage|go|config)/i.test(a));
+      }
+      h += '<tr' + (rid ? ' data-row="' + rid + '"' : '') +
+        (rowAct ? ' data-act="' + rowAct + '" data-id="' + rid + '" class="row-click"' : '') + '>';
+      h += cells.join('') + '</tr>';
     });
     return h + '</tbody></table></div>';
   }

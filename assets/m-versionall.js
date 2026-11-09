@@ -269,7 +269,7 @@
     preview: 'student-home',
     render() {
       const v = V();
-      const rows = v.students.map((s) => Object.assign({ _id: s.id }, s));
+      const rows = v.students.map((s) => Object.assign({ _id: s.id, _act: 'viewStudent' }, s));
       return K.head('学员管理', '第 7 期 48 人 · 高风险 1 人 · 暂停 1 人',
         K.toolbar(K.search('搜索姓名 / 手机号', 'studentSearch') + K.seg([{ id: 'all', label: '全部' }, { id: 'high', label: '高风险' }, { id: 'paused', label: '已暂停' }], 'all', 'stuFilter'),
           K.btn('导出名单', 'exportStudents', { icon: 'download' }) + K.btn('邀请学员', 'invite', { icon: 'plus', cls: 'primary' }))) +
@@ -831,7 +831,7 @@
           { label: '状态', render: (c) => UI.statusPill(c.status) },
           { label: '物流', render: (c) => c.tracking ? '<span class="tnum small">' + E(c.tracking) + '</span>' : '<span class="muted">—</span>' },
           { label: '', align: 'right', render: (c) => '<div class="rowact"><button data-act="shipClaim" data-id="' + c.id + '">' + I('truck', 14) + '</button></div>' }
-        ], list.map((c) => Object.assign({ _id: c.id }, c))) });
+        ], list.map((c) => Object.assign({ _id: c.id, _act: 'shipClaim' }, c))) });
     },
     actions: {
       shipClaim(d) {
@@ -881,7 +881,7 @@
           { label: '兑换时间', render: (e) => '<span class="small tnum muted">' + E(e.date) + '</span>' },
           { label: '状态', render: (e) => UI.statusPill(e.status) },
           { label: '', align: 'right', render: (e) => '<div class="rowact"><button data-act="viewEx" data-id="' + e.id + '">' + I('eye', 14) + '</button></div>' }
-        ], list.map((e) => Object.assign({ _id: e.id }, e))) });
+        ], list.map((e) => Object.assign({ _id: e.id, _act: 'viewEx' }, e))) });
     },
     actions: {
       exportEx() { UI.toast('兑换台账已导出'); },
