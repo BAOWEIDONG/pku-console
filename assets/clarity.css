@@ -1,0 +1,73 @@
+/* ==========================================================================
+   clarity.css — 清晰度增强层（最后加载，只提对比度，不改布局不改风格）
+   目标：文字更深、面板实底、边框更实、画布与卡片分层明确
+   ========================================================================== */
+
+/* ---- 全局变量：文字整体加深一档 ---- */
+:root {
+  --ink: #0a1524;          /* 主文字：更深 */
+  --ink-2: #2e3c52;        /* 次级文字：#46536b → 加深 */
+  --ink-3: #5a6a82;        /* 辅助文字：#7c8aa0 → 明显加深 */
+  --ink-4: #7d8ca3;
+  --line: #d7e1ef;         /* 边框更实 */
+  --paper: #f2f5fa;        /* 画布与白卡拉开一层 */
+}
+
+/* ---- 画布与页面：实底浅灰蓝，让白卡浮出来 ---- */
+body, .canvas { background: #f2f5fa !important; }
+.page { color: var(--ink) !important; }
+
+/* ---- 面板：实底白 + 更实的边框 + 更清晰的阴影 ---- */
+.panel, .card, .hub-card, .ws-picker {
+  background: #ffffff !important;
+  border: 1px solid #d7e1ef !important;
+  box-shadow: 0 1px 3px rgba(16, 42, 82, .07), 0 6px 18px -12px rgba(16, 42, 82, .16) !important;
+}
+.panel-h h3 { color: var(--ink) !important; font-weight: 700 !important; }
+.panel-h .sub { color: #5a6a82 !important; }
+
+/* ---- 顶栏：实底白，去掉半透明毛玻璃造成的"看不清" ---- */
+.topbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #d7e1ef !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.crumb { color: #5a6a82 !important; }
+.crumb b { color: #0a1524 !important; font-weight: 600 !important; }
+
+/* ---- 侧栏：实底 + 文字加深 ---- */
+.subnav { background: #f7fafe !important; border-right: 1px solid #d5e2f2 !important; }
+.sn-item { color: #33445e !important; font-weight: 500 !important; }
+.sn-item:hover { background: #e3edfb !important; color: #0a1524 !important; }
+.sn-item.on { background: #dbe9ff !important; color: #0a4fc0 !important; font-weight: 700 !important; }
+.sn-h { color: #33475f !important; }
+.sn-h-t { color: #33475f !important; }
+.side-name b { color: #0a1524 !important; }
+.side-name em { color: #5a6a82 !important; }
+
+/* ---- 正文常用文字工具类 ---- */
+.mut { color: #5a6a82 !important; }
+.small { color: inherit; }
+h1, h2, h3, h4, b { color: var(--ink); }
+td, th { color: #1c2a3f !important; }
+th { color: #5a6a82 !important; }
+
+/* ---- 表格：表头加底色，行边界更清楚 ---- */
+table { border-collapse: separate; border-spacing: 0; }
+th { background: #f1f5fb !important; font-weight: 600 !important; }
+
+/* ---- 按钮：主按钮更实，次要按钮文字加深 ---- */
+.btn { color: #1c2a3f; }
+.btn.primary, .btn.p { color: #fff !important; }
+
+/* ---- 输入框：实底白、边框更实 ---- */
+.input, input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  background: #fff !important;
+  border: 1px solid #c9d6e8 !important;
+  color: #0a1524 !important;
+}
+input::placeholder, textarea::placeholder { color: #93a3b8 !important; }
+
+/* ---- 状态 pill：底色加浓一档，保证可读 ---- */
+.pill { font-weight: 600 !important; }
