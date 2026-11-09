@@ -129,6 +129,137 @@
   S.price = { needApproval: true, floorGuard: true, tierDiscount: false };
   S.settle.byHead = true; S.settle.warn = true; S.settle.auto = false;
 
+  /* ------------------------------------------------------ 上下游：甲方 / 乙方 */
+  S.upstream = {
+    companies: [
+      {
+        id: 'bc1', name: '示例科技有限公司', short: '示例科技', industry: '互联网 / 科技', employees: 1780, city: '北京 · 海淀',
+        contact: '周敏', phone: '138****6621', owner: '王雪', source: 'brand', level: 'A', status: 'active',
+        tags: ['年度体检', '慢病管理', '五好生活'], settlePartner: '示例科技有限公司',
+        note: '总部与两个研发中心统一采购员工健康福利，重点在体检后管理和五好生活续约。',
+        contract: { no: 'HT-2026-001', name: '2026 员工健康福利', start: '2026-01-01', end: '2026-12-31', amount: 1280000, used: 428600, people: 1780, settlement: '月结 30 天', renewal: '2026-12-01', services: ['年度体检', '慢病管理', '五好生活'] }
+      },
+      {
+        id: 'bc2', name: '海辰医疗', short: '海辰医疗', industry: '医疗器械', employees: 860, city: '北京 · 大兴',
+        contact: '张曼', phone: '186****0921', owner: '客户成功部', source: 'brand', level: 'A', status: 'renewing',
+        tags: ['年度体检', '检后解读'], settlePartner: '海辰医疗',
+        note: '体检季集中在 11 月，HR 关注报告解读和异常复查闭环。',
+        contract: { no: 'HT-2026-018', name: '年度体检与检后管理', start: '2026-03-01', end: '2027-02-28', amount: 780000, used: 326000, people: 860, settlement: '季结 45 天', renewal: '2026-12-15', services: ['年度体检', '检后解读'] }
+      },
+      {
+        id: 'bc3', name: '亦庄科技', short: '亦庄科技', industry: '智能制造', employees: 1200, city: '北京 · 亦庄',
+        contact: '李睿', phone: '139****7710', owner: '张伟', source: 'web', level: 'B', status: 'active',
+        tags: ['企业医务室', '急救培训'], settlePartner: '亦庄科技',
+        note: '园区医务室与急救培训打包采购，正在评估扩大到职业健康。',
+        contract: { no: 'HT-2026-023', name: '园区医务室与急救培训', start: '2026-04-01', end: '2027-03-31', amount: 960000, used: 210000, people: 1200, settlement: '月结 30 天', renewal: '2027-02-01', services: ['企业医务室', '急救培训'] }
+      },
+      {
+        id: 'bc4', name: '青禾资本', short: '青禾资本', industry: '投资 / 金融', employees: 260, city: '北京 · 朝阳',
+        contact: '王宁', phone: '137****2048', owner: '客户成功部', source: 'brand', level: 'A', status: 'active',
+        tags: ['企业家体检', '五好生活'], settlePartner: '青禾资本',
+        note: '合伙人层购买企业家体检，员工层试点五好生活。',
+        contract: { no: 'HT-2026-031', name: '合伙人健康与员工五好试点', start: '2026-06-01', end: '2027-05-31', amount: 420000, used: 186000, people: 260, settlement: '季结 45 天', renewal: '2027-03-01', services: ['企业家体检', '五好生活'] }
+      },
+      {
+        id: 'bc5', name: '博远制造', short: '博远制造', industry: '高端制造', employees: 2400, city: '天津 · 滨海',
+        contact: '郑然', phone: '151****6630', owner: '周琳', source: 'offline', level: 'B', status: 'risk',
+        tags: ['职业健康', '急救培训'], settlePartner: '博远制造',
+        note: '职业健康体检覆盖不足，EHS 要求在安全月前补齐高风险岗位复查。',
+        contract: { no: 'HT-2026-009', name: '职业健康与应急保障', start: '2026-02-01', end: '2027-01-31', amount: 1560000, used: 642000, people: 2400, settlement: '月结 45 天', renewal: '2026-11-20', services: ['职业健康', '急救培训'] }
+      },
+      {
+        id: 'bc6', name: '南城银行', short: '南城银行', industry: '金融 / 银行', employees: 3200, city: '北京 · 西城',
+        contact: '孙禾', phone: '158****3362', owner: '王雪', source: 'offline', level: 'A', status: 'active',
+        tags: ['年度体检', '心理 EAP', '五好生活'], settlePartner: '北京某银行工会',
+        note: '工会统一采购年度体检、心理 EAP 与五好生活，员工覆盖率高。',
+        contract: { no: 'HT-2026-002', name: '员工体检与心理关怀', start: '2026-01-01', end: '2026-12-31', amount: 2080000, used: 810000, people: 3200, settlement: '季结 45 天', renewal: '2026-12-20', services: ['年度体检', '心理 EAP', '五好生活'] }
+      },
+      {
+        id: 'bc7', name: '远望设计', short: '远望设计', industry: '设计 / 创意', employees: 180, city: '北京 · 朝阳',
+        contact: '陈思远', phone: '133****8819', owner: '赵医生', source: 'exam', level: 'B', status: 'renewing',
+        tags: ['企业家体检'], settlePartner: '远望设计',
+        note: '合伙人团队在体检活动后咨询年度健康管理，等待续约方案。',
+        contract: { no: 'HT-2026-044', name: '合伙人年度体检', start: '2026-09-01', end: '2027-08-31', amount: 260000, used: 78000, people: 180, settlement: '月结 30 天', renewal: '2027-01-10', services: ['企业家体检'] }
+      }
+    ],
+    providers: [
+      {
+        id: 'sp1', name: '北京大学国际医院 · 健康管理中心', short: '北大国际医院', type: '体检机构',
+        aliases: ['北京大学国际医院 · 健康管理中心', '北大国际医院'], city: '北京 · 昌平', qualification: '三级综合医院', license: '医疗机构执业许可证 PDY110108',
+        contact: '李主任', phone: '010-6900****', owner: '健康管理部', status: 'active', level: 'A', rating: 4.9, onTime: 98, capacity: 220,
+        settlement: '月结 30 天', clients: ['bc1', 'bc2', 'bc3', 'bc6'], cats: ['体检', '报告解读', '绿色通道'],
+        note: '年度体检与异常复查主履约机构，报告解读能力稳定。',
+        contract: { no: 'PS-2026-011', name: '体检与报告解读服务', start: '2026-01-01', end: '2026-12-31', amount: 860000, bank: '工商银行北京分行', taxNo: '91110108MA01****' }
+      },
+      {
+        id: 'sp2', name: '北大医疗康复医院', short: '北大医疗康复医院', type: '康复机构',
+        aliases: ['北大医疗康复医院'], city: '北京 · 朝阳', qualification: '三级康复医院', license: '医疗机构执业许可证 PDY110105',
+        contact: '陈院长', phone: '010-5900****', owner: '健康管理部', status: 'active', level: 'A', rating: 4.8, onTime: 96, capacity: 90,
+        settlement: '月结 30 天', clients: ['bc1', 'bc5'], cats: ['康复评估', '慢病干预', '运动处方'],
+        note: '承接慢病管理与术后康复转介，档期相对紧张。',
+        contract: { no: 'PS-2026-014', name: '康复评估与干预服务', start: '2026-02-01', end: '2027-01-31', amount: 420000, bank: '建设银行北京分行', taxNo: '91110105MA02****' }
+      },
+      {
+        id: 'sp3', name: '北大医疗互联网医院', short: '互联网医院', type: '线上医疗',
+        aliases: ['北大医疗互联网医院', '线上视频面诊'], city: '全国', qualification: '互联网医院执业许可', license: '互联网医院执业许可证',
+        contact: '赵医生', phone: '400-820-****', owner: '就医服务中心', status: 'active', level: 'A', rating: 4.7, onTime: 94, capacity: 300,
+        settlement: '月结 15 天', clients: ['bc1', 'bc3', 'bc6'], cats: ['视频问诊', '报告解读', '处方续方'],
+        note: '覆盖全国员工，晚间问诊需求高。',
+        contract: { no: 'PS-2026-020', name: '线上问诊与报告解读', start: '2026-01-01', end: '2026-12-31', amount: 360000, bank: '招商银行北京分行', taxNo: '91110108MA03****' }
+      },
+      {
+        id: 'sp4', name: '北京华大医学检验所', short: '华大检验', type: '第三方检验',
+        aliases: ['北京华大医学检验所'], city: '北京 · 顺义', qualification: '医学检验实验室', license: '医疗机构执业许可证 JY110113',
+        contact: '王老师', phone: '010-8049****', owner: '健康管理中心', status: 'active', level: 'B', rating: 4.6, onTime: 92, capacity: 500,
+        settlement: '月结 30 天', clients: ['bc1', 'bc5'], cats: ['基因检测', '专项检验', '肿瘤早筛'],
+        note: '专项检验外包方，报告时效稳定但异常复核需加强。',
+        contract: { no: 'PS-2026-026', name: '专项检验外包', start: '2026-03-01', end: '2027-02-28', amount: 280000, bank: '中国银行北京分行', taxNo: '91110113MA04****' }
+      },
+      {
+        id: 'sp5', name: '京东健康药品配送', short: '京东健康配送', type: '药品配送',
+        aliases: ['京东健康药品配送'], city: '全国', qualification: '药品经营许可证', license: '互联网药品交易服务资格',
+        contact: '刘经理', phone: '400-606-****', owner: '药事服务组', status: 'active', level: 'B', rating: 4.8, onTime: 97, capacity: 800,
+        settlement: '月结 15 天', clients: ['bc1', 'bc6'], cats: ['处方配送', '冷链配送', '用药提醒'],
+        note: '处方药与营养品配送主通道，冷链覆盖一二线城市。',
+        contract: { no: 'PS-2026-030', name: '药品与营养品配送', start: '2026-01-01', end: '2026-12-31', amount: 240000, bank: '中信银行北京分行', taxNo: '91110105MA05****' }
+      },
+      {
+        id: 'sp6', name: '北大医疗健康优选供应链', short: '健康优选供应链', type: '实物供应商',
+        aliases: ['北大医疗健康优选供应链'], city: '北京 · 大兴', qualification: '食品经营许可证', license: '食品经营许可证 JY111150',
+        contact: '孙经理', phone: '010-6788****', owner: '商品运营组', status: 'active', level: 'A', rating: 4.7, onTime: 95, capacity: 1200,
+        settlement: '月结 30 天', clients: ['bc1', 'bc4', 'bc6'], cats: ['营养品', '健康食品', '礼盒'],
+        note: '实物商品主供货商，负责商品资质、库存与售后。',
+        contract: { no: 'PS-2026-033', name: '健康商品供货与履约', start: '2026-01-01', end: '2026-12-31', amount: 520000, bank: '农业银行北京分行', taxNo: '91110115MA06****' }
+      },
+      {
+        id: 'sp7', name: '心屿心理咨询中心', short: '心屿心理', type: '心理服务',
+        aliases: ['心屿心理咨询中心'], city: '北京 · 东城', qualification: '心理咨询机构备案', license: '心理咨询服务备案',
+        contact: '李咨询师', phone: '010-6522****', owner: 'EAP 项目组', status: 'active', level: 'A', rating: 4.9, onTime: 99, capacity: 60,
+        settlement: '月结 30 天', clients: ['bc1', 'bc6'], cats: ['EAP 咨询', '危机干预', '心理测评'],
+        note: '心理数据隔离要求高，只向企业输出匿名化报告。',
+        contract: { no: 'PS-2026-037', name: 'EAP 心理咨询与危机干预', start: '2026-01-01', end: '2026-12-31', amount: 300000, bank: '北京银行', taxNo: '91110101MA07****' }
+      },
+      {
+        id: 'sp8', name: '安泰急救培训中心', short: '安泰急救', type: '培训机构',
+        aliases: ['安泰急救培训中心'], city: '北京 · 丰台', qualification: '急救培训资质', license: '红十字急救培训合作机构',
+        contact: '周老师', phone: '010-6388****', owner: '企业服务部', status: 'active', level: 'B', rating: 4.8, onTime: 97, capacity: 40,
+        settlement: '按场次结算', clients: ['bc3', 'bc5'], cats: ['急救培训', 'AED 配置', '应急演练'],
+        note: '按场次排课，安全月与年度演练集中履约。',
+        contract: { no: 'PS-2026-041', name: '急救培训与应急演练', start: '2026-02-01', end: '2027-01-31', amount: 180000, bank: '交通银行北京分行', taxNo: '91110106MA08****' }
+      }
+    ],
+    payables: [
+      { id: 'AP20261001', providerId: 'sp1', provider: '北京大学国际医院 · 健康管理中心', period: '2026-10', orders: 326, amount: 168400, status: 'pending', due: '2026-11-25' },
+      { id: 'AP20261002', providerId: 'sp2', provider: '北大医疗康复医院', period: '2026-10', orders: 88, amount: 62300, status: 'approved', due: '2026-11-28' },
+      { id: 'AP20261003', providerId: 'sp3', provider: '北大医疗互联网医院', period: '2026-10', orders: 120, amount: 36000, status: 'pending', due: '2026-11-20' },
+      { id: 'AP20261004', providerId: 'sp4', provider: '北京华大医学检验所', period: '2026-10', orders: 142, amount: 38600, status: 'overdue', due: '2026-11-08' },
+      { id: 'AP20261005', providerId: 'sp5', provider: '京东健康药品配送', period: '2026-10', orders: 214, amount: 18900, status: 'paid', due: '2026-11-15' },
+      { id: 'AP20261006', providerId: 'sp6', provider: '北大医疗健康优选供应链', period: '2026-10', orders: 96, amount: 42800, status: 'pending', due: '2026-11-30' },
+      { id: 'AP20261007', providerId: 'sp7', provider: '心屿心理咨询中心', period: '2026-10', orders: 64, amount: 25600, status: 'pending', due: '2026-11-26' },
+      { id: 'AP20261008', providerId: 'sp8', provider: '安泰急救培训中心', period: '2026-10', orders: 18, amount: 14200, status: 'paid', due: '2026-11-18' }
+    ]
+  };
+
   /* 订单统一索引：预约 / 兑换 / 领奖 */
   S.orderIndex = { updated: '2026-11-08 09:00' };
 })();

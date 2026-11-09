@@ -321,7 +321,7 @@
     const f = (x) => {
       const k = 'data-f="' + x.key + '"';
       if (x.type === 'select') return '<div class="field"><label>' + esc(x.label) + '</label><select class="input" ' + k + '>' +
-        (x.options || []).map((op) => { const v = typeof op === 'string' ? op : op.v, l = typeof op === 'string' ? op : op.l; return '<option value="' + esc(v) + '">' + esc(l) + '</option>'; }).join('') + '</select></div>';
+        (x.options || []).map((op) => { const v = typeof op === 'string' ? op : op.v, l = typeof op === 'string' ? op : op.l; return '<option value="' + esc(v) + '"' + (String(v) === String(x.value) ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select></div>';
       if (x.type === 'num') return '<div class="field"><label>' + esc(x.label) + '</label><input class="input tnum" type="number" ' + k + ' value="' + (x.value == null ? 0 : x.value) + '"></div>';
       if (x.type === 'area') return '<div class="field"><label>' + esc(x.label) + '</label><textarea class="input" rows="' + (x.rows || 3) + '" ' + k + '>' + esc(x.value || '') + '</textarea></div>';
       if (x.type === 'bool') return '<div class="row" style="justify-content:space-between;padding:9px 0"><div style="font-size:12.5px">' + esc(x.label) + '</div><button class="switch ' + (x.value ? 'on' : '') + '" data-f="' + x.key + '" data-bool="1"></button></div>';

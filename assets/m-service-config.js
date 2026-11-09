@@ -108,6 +108,9 @@
             UI.fSelect({ label: '所属模块', value: s.mod, options: H().modules.map((m) => ({ v: m.id, l: m.name })), path: 'employee.services.' + i + '.mod' }) + '</div>' +
           '<div class="frow">' + UI.fSelect({ label: '履约范围', value: s.scope, options: ['属地履约', '全国履约'], path: 'employee.services.' + i + '.scope' }) +
             UI.fInput({ label: '服务标签', value: (s.tags || []).join(' / '), hint: '用 / 分隔，最多 3 个', path: 'employee.services.' + i + '.tagsText' }) + '</div>' +
+          UI.fSelect({ label: '履约服务商（乙方）', value: s.providerId || '', hint: '决定履约方、服务质量和应付结算归属',
+            options: ((Store.db.upstream && Store.db.upstream.providers) || []).map((p) => ({ v: p.id, l: p.short + ' · ' + p.type })),
+            path: 'employee.services.' + i + '.providerId' }) +
           UI.fArea({ label: '一句话介绍', value: s.intro, rows: 2, path: 'employee.services.' + i + '.intro', hint: '显示在服务列表卡片上' }) +
         '</div>' +
         '<div class="gsection"><h4>展示素材</h4>' +
@@ -193,7 +196,7 @@
   P['e-services'] = {
     app: 'employee', title: '职工端服务详情', sub: '服务卡片、图文详情、服务流程、须知与可约机构',
     preview: 'emp-services',
-    state: { mod: '' },
+    state: { mod: '', pendingProvider: '' },
     render() {
       const h = ensure(), mod = P['e-services'].state.mod;
       const list = h.services.filter((s) => !mod || s.mod === mod);
@@ -247,16 +250,20 @@
             (s.flow && s.flow.length ? '<div class="formsec" style="margin-top:14px"><h4>服务流程</h4><div class="flow-list">' + s.flow.map((x, i) => '<div class="flow-row" style="grid-template-columns:28px 1fr"><span class="fl-n">' + (i + 1) + '</span><div><b style="font-size:12px">' + E(x.title) + '</b><div class="small mut" style="margin-top:2px">' + E(x.desc) + '</div></div></div>').join('') + '</div></div>' : '') +
             '<div class="note warn" style="margin-top:14px">' + E(s.notice) + '</div></div>' });
       },
-      newSvc() {
+      newSvc(d) {
+        const st = P['e-services'].state;
+        const providerId = (d && d.providerId) || st.pendingProvider || '';
+        st.pendingProvider = '';
         UI.formDrawer({ title: '新增服务', sub: '先建基本信息，再补主图与图文详情', icon: 'package',
           fields: [
             { key: 'name', label: '服务名称' }, { key: 'en', label: '英文名' },
             { key: 'mod', label: '所属模块', type: 'select', options: H().modules.map((m) => ({ v: m.id, l: m.name })) },
             { key: 'scope', label: '履约范围', type: 'select', options: ['属地履约', '全国履约'] },
+            { key: 'providerId', label: '履约服务商（乙方）', type: 'select', value: providerId, options: ((Store.db.upstream && Store.db.upstream.providers) || []).map((p) => ({ v: p.id, l: p.short + ' · ' + p.type })) },
             { key: 'intro', label: '一句话介绍', type: 'area', rows: 2 }
           ],
           onSave(v) {
-            Store.pushItem('employee.services', { id: 's' + Date.now(), mod: v.mod, name: v.name || '新服务', en: v.en, scope: v.scope,
+            Store.pushItem('employee.services', { id: 's' + Date.now(), mod: v.mod, name: v.name || '新服务', en: v.en, scope: v.scope, providerId: v.providerId || '',
               payer: ['企康'], tags: [], intro: v.intro, duration: '半天', resp: '1 个工作日', bookable: true, on: false, hot: false, order: 99,
               orgs: [], price: 0, sold: 0, flow: [], detail: [], gallery: [] }, '新增服务');
             UI.toast('服务已创建，请继续补主图与图文详情'); App.refresh();

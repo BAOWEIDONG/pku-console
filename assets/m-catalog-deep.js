@@ -91,6 +91,8 @@
           '<div class="grid g-2" style="gap:10px">' +
             field({ k: 'cat', label: '分类', type: 'select', value: g.cat || '基础营养', options: cats.map((x) => ({ v: x, l: x })) }) +
             field({ k: 'brand', label: '品牌', value: g.brand || '北大医疗健康优选' }) + '</div>' +
+          field({ k: 'providerId', label: '供货服务商（乙方）', type: 'select', value: g.providerId || 'sp6', hint: '决定供货、库存、售后与应付结算归属',
+            options: ((Store.db.upstream && Store.db.upstream.providers) || []).map((p) => ({ v: p.id, l: p.short + ' · ' + p.type })) }) +
           '<div class="grid g-2" style="gap:10px">' +
             field({ k: 'code', label: '商品编码', value: g.code, hint: '用于订单、库存、结算对账' }) +
             field({ k: 'unit', label: '销售单位', value: g.unit || '盒' }) + '</div>' +
@@ -177,6 +179,7 @@
         const rec = Object.assign({}, g, {
           id: g.id || 'su' + Date.now(),
           name: val('name'), cat: val('cat'), brand: val('brand'), code: val('code'), unit: val('unit'),
+          providerId: val('providerId') || 'sp6',
           tags: val('tags').split('/').map((x) => x.trim()).filter(Boolean),
           price: Number(val('price') || 0), settle: Number(val('settle') || 0), cost: Number(val('cost') || 0),
           stock: Number(val('stock') || 0), safeStock: Number(val('safeStock') || 20),
@@ -213,7 +216,7 @@
   P['svc-goods'] = {
     app: 'all', grp: 'e.services', papp: 'employee', title: '实物商品', sub: '主图、图文详情、SKU、库存与挂载位',
     preview: 'emp-home',
-    state: { cat: '全部' },
+    state: { cat: '全部', pendingProvider: '' },
     render() {
       ensure();
       const st = P['svc-goods'].state;
@@ -251,7 +254,12 @@
     },
     actions: {
       gdCat(d) { P['svc-goods'].state.cat = d.id; App.refresh(); },
-      newGoods() { openEditor({ on: true, cat: '基础营养', images: [], specs: [{ name: '标准装', price: 168, stock: 50 }], price: 168, settle: 132, cost: 82, stock: 50 }); },
+      newGoods(d) {
+        const st = P['svc-goods'].state;
+        const providerId = (d && d.providerId) || st.pendingProvider || '';
+        st.pendingProvider = '';
+        openEditor({ on: true, cat: '基础营养', images: [], providerId: providerId, specs: [{ name: '标准装', price: 168, stock: 50 }], price: 168, settle: 132, cost: 82, stock: 50 });
+      },
       gdEdit(d) { const g = Store.db.supplements.find((x) => x.id === d.id); if (g) openEditor(g); },
       gdView(d) { const g = Store.db.supplements.find((x) => x.id === d.id); if (g) openGoodPreview(g); },
       imp() { UI.toast('请上传商品表 xlsx：名称 / 分类 / 售价 / 结算价 / 库存'); }

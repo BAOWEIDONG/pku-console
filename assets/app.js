@@ -34,7 +34,8 @@
     'h-overview': 'v.ops', 'h-service-flow': 'e.services', 'h-profiles': 'v.ops', 'h-risk': 'v.ops',
     'h-plans': 'v.ops', 'h-followups': 'v.ops', 'h-programs': 'v.ops', 'h-outcomes': 'v.report', 'h-enterprise': 'v.report',
     'fg-members': 'v.ops', 'fg-tasks': 'v.rules', 'fg-coach': 'v.ops', 'fg-escalation': 'v.ops',
-    'fg-privacy': 'v.report', 'fg-loop': 'v.report'
+    'fg-privacy': 'v.report', 'fg-loop': 'v.report',
+    'up-companies': 'v.ops', 'up-providers': 'v.ops', 'trd-payable': 'v.ops'
   };
   const groupOf = (route) => G[route] || (PAGES[route] && PAGES[route].grp) || 'v.ops';
 

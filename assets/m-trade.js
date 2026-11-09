@@ -85,7 +85,7 @@
     render() {
       const s = Store.db.settle;
       return K.head('结算与对账', '3 个合作方 · 待结算 2 期',
-        K.btn('导出对账单', 'export', { icon: 'download' }) + K.btn('发起结算', 'runSettle', { icon: 'send', cls: 'primary' })) +
+        K.btn('服务商应付', 'goPayable', { icon: 'link' }) + ' ' + K.btn('导出对账单', 'export', { icon: 'download' }) + ' ' + K.btn('发起结算', 'runSettle', { icon: 'send', cls: 'primary' })) +
         K.kpis([
           { k: '本期应收', v: '61.4', unit: '万', d: '含 2 个合作方', icon: 'target' },
           { k: '已开票', v: '18.6', unit: '万', d: '回款周期 45 天', icon: 'file' },
@@ -123,6 +123,7 @@
     },
     actions: {
       export() { UI.toast('对账单已导出'); },
+      goPayable() { App.go('trd-payable'); },
       runSettle() { UI.confirm({ title: '生成本期对账单？', desc: '将汇总 2026-11 已履约订单，生成 3 份对账单待确认。', okText: '生成' }).then((ok) => { if (ok) UI.toast('对账单已生成'); }); },
       viewSettle(d) {
         const r = Store.db.settle.records.find((x) => x.id === d.id);
