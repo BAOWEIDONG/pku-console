@@ -55,13 +55,13 @@
 
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
-    { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'fuse-command', title: '指挥中心', desc: '经营 · 洞察 · 发布' },
-    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'fuse-customer', title: '客户中心', desc: '客户 · 交易 · 履约 · 结算' },
-    { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'fuse-catalog', title: '商品中心', desc: '服务 · 商品 · 价格 · 履约' },
-    { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'fuse-health', title: '健康管理', desc: '履约 · 档案 · 计划 · 随访 · 结果' },
-    { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fuse-program', title: '项目中心', desc: '五好生活 · 减重营 · 激励' },
-    { id: 'growth', label: '内容', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'fuse-content', title: '内容中心', desc: '品牌站 · 职工端 · 公共素材' },
-    { id: 'platform', label: '平台', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'fuse-platform', title: '平台中心', desc: '公共资源 · 权限 · 发布' }
+    { id: 'command', label: '经营总览', en: 'OVERVIEW', icon: 'grid', dot: '#7CB6FF', home: 'fuse-command', title: '经营总览', desc: '今日待办 · 经营洞察 · 发布影响' },
+    { id: 'customer', label: '客户与交易', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'fuse-customer', title: '客户与交易', desc: '客户 360 · 订单 · 预约履约 · 结算 · 上下游' },
+    { id: 'catalog', label: '商品与服务', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'fuse-catalog', title: '商品与服务', desc: '服务商品 · 实物商品 · 价格 · 库存 · 渠道' },
+    { id: 'health', label: '健康管理', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'fuse-health', title: '健康管理', desc: '履约 · 健康档案 · 计划 · 随访 · 结果' },
+    { id: 'program', label: '健康项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fuse-program', title: '健康项目', desc: '五好生活 · 减重营 · 激励与活动' },
+    { id: 'growth', label: '内容与渠道', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'fuse-content', title: '内容与渠道', desc: '品牌站 · 职工端 · 公共素材 · 触达' },
+    { id: 'platform', label: '系统与权限', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'fuse-platform', title: '系统与权限', desc: '账号 · 角色 · 字段权限 · 发布 · 日志' }
   ];
 
   const NAV_OF = {
@@ -124,6 +124,11 @@
     const cur = (window.Fusion && Fusion.tabOf(state.app)) || null;
     const curTab = (cur && cur.id) || (area.tabs[0] || {}).id;
     const curView = (window.Fusion && Fusion.current() || {}).view;
+    const subOf = (r) => ((PAGES[r] && PAGES[r].sub) || '').replace(/^[^，。]*，/, '');
+    const tabDesc = (t) => {
+      const first = (t.pages.find((x) => !x.hidden) || t.pages[0] || {}).route;
+      return subOf(first);
+    };
     const open = (state.openTabs && state.openTabs[state.app]) || [curTab];
     const isOpen = (id) => open.indexOf(id) >= 0;
 
@@ -137,8 +142,13 @@
           '<svg class="sn-cv" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>' +
         '</button>' +
         '<div class="sn-items' + (isOpen(t.id) ? '' : ' off') + '">' +
-          items.map((x) => '<button class="sn-item' + ((x.route === curView || x.route === state.route) ? ' on' : '') + '" data-nav="' + x.route + '" title="' + E(x.label) + '">' +
-            '<i class="sn-dot"></i>' + E(x.label) + '</button>').join('') +
+          (tabDesc(t) ? '<div class="sn-hint">' + E(tabDesc(t)) + '</div>' : '') +
+          items.map((x) => {
+            const sub = (PAGES[x.route] && PAGES[x.route].sub) || '';
+            return '<button class="sn-item' + ((x.route === curView || x.route === state.route) ? ' on' : '') + '" data-nav="' + x.route + '" title="' + E(x.label + (sub ? '：' + sub : '')) + '">' +
+              '<span class="sn-t"><i class="sn-dot"></i>' + E(x.label) + '</span>' +
+              (sub ? '<span class="sn-d">' + E(sub) + '</span>' : '') + '</button>';
+          }).join('') +
         '</div></div>';
     }).join('');
 
