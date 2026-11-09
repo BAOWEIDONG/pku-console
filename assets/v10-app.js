@@ -1,7 +1,7 @@
 /* ============================================================================
-   北大医疗 · 三端运营中台 v10
-   - 导航按 versionall / PKU-introduce / pku-employee-health 三端真实页面组织
-   - 数据来自三个 H5 的真实页面、导出数据与 mock 数据
+   北大医疗 · 健康服务超级后台 v10
+   - 一套后台能力支撑多个前端应用；应用注册、共享能力绑定与独立发布
+   - 数据来自 versionall / PKU-introduce / pku-employee-health 的真实页面、导出数据与 mock 数据
    - 配置保存到本机；发布中心可生成并提交 config.json
    ========================================================================== */
 (function () {
@@ -86,6 +86,16 @@
   function initialStore() {
     return { data: clone(SEED), dirty: 0, logs: [], savedAt: '尚未保存', assets: [] };
   }
+  const APP_CAPABILITIES = [
+    { key: 'customer', label: '客户与会员', desc: '客户主档、授权、会员档案与电话跟进', icon: 'users' },
+    { key: 'service', label: '服务与商品', desc: '服务目录、价格、套餐、商品与库存', icon: 'package' },
+    { key: 'health', label: '健康管理', desc: '风险、计划、随访、项目与结果指标', icon: 'pulse' },
+    { key: 'fivegood', label: '五好生活', desc: '主题、任务、打卡审核与月度报告', icon: 'star' },
+    { key: 'benefit', label: '权益与订单', desc: '权益额度、预约、订单、核销与结算', icon: 'shield' },
+    { key: 'content', label: '内容与素材', desc: '轮播、图文、专家、机构、问答与消息', icon: 'image' },
+    { key: 'report', label: '档案与报告', desc: '健康档案、体检报告与企业健康报告', icon: 'file' },
+    { key: 'publish', label: '发布与权限', desc: 'config.json、页面落点、角色与日志', icon: 'send' }
+  ];
   function loadStore() {
     try {
       const raw = localStorage.getItem(KEY);
@@ -289,6 +299,31 @@
       { id: 'qu4', q: '五好生活会员可以给家属使用吗？', cat: '权益说明', hits: 12, source: '职工端提问', at: '2026-11-06' },
       { id: 'qu5', q: '睡眠监测报告多久能出？需要住院吗？', cat: '服务流程', hits: 9, source: '预约咨询', at: '2026-11-06' }
     ];
+    const appDefaults = {
+      camp: { route: 'v-overview', icon: 'activity', owner: '健康训练营运营', version: 'v3.6.2', capabilities: { customer: true, service: false, health: false, fivegood: true, benefit: true, content: true, report: true, publish: true }, note: '学员端：打卡、食谱、积分商城、活动与营期报告。' },
+      brand: { route: 'b-home', icon: 'hospital', owner: '品牌与内容运营', version: 'v2.4.0', capabilities: { customer: false, service: false, health: false, fivegood: false, benefit: false, content: true, report: false, publish: true }, note: '品牌官网：专家、分院、科室、健康营项目与关于我们。' },
+      employee: { route: 'e-home', icon: 'heart', owner: '企康产品运营', version: 'v5.1.0', capabilities: { customer: true, service: true, health: true, fivegood: true, benefit: true, content: true, report: true, publish: true }, note: '职工端：服务目录、预约、权益、健康档案与五好生活。' }
+    };
+    data.apps = data.apps || SEED.h5Pages.map((p, i) => Object.assign({
+      id: p.app, name: p.name, label: p.label, url: p.url, color: p.color,
+      pages: p.pages, roles: (p.roles || []).join(' / '), status: 'online',
+      publishedAt: '2026-11-09 15:02', order: i + 1, type: 'H5'
+    }, appDefaults[p.app] || {}));
+    data.apps.forEach((a, i) => {
+      a.order = Number(a.order || i + 1);
+      a.status = a.status || 'online';
+      a.type = a.type || 'H5';
+      a.route = a.route || 'apps';
+      a.icon = a.icon || 'grid';
+      a.color = a.color || '#176b92';
+      a.roles = a.roles || '访客';
+      a.pages = Number(a.pages || 1);
+      a.owner = a.owner || '平台运营';
+      a.version = a.version || 'v1.0.0';
+      a.publishedAt = a.publishedAt || '尚未发布';
+      a.note = a.note || '共享后台的服务、内容、客户与订单数据。';
+      a.capabilities = Object.assign({ customer: false, service: false, health: false, fivegood: false, benefit: false, content: false, report: false, publish: true }, a.capabilities || {});
+    });
   }
   normalizeData();
   function saveStore() {
@@ -334,7 +369,8 @@
 
   /* ----------------------------------------------------------- 路由与元信息 */
   const DOMAIN = {
-    home: { label: '三端总览', accent: '#176b92', app: 'all' },
+    home: { label: '全域总览', accent: '#176b92', app: 'all' },
+    apps: { label: '应用与共享能力', accent: '#176b92', app: 'all' },
     camp: { label: '健康训练营', accent: '#e4612b', app: 'camp', h5: SEED.h5Pages[0] },
     brand: { label: '品牌站', accent: '#1d6e89', app: 'brand', h5: SEED.h5Pages[1] },
     employee: { label: '职工健康', accent: '#ff6a13', app: 'employee', h5: SEED.h5Pages[2] },
@@ -344,6 +380,7 @@
     platform: { label: '发布与平台', accent: '#425a73', app: 'all' }
   };
   function domainMeta(route) {
+    if (route === 'apps') return DOMAIN.apps;
     if (route.indexOf('v-') === 0) return DOMAIN.camp;
     if (route.indexOf('b-') === 0) return DOMAIN.brand;
     if (route.indexOf('e-') === 0) return DOMAIN.employee;
@@ -354,7 +391,8 @@
     return DOMAIN.home;
   }
   const META = {
-    home: { label: '指挥中心', group: '总览', desc: '三个 H5 的运行实况、待办与发布状态' },
+    home: { label: '指挥中心', group: '总览', desc: '所有前端应用的运行实况、待办与发布状态' },
+    apps: { label: '应用矩阵', group: '总览', desc: '注册前端应用、绑定共享能力并管理发布状态' },
     'v-overview': { label: '运营总览', group: '健康训练营', desc: 'versionall · 学员、教练、营养师与督导真实运营' },
     'v-camps': { label: '营期与学员', group: '健康训练营', desc: '营期、学员归属和开营状态' },
     'v-home': { label: '学员端首页', group: '健康训练营', desc: '首页文案、入口、排名与活动展示' },
@@ -415,15 +453,22 @@
     'settings': { label: '角色与日志', group: '发布与平台', desc: '角色权限与本机操作审计' }
   };
   function metaOf(route) { return META[route] || META.home; }
+  function groupForRoute(route) {
+    for (let i = 0; i < NAV_GROUPS.length; i++) {
+      const g = NAV_GROUPS[i];
+      if (g.route === route) return g.id;
+      for (let j = 0; j < g.children.length; j++) {
+        if (g.children[j].items.some((it) => it.r === route)) return g.id;
+      }
+    }
+    return null;
+  }
 
   function navigate(route, ctx) {
     if (state.route && state.route !== route) { state.prevRoute = state.route; state.prevCtx = state.ctx || {}; }
     state.route = route;
     state.ctx = ctx || {};
-    if (route.indexOf('v-') === 0) state.openGroup = 'camp';
-    else if (route.indexOf('b-') === 0) state.openGroup = 'brand';
-    else if (route.indexOf('e-') === 0) state.openGroup = 'employee';
-    else state.openGroup = null;
+    state.openGroup = groupForRoute(route);
     state.drawer = null;
     state.navOpen = false;
     const q = Object.keys(state.ctx).length ? '?' + Object.keys(state.ctx).map((k) => k + '=' + encodeURIComponent(state.ctx[k])).join('&') : '';
@@ -511,7 +556,91 @@
   /* ----------------------------------------------------------- 侧栏与外壳 */
   const NAV_GROUPS = [
     {
-      id: 'camp', title: '健康训练营', en: 'versionall', color: '#f07a43', route: 'v-overview',
+      id: 'customers', section: 'biz', title: '客户中心', en: 'Customer Hub', color: '#a66a12', route: 'crm',
+      children: [
+        { section: '客户池', items: [
+          { r: 'crm', l: '客户总览', i: 'users' },
+          { r: 'templates', l: '电话跟进', i: 'phone' }
+        ] }
+      ]
+    },
+    {
+      id: 'catalog', section: 'biz', title: '服务与商品', en: 'Service Catalog', color: '#6b5bd2', route: 'plan',
+      children: [
+        { section: '商品与服务', items: [
+          { r: 'plan', l: '规划总览', i: 'calendar' },
+          { r: 'plan-services', l: '服务与商品', i: 'package' },
+          { r: 'v-mall', l: '积分商城', i: 'gift' },
+          { r: 'v-tiers', l: '连续打卡奖励', i: 'badge' }
+        ] },
+        { section: '体检与排期', items: [
+          { r: 'plan-exams', l: '体检套餐', i: 'pulse' },
+          { r: 'plan-schedule', l: '预约排期', i: 'clock' }
+        ] },
+        { section: '定价与组合', items: [
+          { r: 'plan-pricing', l: '价格与政策', i: 'coins' },
+          { r: 'plan-bundles', l: '服务组合', i: 'layers' }
+        ] }
+      ]
+    },
+    {
+      id: 'health', section: 'biz', title: '健康管理', en: 'Health Management', color: '#0c7c78', route: 'e-health',
+      children: [
+        { section: '风险与干预', items: [
+          { r: 'e-health', l: '健康管理总览', i: 'pulse' },
+          { r: 'e-risk', l: '风险与健康计划', i: 'shield' },
+          { r: 'e-programs', l: '项目与健康结果', i: 'activity' }
+        ] },
+        { section: '服务与随访', items: [
+          { r: 'e-followup', l: '随访工作台', i: 'phone' },
+          { r: 'e-serviceflow', l: '服务履约台', i: 'activity' }
+        ] },
+        { section: '档案与知识', items: [
+          { r: 'e-records', l: '健康档案', i: 'file' },
+          { r: 'e-qa', l: '健康问答', i: 'chat' }
+        ] }
+      ]
+    },
+    {
+      id: 'fivegood', section: 'biz', title: '五好生活', en: 'Five-Good Life', color: '#be2a5e', route: 'e-fivegood',
+      children: [
+        { section: '会员运营', items: [
+          { r: 'e-fivegood', l: '五好生活总览', i: 'star' },
+          { r: 'e-five-members', l: '五好会员运营', i: 'badge' },
+          { r: 'e-five-ops', l: '五好主题运营', i: 'leaf' }
+        ] },
+        { section: '营养与食谱', items: [
+          { r: 'v-meal', l: '食谱工程', i: 'bowl' }
+        ] }
+      ]
+    },
+    {
+      id: 'content', section: 'biz', title: '内容与素材', en: 'Content & Assets', color: '#2c8aa8', route: 'assets',
+      children: [
+        { section: '素材与内容', items: [
+          { r: 'assets', l: '素材库', i: 'image' },
+          { r: 'e-content', l: '科普与讲座', i: 'book' },
+          { r: 'e-messages', l: '消息中心', i: 'bell' },
+          { r: 'v-activities', l: '锻炼活动', i: 'video' }
+        ] }
+      ]
+    },
+    {
+      id: 'trade', section: 'biz', title: '订单与结算', en: 'Orders & Settlement', color: '#227a59', route: 'trade-orders',
+      children: [
+        { section: '订单与履约', items: [
+          { r: 'trade-orders', l: '订单中心', i: 'doc' },
+          { r: 'e-booking', l: '预约设置', i: 'calendar' },
+          { r: 'e-orders', l: '预约记录', i: 'doc', badge: () => pendingBookings(data) },
+          { r: 'v-fulfill', l: '发放与核销', i: 'truck', badge: () => pendingFulfill(data) }
+        ] },
+        { section: '结算', items: [
+          { r: 'trade-settle', l: '结算与对账', i: 'coins' }
+        ] }
+      ]
+    },
+    {
+      id: 'camp', section: 'app', title: '健康训练营', en: 'versionall', color: '#f07a43', route: 'v-overview',
       children: [
         { section: '运营', items: [
           { r: 'v-overview', l: '运营总览', i: 'grid' },
@@ -522,19 +651,10 @@
           { r: 'v-rules', l: '打卡规则', i: 'clock' },
           { r: 'v-records', l: '打卡与批注', i: 'activity', badge: () => pendingComments(data) },
           { r: 'v-metrics', l: '健康指标', i: 'stethoscope' },
-          { r: 'v-badges', l: '徽章体系', i: 'badge' }
-        ] },
-        { section: '营养与食谱', items: [
-          { r: 'v-meal', l: '食谱工程', i: 'bowl' }
-        ] },
-        { section: '激励与商城', items: [
-          { r: 'v-points', l: '积分与排行', i: 'chart' },
-          { r: 'v-tiers', l: '连续打卡奖励', i: 'gift' },
-          { r: 'v-mall', l: '积分商城', i: 'package' },
-          { r: 'v-fulfill', l: '发放与核销', i: 'truck', badge: () => pendingFulfill(data) }
+          { r: 'v-badges', l: '徽章体系', i: 'badge' },
+          { r: 'v-points', l: '积分与排行', i: 'chart' }
         ] },
         { section: '团队与复盘', items: [
-          { r: 'v-activities', l: '锻炼活动', i: 'video' },
           { r: 'v-team', l: '营养师 / 教练', i: 'users' },
           { r: 'v-report', l: '营期报告', i: 'doc' },
           { r: 'v-accounts', l: '账号与权限', i: 'shield' }
@@ -542,7 +662,7 @@
       ]
     },
     {
-      id: 'brand', title: '品牌站', en: 'PKU-introduce', color: '#2c8aa8', route: 'b-home',
+      id: 'brand', section: 'app', title: '品牌站', en: 'PKU-introduce', color: '#2c8aa8', route: 'b-home',
       children: [
         { section: '内容', items: [
           { r: 'b-home', l: '品牌首页', i: 'home' },
@@ -557,34 +677,16 @@
       ]
     },
     {
-      id: 'employee', title: '职工健康', en: 'pku-employee-health', color: '#ff752b', route: 'e-home',
+      id: 'employee', section: 'app', title: '职工健康', en: 'pku-employee-health', color: '#ff752b', route: 'e-home',
       children: [
         { section: '首页与目录', items: [
           { r: 'e-home', l: '首页配置', i: 'home' },
           { r: 'e-services', l: '服务目录', i: 'package' },
           { r: 'e-modules', l: '模块与宫格', i: 'layers' }
         ] },
-        { section: '健康管理', items: [
-          { r: 'e-health', l: '健康管理总览', i: 'pulse' },
-          { r: 'e-risk', l: '风险与计划', i: 'shield' },
-          { r: 'e-programs', l: '项目与结果', i: 'activity' },
-          { r: 'e-followup', l: '随访工作台', i: 'phone' }
-        ] },
-        { section: '服务履约', items: [
-          { r: 'e-booking', l: '预约设置', i: 'calendar' },
-          { r: 'e-orders', l: '预约记录', i: 'doc', badge: () => pendingBookings(data) },
-          { r: 'e-orgs', l: '服务机构', i: 'hospital' },
-          { r: 'e-serviceflow', l: '服务履约台', i: 'activity' }
-        ] },
         { section: '员工侧内容', items: [
           { r: 'e-benefits', l: '权益额度', i: 'shield' },
-          { r: 'e-records', l: '健康档案', i: 'file' },
-          { r: 'e-content', l: '科普与讲座', i: 'book' },
-          { r: 'e-fivegood', l: '五好生活', i: 'star' },
-          { r: 'e-five-members', l: '五好会员运营', i: 'badge' },
-          { r: 'e-five-ops', l: '五好主题运营', i: 'leaf' },
-          { r: 'e-qa', l: '健康问答', i: 'chat' },
-          { r: 'e-messages', l: '消息中心', i: 'bell' }
+          { r: 'e-orgs', l: '服务机构', i: 'hospital' }
         ] }
       ]
     }
@@ -595,33 +697,30 @@
 
   function sideNav() {
     const activeGroup = state.openGroup;
+    const renderGroup = (g) => {
+      const open = activeGroup === g.id;
+      return '<div class="nav-group ' + (open ? 'open' : '') + '">' +
+        '<button class="nav-group-head" data-act="toggleGroup" data-group="' + g.id + '"><span class="gdot" style="background:' + g.color + '"></span><span>' + esc(g.title) + '</span><span class="gcount">' + g.children.reduce((n, s) => n + s.items.length, 0) + '</span>' + ic('chevron') + '</button>' +
+        (open ? '<div class="nav-children">' +
+          '<button class="navlink nav-group-home ' + (state.route === g.route ? 'on' : '') + '" data-go="' + g.route + '">' + ic('grid') + '<span>' + esc(g.title) + '总览</span></button>' +
+          g.children.map((s) =>
+          '<div class="nav-child-label">' + esc(s.section) + '</div>' + s.items.map((it) => {
+            const b = it.badge ? it.badge() : 0;
+            return '<button class="navlink ' + (state.route === it.r ? 'on' : '') + '" data-go="' + it.r + '">' + ic(it.i) + '<span>' + esc(it.l) + '</span>' + (b ? '<span class="badge">' + b + '</span>' : '') + '</button>';
+          }).join('')
+        ).join('') + '</div>' : '') + '</div>';
+    };
     return '<aside class="sidebar" data-sidebar>' +
-      '<div class="brand"><div class="brand-mark">' + ic('cross') + '</div><div class="brand-copy"><b>北大医疗</b><span>三端协同运营中台</span></div></div>' +
-      '<div class="side-context"><span class="dot" style="--accent:' + domainMeta(state.route).accent + ';background:' + domainMeta(state.route).accent + '"></span><div class="copy"><b>' + esc(domainMeta(state.route).label) + '</b><span>3 个 H5 · 数据与页面已对齐</span></div></div>' +
+      '<div class="brand"><div class="brand-mark">' + ic('cross') + '</div><div class="brand-copy"><b>北大医疗</b><span>健康服务超级后台</span></div></div>' +
+      '<div class="side-context"><span class="dot" style="--accent:' + domainMeta(state.route).accent + ';background:' + domainMeta(state.route).accent + '"></span><div class="copy"><b>' + esc(domainMeta(state.route).label) + '</b><span>' + data.apps.length + ' 个前端应用 · 一套共享数据</span></div></div>' +
       '<nav class="side-nav">' +
         '<div class="nav-caption">总览</div>' +
         '<button class="nav-single ' + (state.route === 'home' ? 'on' : '') + '" data-go="home">' + ic('home') + '<span>指挥中心</span><span class="badge">' + (state.dirty || 0) + '</span></button>' +
-        '<div class="nav-caption">按 H5 运营</div>' +
-        NAV_GROUPS.map((g) => {
-          const open = activeGroup === g.id;
-          return '<div class="nav-group ' + (open ? 'open' : '') + '">' +
-            '<button class="nav-group-head" data-act="toggleGroup" data-group="' + g.id + '"><span class="gdot" style="background:' + g.color + '"></span><span>' + esc(g.title) + '</span><span class="gcount">' + g.children.reduce((n, s) => n + s.items.length, 0) + '</span>' + ic('chevron') + '</button>' +
-            (open ? '<div class="nav-children">' +
-              '<button class="navlink nav-group-home ' + (state.route === g.route ? 'on' : '') + '" data-go="' + g.route + '">' + ic('grid') + '<span>' + esc(g.title) + '总览</span></button>' +
-              g.children.map((s) =>
-              '<div class="nav-child-label">' + esc(s.section) + '</div>' + s.items.map((it) => {
-                const b = it.badge ? it.badge() : 0;
-                return '<button class="navlink ' + (state.route === it.r ? 'on' : '') + '" data-go="' + it.r + '">' + ic(it.i) + '<span>' + esc(it.l) + '</span>' + (b ? '<span class="badge">' + b + '</span>' : '') + '</button>';
-              }).join('')
-            ).join('') + '</div>' : '') + '</div>';
-        }).join('') +
-        '<div class="nav-caption">跨产品</div>' +
-        '<button class="nav-single ' + (state.route.indexOf('crm') === 0 ? 'on' : '') + '" data-go="crm">' + ic('users') + '<span>客户中心</span><span class="badge">' + data.customers.length + '</span></button>' +
-        '<button class="nav-single ' + (['assets','templates'].indexOf(state.route) >= 0 ? 'on' : '') + '" data-go="assets">' + ic('layers') + '<span>共享资产</span></button>' +
-        '<div class="nav-caption">运营规划</div>' +
-        [['plan','规划总览','calendar'],['plan-services','服务与商品','package'],['plan-exams','体检套餐','pulse'],['plan-schedule','预约排期','clock'],['plan-pricing','价格与政策','coins'],['plan-bundles','服务组合','layers']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
-        '<div class="nav-caption">交易与结算</div>' +
-        [['trade-orders','订单中心','doc'],['trade-settle','结算与对账','coins']].map((x) => '<button class="nav-single ' + (state.route === x[0] ? 'on' : '') + '" data-go="' + x[0] + '">' + ic(x[2]) + '<span>' + x[1] + '</span></button>').join('') +
+        '<button class="nav-single ' + (state.route === 'apps' ? 'on' : '') + '" data-go="apps">' + ic('layers') + '<span>应用矩阵</span><span class="badge">' + data.apps.length + '</span></button>' +
+        '<div class="nav-caption">业务中台</div>' +
+        NAV_GROUPS.filter((g) => g.section === 'biz').map(renderGroup).join('') +
+        '<div class="nav-caption">前端应用</div>' +
+        NAV_GROUPS.filter((g) => g.section === 'app').map(renderGroup).join('') +
         '<div class="nav-caption">平台</div>' +
         '<button class="nav-single ' + (state.route === 'publish' ? 'on' : '') + '" data-go="publish">' + ic('send') + '<span>发布中心</span>' + (state.dirty ? '<span class="badge">' + state.dirty + '</span>' : '') + '</button>' +
         '<button class="nav-single ' + (state.route === 'map' ? 'on' : '') + '" data-go="map">' + ic('map') + '<span>H5 页面对照</span></button>' +
@@ -637,9 +736,9 @@
     const d = domainMeta(state.route);
     return '<header class="topbar"><button class="menu-btn" data-act="toggleNav">' + ic('menu') + '</button>' +
       (state.route !== 'home' ? '<button class="tb-icon" data-act="goHome" title="回到指挥中心">' + ic('home', 14) + '</button>' : '') +
-      '<div class="crumbs"><span class="root">三端运营</span>' + ic('chevron') + '<span>' + esc(d.label) + '</span>' + ic('chevron') + '<b>' + esc(m.label) + '</b></div>' +
+      '<div class="crumbs"><span class="root">超级后台</span>' + ic('chevron') + '<span>' + esc(d.label) + '</span>' + ic('chevron') + '<b>' + esc(m.label) + '</b></div>' +
       '<button class="search" data-act="openSearch">' + ic('search') + '<span>搜索页面、服务、专家、客户</span><kbd>⌘K</kbd></button>' +
-      '<div class="top-actions"><span class="online-chip"><i></i>3 个 H5 在线</span>' +
+      '<div class="top-actions"><span class="online-chip"><i></i>' + data.apps.filter((a) => a.status === 'online').length + ' 个应用在线</span>' +
       (state.dirty ? '<button class="dirty-chip" data-act="openImpact"><span>' + state.dirty + ' 项改动待发布</span>' + ic('activity', 12) + '</button>' : '') +
       '<button class="btn primary" data-act="openPublish">' + ic('send') + '<span>发布</span></button>' +
       '<div class="avatar-top">运</div></div></header>';
@@ -675,6 +774,50 @@
   }
   function refresh() { render(true); }
 
+  /* ----------------------------------------------------------- 应用矩阵 */
+  PAGES.apps = function () {
+    const apps = data.apps.slice().sort((a, b) => a.order - b.order);
+    const online = apps.filter((a) => a.status === 'online').length;
+    const totalPages = apps.reduce((n, a) => n + Number(a.pages || 0), 0);
+    const capCount = (a) => APP_CAPABILITIES.filter((c) => a.capabilities[c.key]).length;
+    const appCards = apps.map((a) => {
+      const onCaps = APP_CAPABILITIES.filter((c) => a.capabilities[c.key]);
+      return '<div class="app-card" data-go="' + esc(a.route) + '" style="--ch:' + esc(a.color) + '">' +
+        '<div class="app-card-head"><span class="app-icon">' + ic(a.icon || 'grid') + '</span><div class="app-title"><b>' + esc(a.label) + '</b><span>' + esc(a.name) + ' · ' + esc(a.type) + '</span></div>' + pill(a.status === 'online' ? '线上运行' : a.status === 'draft' ? '草稿' : '已停用', a.status === 'online' ? 'green' : a.status === 'draft' ? 'amber' : 'outline') + '</div>' +
+        '<p class="app-note">' + esc(a.note) + '</p>' +
+        '<div class="app-metrics"><div><b>' + a.pages + '</b><span>页面 / 操作区</span></div><div><b>' + esc(a.roles) + '</b><span>角色</span></div><div><b>' + onCaps.length + ' / ' + APP_CAPABILITIES.length + '</b><span>共享能力</span></div></div>' +
+        '<div class="chips">' + onCaps.slice(0, 5).map((c) => '<span class="pill">' + esc(c.label) + '</span>').join('') + (onCaps.length > 5 ? '<span class="pill outline">+' + (onCaps.length - 5) + '</span>' : '') + '</div>' +
+        '<div class="app-card-foot"><div class="tiny muted"><b>' + esc(a.version) + '</b> · ' + esc(a.publishedAt) + '<br>负责人 ' + esc(a.owner) + '</div><div class="row-flex" style="gap:6px"><button class="btn sm" data-act="editApp" data-id="' + esc(a.id) + '">' + ic('settings') + '配置</button><span class="btn sm primary">进入运营 ' + ic('chevron') + '</span></div></div>' +
+      '</div>';
+    }).join('');
+    const matrix = '<div class="table-wrap"><table class="table cap-table"><thead><tr><th>应用</th>' + APP_CAPABILITIES.map((c) => '<th class="cap-th">' + esc(c.label) + '</th>').join('') + '<th>复用率</th></tr></thead><tbody>' +
+      apps.map((a) => '<tr class="click" data-act="editApp" data-id="' + esc(a.id) + '"><td><div class="row-main"><span class="app-dot" style="background:' + esc(a.color) + '"></span><div><div class="name">' + esc(a.label) + '</div><div class="sub">' + esc(a.name) + '</div></div></div></td>' +
+        APP_CAPABILITIES.map((c) => '<td class="cap-cell">' + (a.capabilities[c.key] ? '<span class="cap-dot on">' + ic('check') + '</span>' : '<span class="cap-dot">—</span>') + '</td>').join('') +
+        '<td class="nowrap"><b>' + Math.round(capCount(a) / APP_CAPABILITIES.length * 100) + '%</b></td></tr>').join('') + '</tbody></table></div>';
+    const capCards = APP_CAPABILITIES.map((c) => '<div class="cap-card"><span class="cap-icon">' + ic(c.icon) + '</span><div><b>' + esc(c.label) + '</b><span>' + esc(c.desc) + '</span></div><span class="cap-use">' + apps.filter((a) => a.capabilities[c.key]).length + ' 个应用</span></div>').join('');
+    return '<div class="page wide">' +
+      pageHead('应用矩阵', '这里不是一个后台管三个页面，而是一套后台能力支撑多个前端 H5。应用只负责展示与交互，客户、服务、商品、健康档案、权益、订单、内容与发布全部在后台统一维护。', '<button class="btn primary" data-act="newApp">' + ic('plus') + '<span>接入新应用</span></button>', 'SUPER ADMIN / 应用与共享能力') +
+      purpose('回答“现在有哪些前端在用这套后台、各自用了哪些能力、新增应用怎么接”。', '注册应用后，勾选它可复用的共享能力；页面落点与发布状态仍按应用独立管理。', '平台产品 / 应用运营') +
+      '<div class="kpi-grid">' + kpi('接入应用', apps.length, '个', '含 H5 / 小程序 / 站点', 'layers', ['#edf3ff','#1f4fd1']) + kpi('在线运行', online, '个', '可独立发布与回滚', 'check', ['#e9f7f1','#0c7c59']) + kpi('共享能力', APP_CAPABILITIES.length, '类', '客户 / 服务 / 健康 / 订单', 'package', ['#f1efff','#5b4bc4']) + kpi('页面与操作区', totalPages, '个', '跨应用统一台账', 'grid', ['#fff1e7','#c75311']) + '</div>' +
+      panel('已接入应用', '点击整卡进入该应用的运营配置；点「配置」编辑应用信息与共享能力', '<div class="app-grid">' + appCards + '<div class="app-card add" data-act="newApp"><span class="app-add-icon">' + ic('plus') + '</span><b>接入新的前端应用</b><span>复用客户、服务、商品、健康档案与订单，不需要复制一套后台。</span><span class="btn sm primary">开始接入 ' + ic('chevron') + '</span></div></div>', '<span class="pill">' + online + ' / ' + apps.length + ' 在线</span>') +
+      '<div class="section-space">' + panel('共享能力层', '后台维护一次，多个应用复用；应用只决定“展示什么、怎么展示”', '<div class="cap-grid">' + capCards + '</div>') + '</div>' +
+      '<div class="grid main-side section-space"><div class="stack">' + panel('能力矩阵', '每行是一个应用，每列是一项后台共享能力', matrix, '', true) + '</div><div class="stack">' +
+        panel('接入一个新 H5', '四步，不复制后台', '<div class="step-list">' + [
+          ['注册应用', '填写名称、代码、域名、负责人和页面规模'],
+          ['绑定共享能力', '勾选客户、服务、商品、健康、权益、订单、内容与发布'],
+          ['配置页面落点', '在 H5 页面对照里指定每个页面读取哪份后台数据'],
+          ['发布与验收', '生成该应用的 config.json，刷新 H5 后逐项验收']
+        ].map((x, i) => '<div class="step-row"><span class="step-no">' + (i + 1) + '</span><div><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></div></div>').join('') + '</div>') +
+        panel('共享与隔离', '边界清楚，才敢扩展', '<div class="stack tight">' + [
+          ['共享', '客户主档、服务与商品、价格、权益、订单、内容素材、健康档案'],
+          ['按应用隔离', '页面结构、导航文案、主题色、展示字段、发布配置'],
+          ['不共享', '员工心理内容、企业人事数据、各应用自己的草稿与未发布内容'],
+          ['真实边界', '当前 H5 只读取 config.json 的 6 类字段；其余内容先保存后台']
+        ].map((x) => '<div class="bound-row"><span class="pill ' + (x[0] === '共享' ? 'green' : x[0] === '不共享' ? 'red' : 'outline') + '">' + esc(x[0]) + '</span><span>' + esc(x[1]) + '</span></div>').join('') + '</div>') +
+        panel('应用发布状态', '每次发布可追溯到应用', '<div class="stack tight">' + apps.map((a) => '<div class="row-flex small" style="padding:8px 0;border-bottom:1px solid var(--line-soft)"><span class="app-dot" style="background:' + esc(a.color) + '"></span><b>' + esc(a.label) + '</b><span class="right-auto tiny muted">' + esc(a.version) + ' · ' + esc(a.publishedAt) + '</span></div>').join('') + '</div>', '<button class="btn sm" data-go="publish">发布中心</button>') +
+      '</div></div></div>';
+  };
+
   /* ----------------------------------------------------------- 首页 */
   PAGES.home = function () {
     const d = data;
@@ -684,45 +827,41 @@
     const campPct = activeStudents.length ? Math.min(100, Math.round(todayDiet.length / (activeStudents.length * 3) * 100)) : 0;
     const pending = pendingComments(d) + pendingFulfill(d) + pendingBookings(d);
     const paid = d.employee.products.filter((p) => p.id);
-    const cards = [
-      { key: 'camp', title: '健康训练营', en: 'versionall · 4 个角色', color: '#f07a43', icon: 'activity', live: true,
-        snapTitle: activeCamp.name + ' · DAY ' + (activeCamp.days || 12), metric: activeStudents.length + ' 人在营', sub: campPct + '% 今日打卡完成', bars: [52, 68, 61, 78, 73, 86, 80],
-        route: 'v-overview' },
-      { key: 'brand', title: '品牌站', en: 'PKU-introduce · 7 个页面', color: '#2c8aa8', icon: 'hospital', live: true,
-        snapTitle: '北医的专家 就在您身边', metric: d.brand.experts.length + ' 位专家', sub: d.brand.institutions.length + ' 家机构 · ' + d.brand.departments.length + ' 个科室', bars: [38, 44, 48, 57, 63, 69, 74],
-        route: 'b-home' },
-      { key: 'employee', title: '职工健康', en: 'pku-employee-health · 28 项服务', color: '#ff752b', icon: 'heart', live: true,
-        snapTitle: '企业职工医疗健康管理系列产品', metric: paid.length + ' 项服务', sub: d.employee.modules.length + ' 大模块 · ' + d.employee.bookings.filter((b) => b.statusKey === 'pending').length + ' 单待跟进', bars: [36, 42, 45, 50, 55, 59, 65],
-        route: 'e-home' }
-    ];
+    const appCardMeta = {
+      camp: { snapTitle: activeCamp.name + ' · DAY ' + (activeCamp.days || 12), metric: activeStudents.length + ' 人在营', sub: campPct + '% 今日打卡完成', bars: [52, 68, 61, 78, 73, 86, 80] },
+      brand: { snapTitle: '北医的专家 就在您身边', metric: d.brand.experts.length + ' 位专家', sub: d.brand.institutions.length + ' 家机构 · ' + d.brand.departments.length + ' 个科室', bars: [38, 44, 48, 57, 63, 69, 74] },
+      employee: { snapTitle: '企业职工医疗健康管理系列产品', metric: paid.length + ' 项服务', sub: d.employee.modules.length + ' 大模块 · ' + d.employee.bookings.filter((b) => b.statusKey === 'pending').length + ' 单待跟进', bars: [36, 42, 45, 50, 55, 59, 65] }
+    };
+    const cards = d.apps.slice().sort((a, b) => a.order - b.order).map((a) => Object.assign({
+      key: a.id, title: a.label, en: a.name + ' · ' + a.pages + ' 个页面', color: a.color, icon: a.icon || 'grid', live: a.status === 'online',
+      snapTitle: a.note, metric: a.pages + ' 个页面', sub: a.roles, bars: [42, 48, 55, 61, 66, 72, 78], route: a.route
+    }, appCardMeta[a.id] || {}));
     const taskItems = [
       { tone: 'red', title: pendingComments(d) + ' 条运动/体重记录待批注', sub: '营养师与教练工作台 · 最长等待 2 天', time: '今天', route: 'v-records' },
       { tone: '', title: pendingFulfill(d) + ' 单奖励或兑换待发货', sub: '连续打卡奖品 + 积分商城兑换', time: '今天', route: 'v-fulfill' },
       { tone: 'green', title: '职工年度体检服务有 1 单待随访', sub: '五高一重管理 · 杨君 · 张医生', time: '09:30', route: 'e-orders' },
       { tone: '', title: '第 7 期健康营项目页内容待复核', sub: '品牌站 / 项目团队 / 8 家医院', time: '本周', route: 'b-camp' }
     ];
-    const channels = [
-      { label: '健康训练营', pct: 100, pages: 47, note: '47 个页面均有落点', color: '#f07a43' },
-      { label: '品牌站', pct: 100, pages: 7, note: '7 个页面均已映射', color: '#2c8aa8' },
-      { label: '职工健康', pct: 100, pages: 1, note: '单文件 H5，12 个后台操作区', color: '#ff752b' }
-    ];
+    const channels = d.apps.map((a) => ({ label: a.label, pct: a.status === 'online' ? 100 : 55, pages: a.pages, note: a.name + ' · ' + a.roles, color: a.color }));
     return '<div class="page wide">' +
-      '<div class="command-hero"><div class="micro"><i></i>COMMAND CENTER · ' + esc(today()) + ' · 实时数据来自三端 H5</div>' +
-        '<h1>三端运营，<em>一处指挥</em></h1>' +
-        '<p class="sub">这不是一个泛化的后台模板。健康训练营的打卡与激励、品牌站的专家与分院、职工健康的 28 项服务，全部按照前端真实页面组织。</p>' +
-        '<div class="hero-meta"><span>' + ic('activity', 12) + ' 当前营期 ' + esc(activeCamp.name) + '</span><span>' + ic('users', 12) + ' ' + activeStudents.length + ' 名在营学员</span><span>' + ic('package', 12) + ' ' + paid.length + ' 项职工服务</span><span>' + ic('clock', 12) + ' 上次保存 ' + esc(state.savedAt) + '</span></div>' +
-        '<div class="hero-actions"><button class="btn primary" data-go="map">' + ic('map') + '查看 H5 页面对照</button><button class="btn" data-act="openImpact">' + ic('activity') + '变更影响</button><button class="btn" data-act="openPublish">' + ic('send') + '发布配置</button></div>' +
+      '<div class="command-hero"><div class="micro"><i></i>HEALTH SERVICE OS · ' + esc(today()) + ' · 统一数据 / 多应用运营</div>' +
+        '<h1>一个后台，<em>驱动所有前端</em></h1>' +
+        '<p class="sub">不是为三个 H5 定制的后台，而是一套可扩展的健康服务操作系统：客户、服务、商品、健康档案、权益、订单、内容与发布在最底层共享，每个前端应用只负责自己的展示与交互。</p>' +
+        '<div class="hero-meta"><span>' + ic('layers', 12) + ' ' + d.apps.length + ' 个前端应用</span><span>' + ic('package', 12) + ' ' + paid.length + ' 项共享服务</span><span>' + ic('users', 12) + ' ' + d.customers.length + ' 位客户</span><span>' + ic('clock', 12) + ' 上次保存 ' + esc(state.savedAt) + '</span></div>' +
+        '<div class="hero-actions"><button class="btn primary" data-go="apps">' + ic('layers') + '管理应用矩阵</button><button class="btn" data-go="map">' + ic('map') + '查看页面落点</button><button class="btn" data-act="openImpact">' + ic('activity') + '变更影响</button><button class="btn" data-act="openPublish">' + ic('send') + '发布配置</button></div>' +
       '</div>' +
       '<div class="channel-grid section-space">' + cards.map((c) => '<div class="channel-card" style="--ch:' + c.color + '">' +
-        '<div class="cc-top"><div class="cc-icon">' + ic(c.icon) + '</div><div class="cc-name"><b>' + esc(c.title) + '</b><span>' + esc(c.en) + '</span></div><span class="live"><i></i>线上</span></div>' +
+        '<div class="cc-top"><div class="cc-icon">' + ic(c.icon) + '</div><div class="cc-name"><b>' + esc(c.title) + '</b><span>' + esc(c.en) + '</span></div><span class="live"><i></i>' + (c.live ? '线上' : '草稿') + '</span></div>' +
         '<div class="cc-snapshot"><div class="snap-title">' + ic('eye', 11) + '<b>' + esc(c.snapTitle) + '</b></div><div class="bars">' + c.bars.map((v) => '<i style="height:' + v + '%"></i>').join('') + '</div></div>' +
         '<div class="cc-foot"><span class="metric"><b>' + esc(c.metric) + '</b>' + esc(c.sub) + '</span><button class="go" data-go="' + c.route + '">进入管理 ' + ic('chevron') + '</button></div>' +
-      '</div>').join('') + '</div>' +
+      '</div>').join('') +
+        '<div class="channel-card app-add-card" data-go="apps"><div class="cc-top"><div class="cc-icon">' + ic('plus') + '</div><div class="cc-name"><b>接入新的 H5</b><span>复用同一套后台数据</span></div></div><div class="cc-snapshot"><div class="snap-title">' + ic('layers', 11) + '<b>注册应用 → 绑定共享能力 → 配置页面落点 → 发布</b></div><div class="add-caps">' + APP_CAPABILITIES.slice(0, 5).map((c) => '<span>' + esc(c.label) + '</span>').join('') + '</div></div><div class="cc-foot"><span class="metric"><b>无需复制后台</b>新应用直接复用客户、服务、商品与订单</span><button class="go">应用矩阵 ' + ic('chevron') + '</button></div></div>' +
+      '</div>' +
       '<div class="grid main-side section-space"><div class="stack">' +
         panel('今天要处理的事', '按紧急程度排序 · 点击整行直接进入对应页面', '<div class="todo-list">' + taskItems.map((t) => '<div class="todo" data-go="' + t.route + '" style="cursor:pointer"><span class="mark ' + t.tone + '"></span><div class="tx"><b>' + esc(t.title) + '</b><span>' + esc(t.sub) + '</span></div><span class="time">' + esc(t.time) + '</span>' + ic('chevron', 14) + '</div>').join('') + '</div>') +
-        panel('三个 H5 在后台都有真实落点', '不按抽象业务域拆分；从页面到配置、从操作到影响都能追溯',
+        panel('前端应用都建立在同一套后台数据上', '应用只负责展示；客户、服务、商品、权益、订单与内容由后台统一维护',
           '<div class="stack">' + channels.map((c) => '<div style="display:flex;align-items:center;gap:11px"><div style="width:8px;height:8px;border-radius:50%;background:' + c.color + '"></div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:11.5px">' + esc(c.label) + '</b><span class="tiny muted">' + c.pages + ' 页</span></div>' + progress(c.pct, c.color) + '<div class="tiny muted" style="margin-top:4px">' + esc(c.note) + '</div></div></div>').join('') + '</div>' +
-          '<div class="notice green" style="margin-top:14px">' + ic('check') + '<span>三个 H5 均已接入 <b>pku-bridge.js</b>。发布中心写入 config.json 后，标题、联系方式、职工端模块与服务上下架会在刷新后生效。其余图文内容目前只保存在后台。</span></div>') +
+          '<div class="notice green" style="margin-top:14px">' + ic('check') + '<span>现有 H5 通过 <b>pku-bridge.js</b> 读取同一份 config.json；以后新增应用也走同一套注册、绑定与发布流程。当前真实生效 6 类，其余图文内容先保存在后台。</span></div>') +
       '</div><div class="stack">' +
         panel('发布前的完整性', '当前配置状态', '<div style="display:flex;align-items:center;gap:17px"><div class="ring" style="width:104px;height:104px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="41" fill="none" stroke="#edf2f6" stroke-width="8"/><circle cx="50" cy="50" r="41" fill="none" stroke="' + domainMeta(state.route).accent + '" stroke-width="8" stroke-dasharray="' + (2 * Math.PI * 41 * .98) + ' ' + (2 * Math.PI * 41) + '" stroke-dashoffset="0" transform="rotate(-90 50 50)"/></svg><div class="val"><b>98%</b><span>页面已映射</span></div></div><div style="flex:1" class="stack tight"><div class="row-flex small"><span class="muted">H5 页面</span><b class="right-auto">55 / 55</b></div><div class="row-flex small"><span class="muted">真实数据对象</span><b class="right-auto">' + (data.brand.experts.length + data.employee.products.length + data.camp.students.length) + '</b></div><div class="row-flex small"><span class="muted">可编辑字段</span><b class="right-auto">330+</b></div><div class="row-flex small"><span class="muted">真实生效</span><b class="right-auto" style="color:var(--green)">6 类</b></div></div></div>', '<button class="btn sm" data-go="capability">查看边界</button>') +
         panel('最近操作', '只保存本机，不会伪造线上已生效', '<div class="timeline">' + (state.logs.length ? state.logs.slice(0, 4).map((l, i) => '<div class="tl-row"><span class="tl-time">' + esc((l.at || '').slice(5, 16)) + '</span><div class="tl-axis"><span class="tl-dot" style="--dot:' + (i === 0 ? domainMeta(state.route).accent : '#c9d5e0') + '"></span></div><div class="tl-body"><b>' + esc(l.label) + '</b><span>' + esc(l.app) + ' · ' + esc(l.route) + '</span></div></div>').join('') : '<div class="empty">' + ic('clock', 34) + '<div>还没有配置操作</div></div>') + '</div>') +
@@ -1876,7 +2015,7 @@
     const cross = data.customers.filter((c) => (c.sources || []).length > 1).length;
     const active = data.customers.filter((c) => (c.lastActive || '').indexOf('今天') >= 0).length;
     return '<div class="page wide">' + pageHead('客户总览', '把健康训练营学员、品牌站访客与职工健康职工聚合为同一客户池。点击整行进入客户 360。', '<button class="btn primary" data-act="newCustomer">' + ic('plus') + '<span>新增客户</span></button>', '跨产品 / 客户中心') +
-      purpose('按渠道来源识别客户，查看他/她在三个 H5 的全部使用痕迹。', '客户 360、电话跟进与所有服务记录；不替代 H5 登录。', '客户运营 / 健康管家') +
+      purpose('按渠道来源识别客户，查看他/她在所有前端应用的全部使用痕迹。', '客户 360、电话跟进与所有服务记录；不替代 H5 登录。', '客户运营 / 健康管家') +
       '<div class="kpi-grid">' + kpi('客户总数', data.customers.length, '人', '去重后真实客户', 'users', ['#fff1e7','#a66a12']) + kpi('跨端客户', cross, '人', '使用过 2 个及以上 H5', 'layers', ['#e7f4f8','#1d6e89']) + kpi('今日活跃', active, '人', '最近访问或打卡', 'activity', ['#e9f7f1','#0c7c59']) + kpi('未结电话待办', data.followups.filter((f) => f.status === 'open').length, '条', '人工跟进', 'phone', ['#fdeef4','#be2a5e']) + '</div>' +
       panel('全渠道客户池', '来源 / 标签 / 搜索 · 点击整行进入 360', '<div class="toolbar" style="padding:10px 0 5px">' + seg([{id:'all',label:'全部来源'}].concat(customerSources().map((s) => ({id:s,label:s.replace('H5 ','')}))), source, 'crmSource') + seg([{id:'all',label:'全部标签'}].concat(tags.slice(0, 7).map((t) => ({id:t,label:t}))), tag, 'crmTag') + '<div class="searchbar right-auto">' + ic('search') + '<input class="input" data-ui-input="crmQ" placeholder="姓名 / 手机 / 企业 / 标签" value="' + esc(q) + '"></div></div>' +
         '<div class="table-wrap"><table class="table"><thead><tr><th>客户</th><th>手机号</th><th>来源渠道</th><th>标签</th><th>负责人</th><th>最近活跃</th><th>操作</th></tr></thead><tbody>' + (rows.length ? rows.map((c) => '<tr class="click" data-go="crm-detail" data-id="' + esc(c.id) + '"><td><div class="row-main">' + avatar(c.name) + '<div><div class="name">' + esc(c.name) + '</div><div class="sub">' + esc(c.department || c.summary || '') + '</div></div></div></td><td class="tnum">' + esc(c.phone) + '</td><td><div class="chips">' + (c.sources || []).map((s) => pill(s, 'outline')).join('') + '</div></td><td><div class="chips">' + (c.tags || []).slice(0, 3).map((t) => pill(t, t === '高活跃' ? 'green' : t === '待唤醒' ? 'amber' : 'blue')).join('') + '</div></td><td>' + esc(c.owner || '未分配') + '</td><td class="muted">' + esc(c.lastActive || '') + '</td><td class="actions"><button class="btn sm">客户 360</button></td></tr>').join('') : '<tr><td colspan="7">' + empty('没有匹配客户') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">' + rows.length + ' 人</span>', true) + '</div>';
@@ -1977,15 +2116,15 @@
       ['品牌站导航入口显隐', '导航链接 display', '真实生效'],
       ['versionall 排行榜入口', '排行按钮隐藏', '真实生效']
     ];
-    return '<div class="page wide">' + pageHead('发布中心', '生成三个 H5 共用的 config.json。真实生效字段会明示；后台保存但 H5 不读取的内容不会伪装成已上线。', '<button class="btn" data-act="downloadConfig">' + ic('download') + '<span>下载 config.json</span></button><button class="btn primary" data-act="openPublish">' + ic('send') + '<span>生成发布包</span></button>', '平台 / 发布') +
-      purpose('把后台配置转换成 H5 可读取的发布文件，并明确每一项的真实影响。', '三端 bridge 读取 config.json；GitHub Pages 更新仍需在仓库侧部署。', '平台管理员') +
+    return '<div class="page wide">' + pageHead('发布中心', '生成所有前端应用共用的 config.json，并按应用查看发布状态。真实生效字段会明示；后台保存但 H5 不读取的内容不会伪装成已上线。', '<button class="btn" data-act="downloadConfig">' + ic('download') + '<span>下载 config.json</span></button><button class="btn primary" data-act="openPublish">' + ic('send') + '<span>生成发布包</span></button>', '平台 / 发布') +
+      purpose('把后台配置转换成 H5 可读取的发布文件，并明确每一项的真实影响。', '各应用通过 bridge 读取 config.json；GitHub Pages 更新仍需在仓库侧部署。', '平台管理员') +
       '<div class="grid main-side"><div class="stack">' +
         panel('发布前检查', '当前本机改动 ' + state.dirty + ' 项', '<div class="stack tight">' + effective.map((x) => '<div class="row-flex" style="padding:9px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">生效</span><div style="flex:1"><b style="font-size:11px">' + esc(x[0]) + '</b><div class="tiny muted">' + esc(x[1]) + '</div></div><span class="tiny muted">' + esc(x[2]) + '</span></div>').join('') + '</div>') +
-        panel('config.json 预览', '发布后由三端 bridge 读取', '<pre style="margin:0;padding:14px;background:#0b1f32;color:#cfe4f4;border-radius:12px;font-size:10.5px;line-height:1.65;overflow:auto;max-height:430px">' + esc(JSON.stringify(cfg, null, 2)) + '</pre>', '<button class="btn sm" data-act="copyConfig">' + ic('copy') + '复制</button>') +
+        panel('config.json 预览', '发布后由各应用 bridge 读取', '<pre style="margin:0;padding:14px;background:#0b1f32;color:#cfe4f4;border-radius:12px;font-size:10.5px;line-height:1.65;overflow:auto;max-height:430px">' + esc(JSON.stringify(cfg, null, 2)) + '</pre>', '<button class="btn sm" data-act="copyConfig">' + ic('copy') + '复制</button>') +
       '</div><div class="stack">' +
         panel('发布状态', '', '<div class="radar-card"><div class="micro">CONFIG PIPELINE</div><h3>' + (state.dirty ? state.dirty + ' 项改动待发布' : '当前无未发布改动') + '</h3><p>文件生成在本机；上传到 GitHub Pages 后，H5 刷新即读取。</p><div class="radar-list"><div class="radar-row"><span>真实生效字段</span><b>6 类</b></div><div class="radar-row"><span>仅后台保存</span><b>图文内容</b></div><div class="radar-row"><span>外部接口</span><b>无</b></div></div></div>') +
         panel('不会自动发生的事', '', '<div class="stack tight"><div class="notice warm">' + ic('info') + '<span>不会自动推送短信 / 企微，不会自动发货，不会自动确认预约，也不会自动写回 H5 的图文详情。</span></div><div class="notice">' + ic('external') + '<span>GitHub 部署由维护者在本机执行；浏览器端不保存 GitHub Token。</span></div></div>') +
-        panel('发布后验证', '建议顺序', '<div class="stack tight">' + ['下载 config.json 并替换线上文件', '提交并等待 GitHub Pages 构建', '打开三个 H5 检查联系方式与入口显隐', '回到「H5 页面对照」核对生效状态'].map((x, i) => '<div class="row-flex small" style="padding:7px 0;border-bottom:1px solid var(--line-soft)"><span class="avatar square" style="width:24px;height:24px;font-size:9px">' + (i + 1) + '</span><span>' + x + '</span></div>').join('') + '</div>') +
+        panel('发布后验证', '建议顺序', '<div class="stack tight">' + ['下载 config.json 并替换线上文件', '提交并等待 GitHub Pages 构建', '逐个应用检查联系方式与入口显隐', '回到「H5 页面对照」核对生效状态'].map((x, i) => '<div class="row-flex small" style="padding:7px 0;border-bottom:1px solid var(--line-soft)"><span class="avatar square" style="width:24px;height:24px;font-size:9px">' + (i + 1) + '</span><span>' + x + '</span></div>').join('') + '</div>') +
       '</div></div></div>';
   };
 
@@ -2032,9 +2171,14 @@
         ['企康小安智能推荐入口', 'e-home', '保存']
       ] }
     ];
+    data.apps.forEach((a) => {
+      if (!groups.some((g) => g.app === a.id)) {
+        groups.push({ app: a.id, name: a.name, ch: a.color, pct: 0, rows: [['尚未建立页面落点', 'apps', '保存']] });
+      }
+    });
     return '<div class="page wide">' + pageHead('H5 页面对照', '每个 H5 页面都能找到后台落点，并标注是真实生效、bridge 生效，还是只保存后台。', '<button class="btn" data-act="openPublish">' + ic('send') + '<span>生成发布包</span></button>', '平台 / 页面映射') +
-      purpose('回答“这个前端页面到底在哪里配置、改了会不会生效”。', '所有三端页面的后台入口与生效状态。', '平台管理员') +
-      '<div class="map-grid">' + groups.map((g) => '<div class="map-app"><div class="map-app-head" style="--ch:' + g.ch + '"><span class="ma">' + ic(g.app === 'camp' ? 'activity' : g.app === 'brand' ? 'hospital' : 'heart') + '</span><div class="tx"><b>' + esc(g.name) + '</b><span>' + SEED.h5Pages.find((x) => x.app === g.app).label + ' · ' + g.rows.length + ' 个页面/操作区</span></div><span class="pct">' + g.pct + '%</span></div><div class="map-list">' + g.rows.map((r, i) => '<div class="map-row"><span class="mp">' + (i + 1) + '</span><span class="mt">' + esc(r[0]) + '</span><button class="btn sm" data-go="' + esc(r[1].split(' · ')[0]) + '">' + esc(r[1]) + '</button><span class="badge" style="background:' + (r[2] === '真实' ? '#e9f7f1' : r[2] === 'bridge' ? '#fff6e0' : '#edf3ff') + ';color:' + (r[2] === '真实' ? '#0c7c59' : r[2] === 'bridge' ? '#a86a06' : '#1f4fd1') + '">' + r[2] + '</span></div>').join('') + '</div></div>').join('') + '</div></div>';
+      purpose('回答“这个前端页面到底在哪里配置、改了会不会生效”。', '所有应用页面的后台入口与生效状态。', '平台管理员') +
+      '<div class="map-grid">' + groups.map((g) => '<div class="map-app"><div class="map-app-head" style="--ch:' + g.ch + '"><span class="ma">' + ic(g.app === 'camp' ? 'activity' : g.app === 'brand' ? 'hospital' : g.app === 'employee' ? 'heart' : 'grid') + '</span><div class="tx"><b>' + esc(g.name) + '</b><span>' + esc(((data.apps.find((x) => x.id === g.app) || {}).label || g.name)) + ' · ' + g.rows.length + ' 个页面/操作区</span></div><span class="pct">' + g.pct + '%</span></div><div class="map-list">' + g.rows.map((r, i) => '<div class="map-row"><span class="mp">' + (i + 1) + '</span><span class="mt">' + esc(r[0]) + '</span><button class="btn sm" data-go="' + esc(r[1].split(' · ')[0]) + '">' + esc(r[1]) + '</button><span class="badge" style="background:' + (r[2] === '真实' ? '#e9f7f1' : r[2] === 'bridge' ? '#fff6e0' : '#edf3ff') + ';color:' + (r[2] === '真实' ? '#0c7c59' : r[2] === 'bridge' ? '#a86a06' : '#1f4fd1') + '">' + r[2] + '</span></div>').join('') + '</div></div>').join('') + '</div></div>';
   };
 
   PAGES['capability'] = function () {
@@ -2069,10 +2213,10 @@
       { name: '健康管家', scope: '客户 360、电话跟进、报告解读', color: '#a66a12', icon: 'phone', count: 4 },
       { name: '履约运营', scope: '发货、核销、机构号源', color: '#0c7c78', icon: 'truck', count: 2 }
     ];
-    return '<div class="page wide">' + pageHead('角色与日志', '按三端真实角色划分职责。所有敏感操作只保存在本机日志，不伪造服务端审计。', '<button class="btn" data-act="exportLogs">' + ic('download') + '<span>导出日志</span></button>', '平台 / 权限') +
+    return '<div class="page wide">' + pageHead('角色与日志', '按应用真实角色划分职责。所有敏感操作只保存在本机日志，不伪造服务端审计。', '<button class="btn" data-act="exportLogs">' + ic('download') + '<span>导出日志</span></button>', '平台 / 权限') +
       purpose('明确谁负责哪一块，并记录本机改动了哪些配置。', '运营分工、发布前复核与问题追溯。', '平台管理员') +
       '<div class="grid three">' + roles.map((r) => '<div class="panel" style="box-shadow:none"><div class="panel-body"><div class="row-flex"><span class="avatar square" style="width:34px;height:34px;background:' + r.color + '18;color:' + r.color + '">' + ic(r.icon) + '</span><div><b style="font-size:12px">' + esc(r.name) + '</b><div class="tiny muted" style="margin-top:2px">' + esc(r.scope) + '</div></div><span class="pill right-auto">' + r.count + ' 人</span></div></div></div>').join('') + '</div>' +
-      '<div class="grid main-side section-space"><div class="stack">' + panel('操作日志', '最近 ' + state.logs.length + ' 条 · 本机记录', '<div class="table-wrap"><table class="table"><thead><tr><th>时间</th><th>操作</th><th>所属端</th><th>页面</th></tr></thead><tbody>' + (state.logs.length ? state.logs.slice(0, 20).map((l) => '<tr><td class="muted">' + esc(l.at) + '</td><td><b style="font-size:11px">' + esc(l.label) + '</b></td><td>' + esc(l.app) + '</td><td class="muted">' + esc(l.route) + '</td></tr>').join('') : '<tr><td colspan="4">' + empty('还没有操作日志') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">仅本机</span>', true) + '</div><div class="stack">' + panel('本机存储', 'localStorage · 非服务端', '<div class="stack tight"><div class="row-flex small"><span class="muted">存储键</span><b class="right-auto">' + KEY + '</b></div><div class="row-flex small"><span class="muted">数据版本</span><b class="right-auto">' + STORAGE_VERSION + '</b></div><div class="row-flex small"><span class="muted">改动计数</span><b class="right-auto">' + state.dirty + '</b></div><div class="row-flex small"><span class="muted">最近保存</span><b class="right-auto">' + esc(state.savedAt) + '</b></div><div class="row-flex small"><span class="muted">本机素材</span><b class="right-auto">' + state.assets.length + ' 张</b></div></div>') + panel('危险操作', '', '<div class="notice danger">' + ic('trash') + '<span>清空本机会恢复三个 H5 的真实种子数据，已上传图片和未导出的改动会丢失。</span></div><button class="btn danger w-full" style="margin-top:10px" data-act="resetLocal">' + ic('refresh') + '清空本机配置</button>') + panel('安全提醒', '', '<div class="notice amber">' + ic('shield') + '<span>不要在浏览器或代码中保存 GitHub Token。发布用最小权限 Token，并在使用后撤销。</span></div>') + '</div></div></div>';
+      '<div class="grid main-side section-space"><div class="stack">' + panel('操作日志', '最近 ' + state.logs.length + ' 条 · 本机记录', '<div class="table-wrap"><table class="table"><thead><tr><th>时间</th><th>操作</th><th>所属应用</th><th>页面</th></tr></thead><tbody>' + (state.logs.length ? state.logs.slice(0, 20).map((l) => '<tr><td class="muted">' + esc(l.at) + '</td><td><b style="font-size:11px">' + esc(l.label) + '</b></td><td>' + esc(l.app) + '</td><td class="muted">' + esc(l.route) + '</td></tr>').join('') : '<tr><td colspan="4">' + empty('还没有操作日志') + '</td></tr>') + '</tbody></table></div>', '<span class="pill">仅本机</span>', true) + '</div><div class="stack">' + panel('本机存储', 'localStorage · 非服务端', '<div class="stack tight"><div class="row-flex small"><span class="muted">存储键</span><b class="right-auto">' + KEY + '</b></div><div class="row-flex small"><span class="muted">数据版本</span><b class="right-auto">' + STORAGE_VERSION + '</b></div><div class="row-flex small"><span class="muted">改动计数</span><b class="right-auto">' + state.dirty + '</b></div><div class="row-flex small"><span class="muted">最近保存</span><b class="right-auto">' + esc(state.savedAt) + '</b></div><div class="row-flex small"><span class="muted">本机素材</span><b class="right-auto">' + state.assets.length + ' 张</b></div></div>') + panel('危险操作', '', '<div class="notice danger">' + ic('trash') + '<span>清空本机会恢复真实种子数据，已上传图片和未导出的改动会丢失。</span></div><button class="btn danger w-full" style="margin-top:10px" data-act="resetLocal">' + ic('refresh') + '清空本机配置</button>') + panel('安全提醒', '', '<div class="notice amber">' + ic('shield') + '<span>不要在浏览器或代码中保存 GitHub Token。发布用最小权限 Token，并在使用后撤销。</span></div>') + '</div></div></div>';
   };
 
   /* ----------------------------------------------------------- 数据同步 */
@@ -3074,15 +3218,13 @@
 
   function openImpactDrawer() {
     const logs = state.logs.slice(0, 8);
-    const affected = ['健康训练营', '品牌站', '职工健康'];
     openDrawer({ title: '变更影响', sub: '当前本机 ' + state.dirty + ' 项改动 · 不跳离当前页面', save: false, extra: '<button class="btn" data-go="map">查看映射</button><button class="btn primary" data-act="openPublish">' + ic('send') + '生成发布包</button>', body: function () {
       return '<div class="stack">' +
-        panel('会影响哪三个 H5', '按端汇总', '<div class="stack tight">' + ['camp', 'brand', 'employee'].map((app) => {
-          const logCount = logs.filter((l) => ({ camp: 'v-', brand: 'b-', employee: 'e-' }[app] || '' ).length && l.route.indexOf({ camp: 'v-', brand: 'b-', employee: 'e-' }[app]) === 0).length;
-          const pg = SEED.h5Pages.find((x) => x.app === app);
-          return '<div class="impact-app"><span class="avatar square" style="width:30px;height:30px;background:' + pg.color + '18;color:' + pg.color + '">' + ic(app === 'camp' ? 'activity' : app === 'brand' ? 'hospital' : 'heart') + '</span><div class="tx"><b>' + esc(pg.label) + '</b><span>' + esc(pg.name) + ' · ' + (logCount ? logCount + ' 项改动来自此端' : '本次无直接改动') + '</span></div>' + pill(logCount ? '有改动' : '未涉及', logCount ? 'amber' : 'outline') + '</div>';
+        panel('会影响哪些前端应用', '按应用汇总', '<div class="stack tight">' + data.apps.map((app) => {
+          const logCount = logs.filter((l) => l.app === app.label).length;
+          return '<div class="impact-app"><span class="avatar square" style="width:30px;height:30px;background:' + app.color + '18;color:' + app.color + '">' + ic(app.icon || 'grid') + '</span><div class="tx"><b>' + esc(app.label) + '</b><span>' + esc(app.name) + ' · ' + (logCount ? logCount + ' 项改动来自此应用' : '本次无直接改动') + '</span></div>' + pill(logCount ? '有改动' : '未涉及', logCount ? 'amber' : 'outline') + '</div>';
         }).join('') + '</div>') +
-        panel('真实生效范围', '发布后 bridge 才会读取', '<div class="stack tight">' + [['联系方式', '三端文本'], ['职工端标题', 'title'], ['模块与服务上下架', '职工端'], ['品牌导航入口', '品牌站'], ['排行榜入口', 'versionall']].map((x) => '<div class="row-flex small" style="padding:7px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">生效</span><span>' + x[0] + '</span><span class="right-auto tiny muted">' + x[1] + '</span></div>').join('') + '</div>') +
+        panel('真实生效范围', '发布后 bridge 才会读取', '<div class="stack tight">' + [['联系方式', '全应用文本'], ['职工端标题', 'title'], ['模块与服务上下架', '职工端'], ['品牌导航入口', '品牌站'], ['排行榜入口', 'versionall']].map((x) => '<div class="row-flex small" style="padding:7px 0;border-bottom:1px solid var(--line-soft)"><span class="pill green">生效</span><span>' + x[0] + '</span><span class="right-auto tiny muted">' + x[1] + '</span></div>').join('') + '</div>') +
         panel('最近改动', '返回原页面继续操作', '<div class="timeline">' + (logs.length ? logs.map((l, i) => '<div class="tl-row"><span class="tl-time">' + esc((l.at || '').slice(5, 16)) + '</span><div class="tl-axis"><span class="tl-dot" style="--dot:' + (i === 0 ? domainMeta(state.route).accent : '#c9d5e0') + '"></span></div><div class="tl-body"><b>' + esc(l.label) + '</b><span>' + esc(l.app) + ' · ' + esc(l.route) + '</span></div></div>').join('') : empty('还没有改动')) + '</div>') +
         '<div class="notice warm">' + ic('info') + '<span>“变更影响”只做说明与发布入口，不会自动跳转页面，也不会自动上线。</span></div></div>';
     } });
@@ -3090,7 +3232,7 @@
 
   function openPublishDrawer() {
     const cfg = buildConfig();
-    openDrawer({ title: '生成发布包', sub: 'config.json · 三端共用', save: false, extra: '<button class="btn" data-act="copyConfig">' + ic('copy') + '复制 JSON</button><button class="btn primary" data-act="downloadConfig">' + ic('download') + '下载 config.json</button>', body: function () {
+    openDrawer({ title: '生成发布包', sub: 'config.json · 所有应用共用', save: false, extra: '<button class="btn" data-act="copyConfig">' + ic('copy') + '复制 JSON</button><button class="btn primary" data-act="downloadConfig">' + ic('download') + '下载 config.json</button>', body: function () {
       return '<div class="stack">' + panel('将写入', '', '<div class="stack tight">' + [['联系方式', 'contact'], ['职工端模块', 'employee.modules'], ['服务上下架', 'employee.services'], ['品牌导航入口', 'channelPages.brand'], ['排行榜开关', 'versionall.rankingOn']].map((x) => '<div class="row-flex small" style="padding:7px 0;border-bottom:1px solid var(--line-soft)"><span>' + x[0] + '</span><b class="right-auto" style="font-size:9.5px;color:var(--muted)">' + x[1] + '</b></div>').join('') + '</div>') +
         panel('不会写入', '', '<div class="notice warm">' + ic('info') + '<span>商品图文详情、专家照片、横幅图片、客户备注、电话待办等不会进入 config.json；它们只保存在后台本机。</span></div>') +
         panel('config.json', '', '<pre style="margin:0;padding:13px;background:#0b1f32;color:#cfe4f4;border-radius:10px;font-size:10px;line-height:1.6;max-height:340px;overflow:auto">' + esc(JSON.stringify(cfg, null, 2)) + '</pre>') + '</div>';
@@ -3308,6 +3450,52 @@
     data.camp.camps.push(c);
     openCampDrawer(c.id);
   }
+  function openAppDrawer(id) {
+    const a = data.apps.find((x) => x.id === id);
+    if (!a) return;
+    const i = data.apps.indexOf(a);
+    const p = 'apps.' + i;
+    openDrawer({
+      title: '应用 · ' + a.label,
+      sub: a.name + ' · ' + a.type + ' · 绑定 ' + APP_CAPABILITIES.filter((c) => a.capabilities[c.key]).length + ' 项共享能力',
+      save: true, saveLabel: '应用配置',
+      extra: '<button class="btn" data-go="' + esc(a.route) + '">' + ic('external') + '进入应用</button><button class="btn danger" data-act="deleteApp" data-id="' + esc(a.id) + '">' + ic('trash') + '移除应用</button>',
+      body: function () {
+        return '<div class="stack">' +
+          panel('应用信息', '只影响这个前端的展示与发布', '<div class="form-grid two">' +
+            field('显示名称', a.label, p + '.label') +
+            field('应用代码', a.name, p + '.name') +
+            field('访问地址', a.url, p + '.url') +
+            field('应用类型', a.type, p + '.type', { select: [{ v: 'H5', l: 'H5 页面' }, { v: '小程序', l: '小程序' }, { v: '站点', l: 'Web 站点' }] }) +
+            field('运营入口', a.route, p + '.route', { select: [{ v: 'v-overview', l: '健康训练营 · 运营总览' }, { v: 'b-home', l: '品牌站 · 品牌首页' }, { v: 'e-home', l: '职工健康 · 首页配置' }, { v: 'apps', l: '应用矩阵' }, { v: 'map', l: 'H5 页面对照' }] }) +
+            field('运行状态', a.status, p + '.status', { select: [{ v: 'online', l: '线上运行' }, { v: 'draft', l: '草稿 / 未上线' }, { v: 'offline', l: '已停用' }] }) +
+            field('页面 / 操作区', a.pages, p + '.pages', { num: true }) +
+            field('使用角色', a.roles, p + '.roles') +
+            field('负责人', a.owner, p + '.owner') +
+            field('当前版本', a.version, p + '.version') +
+            field('最近发布', a.publishedAt, p + '.publishedAt') +
+            field('主题色', a.color, p + '.color') +
+            field('应用说明', a.note, p + '.note', { area: true, rows: 3 }) +
+          '</div>') +
+          panel('复用的共享能力', '勾选后该应用可读取对应后台数据；取消只关闭入口，不删除数据', '<div class="stack tight">' + APP_CAPABILITIES.map((c) => switchRow(c.label, c.desc, p + '.capabilities.' + c.key, !!a.capabilities[c.key])).join('') + '</div>') +
+          panel('页面落点与发布', '应用独立发布，不影响其他前端', '<div class="notice">' + ic('map') + '<span>先在「H5 页面对照」确认每个页面读取哪份数据，再在「发布中心」生成该应用的 config.json。当前只有 6 类字段会被静态 H5 真实读取。</span></div>') +
+          '<div class="notice warm">' + ic('info') + '<span>移除应用只删除注册关系与发布配置，不会删除客户、服务、订单等共享数据。</span></div>' +
+        '</div>';
+      }
+    });
+  }
+  function createNewApp() {
+    const a = {
+      id: uid('app'), name: 'new-h5', label: '新前端应用', url: '', type: 'H5', status: 'draft',
+      pages: 1, roles: '访客', owner: '平台运营', version: 'v1.0.0', publishedAt: '尚未发布',
+      color: '#176b92', icon: 'grid', route: 'map', order: data.apps.length + 1,
+      note: '请填写这个前端提供什么服务、服务哪些人。',
+      capabilities: { customer: false, service: false, health: false, fivegood: false, benefit: false, content: true, report: false, publish: true }
+    };
+    data.apps.push(a);
+    saveStore();
+    openAppDrawer(a.id);
+  }
   function createNewService() {
     const p = { id: uid('svc'), mod: 'screen', name: '新服务', en: '', scope: '属地履约', payer: [], payerText: '', tags: [], tagsText: '', intro: '请填写服务简介', includes: [], notice: [], flow: [], orgs: [], duration: '', resp: '', active: true, recommended: false, imageUrl: '', gallery: [], detailHtml: '<p>请填写图文详情。</p>' };
     data.employee.products.push(p);
@@ -3359,6 +3547,9 @@
     if (act === 'toggleNav') { state.navOpen = !state.navOpen; document.body.classList.toggle('nav-open', state.navOpen); return; }
     if (act === 'toggleGroup') { const g = el.dataset.group; state.openGroup = state.openGroup === g ? null : g; render(true); return; }
     if (act === 'goHome') return navigate('home');
+    if (act === 'editApp') return openAppDrawer(id);
+    if (act === 'newApp') return createNewApp();
+    if (act === 'deleteApp') { const a = data.apps.find((x) => x.id === id); if (a && confirm('移除应用「' + a.label + '」？共享数据不会被删除。')) { data.apps.splice(data.apps.indexOf(a), 1); state.drawer = null; commit('移除前端应用'); render(true); } return; }
     if (act === 'save') { commit(el.dataset.label || '改动'); render(true); return; }
     if (act === 'commitDrawer') { const label = el.dataset.label || '改动'; state.drawer = null; commit(label); render(true); return; }
     if (act === 'openSearch') return openSearchDrawer();
@@ -3521,7 +3712,7 @@
     if (act === 'exportOrders') return exportOrders();
     if (act === 'exportCustomers') return exportCustomers();
     if (act === 'exportLogs') return exportLogs();
-    if (act === 'resetLocal') { if (confirm('清空本机配置并恢复三个 H5 的真实种子数据？此操作不可恢复。')) { localStorage.removeItem(KEY); location.hash = ''; location.reload(); } return; }
+    if (act === 'resetLocal') { if (confirm('清空本机配置并恢复真实种子数据？此操作不可恢复。')) { localStorage.removeItem(KEY); location.hash = ''; location.reload(); } return; }
     if (act === 'richBold') { document.execCommand('bold'); syncRich(act); return; }
     if (act === 'richUnderline') { document.execCommand('underline'); syncRich(act); return; }
     if (act === 'richList') { document.execCommand('insertHTML', false, '<ul><li>列表项</li></ul>'); syncRich(act); return; }
