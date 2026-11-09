@@ -268,8 +268,8 @@
               { label: '责任人', render: (c) => '<span class="small">' + E(c.owner) + '</span>' },
               { label: '时限', render: (c) => '<span class="small tnum">' + E(c.due) + '</span>' },
               { label: '下一步', render: (c) => '<span class="small mut clip">' + E(c.next) + '</span>' },
-              { label: '', align: 'right', render: (c) => '<div class="rowact"><button data-act="advanceCase" data-id="' + c.id + '" title="推进">' + I('chevron', 14) + '</button><button data-act="caseToPlan" data-id="' + c.id + '" title="转管理">' + I('target', 14) + '</button></div>' }
-            ], list.map((c) => Object.assign({ _id: c.id }, c))) }) +
+              { label: '查看', align: 'right', render: (c) => '<div class="rowact"><button data-act="viewCase" data-id="' + c.id + '" title="查看服务案例">' + I('eye', 13) + '</button><button data-act="advanceCase" data-id="' + c.id + '" title="推进">' + I('chevron', 14) + '</button><button data-act="caseToPlan" data-id="' + c.id + '" title="转管理">' + I('target', 14) + '</button></div>' }
+            ], list.map((c) => Object.assign({ _id: c.id, _act: 'viewCase' }, c))) }) +
           '<div class="stack">' +
             K.panel({ title: '履约前置检查', sub: '缺口在预约前暴露', body: '<div class="hn-checks">' +
               [['权益校验', 8, '1 人权益不足'], ['知情同意', 7, '1 人待签署'], ['风险问卷', 6, '2 人未完成'], ['空腹/准备', 5, '1 单需提醒'], ['禁忌核对', 9, '全部通过']].map((x) =>
@@ -286,6 +286,53 @@
     actions: {
       filterStage(d) { const st = P['h-service-flow'].state; st.stage = d.id === st.stage ? '' : d.id; App.refresh(true); },
       exportS() { UI.toast('履约清单已导出'); },
+      viewCase(d) {
+        const c = H().serviceCases.find((x) => x.id === d.id);
+        if (!c) return;
+        const profile = H().profiles.find((p) => p.id === c.profileId) || {};
+        const exs = H().exceptions.filter((e) => e.caseId === c.id);
+        const plan = H().carePlans.find((p) => p.profileId === c.profileId);
+        const rows = [
+          ['服务对象', c.person + ' · ' + (profile.dept || '—')],
+          ['服务项目', c.service],
+          ['当前阶段', c.stage],
+          ['责任人', c.owner],
+          ['时限', c.due],
+          ['权益使用', c.benefit || '—'],
+          ['结算金额', c.amount ? '¥' + Number(c.amount).toLocaleString('zh-CN') : '权益内'],
+          ['下一步', c.next]
+        ];
+        UI.drawer({
+          title: '服务案例 · ' + c.person, sub: c.service + ' · ' + c.stage,
+          icon: 'stethoscope', width: 620, okText: '关闭', footer: true,
+          body: '<div class="note" style="margin-bottom:12px">从预约到报告、转管理、结算都在同一个案例里推进，任何一项逾期都会进入履约台待办。</div>' +
+            '<dl class="vkv">' + rows.map((r) => '<dt>' + E(r[0]) + '</dt><dd>' + E(r[1]) + '</dd>').join('') + '</dl>' +
+            '<div class="formsec" style="margin-top:14px"><h4>阶段进展</h4><div class="hn-pipeline" style="margin:0">' +
+              STAGE.map((s, i) => '<button class="hn-stage ' + (s === c.stage ? 'on' : '') + '" style="cursor:default"><span>0' + (i + 1) + '</span><em>' + s + '</em><small>' + STAGE_HINT[s] + '</small></button>' + (i < STAGE.length - 1 ? '<i>→</i>' : '')).join('') +
+            '</div></div>' +
+            '<div class="grid g-2" style="margin-top:14px;gap:10px">' +
+              '<div class="panel" style="padding:13px 14px;box-shadow:none"><b style="font-size:12px">健康与风险</b>' +
+                '<div class="small mut" style="margin-top:6px;line-height:1.7">' + (profile.risk ? '风险分层：' + ({ high: '高', medium: '中', low: '低' }[profile.risk] || profile.risk) + '<br>' : '') +
+                (profile.exam ? '最近体检：' + E(profile.exam.date || '') + '<br>异常：' + E((profile.exam.abnormal || []).join('、') || '无') : '暂无体检档案') + '</div></div>' +
+              '<div class="panel" style="padding:13px 14px;box-shadow:none"><b style="font-size:12px">管理衔接</b>' +
+                '<div class="small mut" style="margin-top:6px;line-height:1.7">' + (plan ? '计划：' + E(plan.name) + '<br>责任人：' + E(plan.owner) + '<br>依从性：' + plan.adherence + '%' : '尚未建立管理计划') +
+                '<br>异常：' + (exs.length ? E(exs.map((e) => e.type).join('、')) : '无') + '</div></div>' +
+            '</div>' +
+            '<div class="row" style="margin-top:14px;gap:8px">' +
+              '<button class="btn sm primary" data-case-go="advanceCase" data-id="' + c.id + '">' + I('chevron', 13) + '推进到下一阶段</button>' +
+              '<button class="btn sm" data-case-go="caseToPlan" data-id="' + c.id + '">' + I('target', 13) + '转入健康管理</button>' +
+              '<button class="btn sm ghost" data-case-go="openProfile" data-id="' + c.profileId + '">' + I('user', 13) + '查看健康档案</button>' +
+            '</div>',
+          mount(n) {
+            n.querySelectorAll('[data-case-go]').forEach((b) => b.addEventListener('click', () => {
+              const act = b.dataset.caseGo;
+              UI.closeOverlay();
+              if (act === 'openProfile') App.go('h-profiles', { id: b.dataset.id });
+              else P['h-service-flow'].actions[act]({ id: b.dataset.id });
+            }));
+          }
+        });
+      },
       advanceCase(d) {
         const c = H().serviceCases.find((x) => x.id === d.id);
         const next = advanceStage(c);

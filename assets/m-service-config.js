@@ -205,7 +205,7 @@
           '<div class="minisearch">' + I('search', 13) + '<input placeholder="搜索服务名称 / 标签" data-live-filter="svc"></div>') +
         '<div class="svc-grid">' + list.map((s) => {
           const p = score(s);
-          return '<article class="svc-card" data-filter-item="svc" data-text="' + E(s.name + ' ' + s.en + ' ' + (s.tags || []).join(' ')) + '">' +
+          return '<article class="svc-card" data-act="editSvc" data-id="' + s.id + '" title="点击任意位置编辑服务详情" data-filter-item="svc" data-text="' + E(s.name + ' ' + s.en + ' ' + (s.tags || []).join(' ')) + '">' +
             '<div class="svc-cover">' +
               (s.cover ? '<img src="' + E(s.cover) + '" alt="">' : '<div class="svc-empty">' + I('image', 22) + '<span>缺服务主图</span></div>') +
               '<span class="svc-state">' + UI.pill(s.on ? '在架' : '下架', s.on ? 'green' : 'grey') + '</span>' +

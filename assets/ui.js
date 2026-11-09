@@ -228,7 +228,8 @@
     cols.forEach((c) => { h += '<th style="' + (c.w ? 'width:' + c.w + ';' : '') + (c.align ? 'text-align:' + c.align : '') + '">' + c.label + '</th>'; });
     h += '</tr></thead><tbody>';
     rows.forEach((r) => {
-      h += '<tr' + (r._id ? ' data-row="' + r._id + '"' : '') + '>';
+      h += '<tr' + (r._id ? ' data-row="' + r._id + '"' : '') +
+        (r._act ? ' data-act="' + r._act + '" data-id="' + r._id + '" class="row-click"' : '') + '>';
       cols.forEach((c) => {
         const v = typeof c.render === 'function' ? c.render(r) : r[c.key];
         h += '<td style="' + (c.align ? 'text-align:' + c.align : '') + '">' + (v == null ? '' : v) + '</td>';

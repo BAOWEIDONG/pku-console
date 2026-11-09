@@ -12,7 +12,7 @@
     'g-insights': 'v.report',
     'g-impact': 'logs',
     'chn-map': 'shared.content',
-    'crm-360': 'v.ops',
+    'crm-hub': 'v.ops', 'crm-360': 'v.ops', 'crm-customer': 'v.ops',
     'v-dashboard': 'v.ops', 'v-camps': 'v.ops', 'v-students': 'v.ops', 'v-student-detail': 'v.ops',
     'v-records': 'v.ops', 'v-annotations': 'v.ops', 'v-attendance': 'v.ops', 'v-content': 'v.ops', 'v-messages': 'v.ops',
     'v-rules': 'v.rules', 'v-points-rules': 'v.rules', 'v-metrics': 'v.rules', 'v-questionnaire': 'v.rules', 'v-activities': 'v.rules',
@@ -56,7 +56,7 @@
     { id: 'command', label: '指挥', en: 'COMMAND', icon: 'grid', dot: '#7CB6FF', home: 'workbench', desc: '实时经营 · 待办 · 发布状态' },
     { id: 'growth', label: '增长', en: 'GROWTH', icon: 'spark', dot: '#48D3C7', home: 'chn-map', desc: '渠道 · 内容 · 触点编排' },
     { id: 'catalog', label: '商品', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'svc-catalog', desc: '服务 · 价格 · 履约能力' },
-    { id: 'customer', label: '交易', en: 'TRADE', icon: 'file', dot: '#F0B45E', home: 'trd-orders', desc: '订单 · 预约 · 结算 · 客户' },
+    { id: 'customer', label: '客户', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'crm-hub', desc: '全渠道客户 · 360 档案 · 服务痕迹' },
     { id: 'health', label: '健管', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'h-overview', desc: '服务履约 · 风险 · 计划 · 随访 · 结果' },
     { id: 'program', label: '项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fg-overview', desc: '五好生活 · 减重营 · 激励' },
     { id: 'shared', label: '共享', en: 'SHARED', icon: 'link', dot: '#48D3C7', home: 'lib-assets', desc: '资产 · 触达 · 权益 · 规则' },
@@ -125,6 +125,13 @@
       ] }
     ],
     customer: [
+      { group: '客户管理', items: [
+        { id: 'crm-hub', label: '客户总览', icon: 'users' },
+        { id: 'crm-customer', label: '全渠道客户', icon: 'user' },
+        { id: 'crm-360', label: '客户 360', icon: 'activity' },
+        { id: 'e-orgs', label: '企业客户与权益', icon: 'building' },
+        { id: 'g-accounts', label: '客户账号', icon: 'lock' }
+      ] },
       { group: '交易', items: [
         { id: 'trd-orders', label: '订单中心', icon: 'file' },
         { id: 'v-claims', label: '领奖订单', icon: 'gift' },
@@ -142,12 +149,6 @@
         { id: 'trd-diff', label: '结算差异', icon: 'x' },
         { id: 'trd-refund', label: '退款与冲销', icon: 'undo' },
         { id: 'trd-invoice', label: '开票与回款', icon: 'file' }
-      ] },
-      { group: '客户', items: [
-        { id: 'crm-360', label: '客户 360', icon: 'user' },
-        { id: 'crm-customer', label: '客户台账', icon: 'users' },
-        { id: 'e-orgs', label: '企业客户与权益', icon: 'building' },
-        { id: 'g-accounts', label: '客户账号', icon: 'lock' }
       ] }
     ],
     health: [
@@ -313,14 +314,17 @@
     return '<div class="side-brand">' +
         '<span class="side-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></span>' +
         '<span class="side-name"><b>北大医疗</b><em>超级运营中台</em></span>' +
-        '<button class="side-all" data-act="spaceMenu" title="查看全部 9 个工作区">' + I('grid', 13) + '全部</button>' +
       '</div>' +
-      '<div class="subnav-head"><div class="subnav-eyebrow">' + E(space.en) + ' · 当前工作区</div>' +
-        '<button class="space-switch" data-act="spaceMenu" title="切换工作区">' +
-          '<span class="sp-dot" style="background:' + space.dot + '"></span>' +
-          '<b>' + E(space.label) + '</b>' + I('down', 13) + '</button>' +
-        '<div class="sp-desc">' + E(space.desc) + '</div>' +
-        '<button class="subnav-new" data-act="quickNew">' + I('plus', 14) + '新建</button></div>' +
+      '<div class="ws-picker">' +
+        '<div class="ws-picker-h"><span>工作区</span><em>点击直接切换</em>' +
+          '<button class="subnav-new" data-act="quickNew">' + I('plus', 13) + '新建</button></div>' +
+        '<div class="ws-grid">' + WORKBENCHES.map((w) =>
+          '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.desc) + '">' +
+            '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 13) + '</span>' +
+            '<b>' + E(w.label) + '</b>' +
+          '</button>').join('') + '</div>' +
+        '<div class="ws-desc"><span style="background:' + space.dot + '"></span>' + E(space.desc) + '</div>' +
+      '</div>' +
       '<div class="subnav-search" data-act="cmd">' + I('search', 14) + '<span>搜索 ' + E(space.label) + ' 内页面</span><kbd>⌘K</kbd></div>' +
       '<nav class="nav">' + nav.map((g) => {
         const items = g.items.filter((it) => visible(it.id));
@@ -947,8 +951,8 @@
   if (window.V6) V6.ensure();
   if (window.V7) V7.ensure();
   if (window.V8) V8.ensure();
-  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9) {
-    Store.db.meta.version = '9.0.0';
+  if (Store.db.meta && parseFloat(Store.db.meta.version) < 9.1) {
+    Store.db.meta.version = '9.1.0';
     Store.persist();
   }
   // 主题色注入

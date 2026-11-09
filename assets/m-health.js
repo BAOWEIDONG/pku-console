@@ -270,11 +270,38 @@
             (b.status === 'pending' ? '<button data-act="setBk" data-id="' + b.id + '" title="确认">' + I('check', 14) + '</button>' : '') +
             (b.status === 'confirmed' ? '<button data-act="setBk" data-id="' + b.id + '" title="完成">' + I('check', 14) + '</button>' : '') +
             '<button data-act="cancelBk" data-id="' + b.id + '" title="取消">' + I('x', 14) + '</button></div>' }
-        ], list.map((b) => Object.assign({ _id: b.id }, b))) });
+        ], list.map((b) => Object.assign({ _id: b.id, _act: 'viewBooking' }, b))) });
     },
     actions: {
       bkStTab(d) { P['e-bookings'].state.tab = d.id; App.refresh(); },
       exportBk() { UI.toast('预约订单已导出'); },
+      viewBooking(d) {
+        const b = H().bookings.find((x) => x.id === d.id);
+        if (!b) return;
+        UI.drawer({
+          title: b.service, sub: b.id + ' · ' + b.person + ' · ' + b.date + ' ' + b.time,
+          icon: 'calendar', width: 560, okText: '关闭',
+          body: '<dl class="vkv">' +
+            [['预约编号', b.id], ['员工', b.person + ' · ' + b.dept], ['联系电话', b.phone], ['服务机构', b.org],
+              ['预约时间', b.date + ' ' + b.time], ['当前状态', ST[b.status][0]], ['提交时间', b.created]].map((r) =>
+              '<dt>' + E(r[0]) + '</dt><dd>' + E(r[1]) + '</dd>').join('') + '</dl>' +
+            '<div class="note" style="margin-top:12px">预约状态变更会同步到职工端「我的预约」，完成履约后自动进入健康服务履约台。</div>' +
+            '<div class="row" style="margin-top:12px;gap:8px">' +
+              (b.status === 'pending' ? '<button class="btn sm primary" data-bk-go="setBk" data-id="' + b.id + '">' + I('check', 13) + '确认预约</button>' : '') +
+              (b.status === 'confirmed' ? '<button class="btn sm primary" data-bk-go="setBk" data-id="' + b.id + '">' + I('check', 13) + '标记完成</button>' : '') +
+              (b.status !== 'cancelled' && b.status !== 'completed' ? '<button class="btn sm" data-bk-go="cancelBk" data-id="' + b.id + '">' + I('x', 13) + '取消预约</button>' : '') +
+              '<button class="btn sm ghost" data-bk-go="viewCrm" data-id="' + E(b.person) + '">' + I('users', 13) + '客户 360</button>' +
+            '</div>',
+          mount(n) {
+            n.querySelectorAll('[data-bk-go]').forEach((btn) => btn.addEventListener('click', () => {
+              const act = btn.dataset.bkGo;
+              UI.closeOverlay();
+              if (act === 'viewCrm') App.go('crm-360', { id: btn.dataset.id });
+              else P['e-bookings'].actions[act]({ id: btn.dataset.id });
+            }));
+          }
+        });
+      },
       setBk(d) {
         const b = H().bookings.find((x) => x.id === d.id);
         const next = b.status === 'pending' ? 'confirmed' : 'completed';
