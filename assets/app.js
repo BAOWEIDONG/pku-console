@@ -55,13 +55,13 @@
 
   /* ---------------------------------------------------------- 业务工作台 */
   const WORKBENCHES = [
-    { id: 'command', label: '经营总览', en: 'OVERVIEW', icon: 'grid', dot: '#7CB6FF', home: 'fuse-command', title: '经营总览', desc: '今日待办 · 经营洞察 · 发布影响' },
-    { id: 'customer', label: '客户与交易', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'fuse-customer', title: '客户与交易', desc: '客户 360 · 订单 · 预约履约 · 结算 · 上下游' },
-    { id: 'catalog', label: '商品与服务', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'fuse-catalog', title: '商品与服务', desc: '服务商品 · 实物商品 · 价格 · 库存 · 渠道' },
-    { id: 'health', label: '健康管理', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'fuse-health', title: '健康管理', desc: '履约 · 健康档案 · 计划 · 随访 · 结果' },
-    { id: 'program', label: '健康项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fuse-program', title: '健康项目', desc: '五好生活 · 减重营 · 激励与活动' },
-    { id: 'growth', label: '内容与渠道', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'fuse-content', title: '内容与渠道', desc: '品牌站 · 职工端 · 公共素材 · 触达' },
-    { id: 'platform', label: '系统与权限', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'fuse-platform', title: '系统与权限', desc: '账号 · 角色 · 字段权限 · 发布 · 日志' }
+    { id: 'command', label: '经营总览', en: 'OVERVIEW', icon: 'grid', dot: '#7CB6FF', home: 'fuse-command', title: '经营总览', desc: '待办 · 洞察 · 发布' },
+    { id: 'customer', label: '客户与交易', en: 'CUSTOMER', icon: 'users', dot: '#F0B45E', home: 'fuse-customer', title: '客户与交易', desc: '客户 · 订单 · 结算' },
+    { id: 'catalog', label: '商品与服务', en: 'CATALOG', icon: 'package', dot: '#8FB8FF', home: 'fuse-catalog', title: '商品与服务', desc: '服务 · 商品 · 价格' },
+    { id: 'health', label: '健康管理', en: 'HEALTH', icon: 'stethoscope', dot: '#7FE6D8', home: 'fuse-health', title: '健康管理', desc: '履约 · 档案 · 随访' },
+    { id: 'program', label: '健康项目', en: 'PROGRAM', icon: 'layers', dot: '#B7A6FF', home: 'fuse-program', title: '健康项目', desc: '五好 · 减营 · 激励' },
+    { id: 'growth', label: '内容与渠道', en: 'CONTENT', icon: 'spark', dot: '#48D3C7', home: 'fuse-content', title: '内容与渠道', desc: '品牌站 · 职工端' },
+    { id: 'platform', label: '系统与权限', en: 'PLATFORM', icon: 'settings', dot: '#A6B7CE', home: 'fuse-platform', title: '系统与权限', desc: '账号 · 权限 · 发布' }
   ];
 
   const NAV_OF = {
@@ -142,12 +142,10 @@
           '<svg class="sn-cv" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>' +
         '</button>' +
         '<div class="sn-items' + (isOpen(t.id) ? '' : ' off') + '">' +
-          (tabDesc(t) ? '<div class="sn-hint">' + E(tabDesc(t)) + '</div>' : '') +
           items.map((x) => {
             const sub = (PAGES[x.route] && PAGES[x.route].sub) || '';
             return '<button class="sn-item' + ((x.route === curView || x.route === state.route) ? ' on' : '') + '" data-nav="' + x.route + '" title="' + E(x.label + (sub ? '：' + sub : '')) + '">' +
-              '<span class="sn-t"><i class="sn-dot"></i>' + E(x.label) + '</span>' +
-              (sub ? '<span class="sn-d">' + E(sub) + '</span>' : '') + '</button>';
+              '<i class="sn-dot"></i>' + E(x.label) + '</button>';
           }).join('') +
         '</div></div>';
     }).join('');
@@ -162,11 +160,11 @@
         '<div class="ws-picker-h"><span>工作区</span><em>6 个</em></div>' +
         '<div class="ws-grid">' + WORKBENCHES.map((w) =>
           '<button class="ws-tile ' + (w.id === state.app ? 'on' : '') + '" data-app="' + w.id + '" title="' + E(w.title) + '">' +
-          '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 11) + '</span><b>' + E(w.label) + '</b></button>').join('') +
+          '<span class="ws-ic" style="background:' + w.dot + '">' + I(w.icon, 11) + '</span>' +
+          '<span class="ws-t"><b>' + E(w.label) + '</b><em>' + E(w.desc) + '</em></span></button>').join('') +
         '</div>' +
       '</div>' +
-      '<div class="sn-work">' +
-        '<div class="sn-work-h"><b>' + E(space.title) + '</b><span>' + E(space.desc) + '</span></div>' +
+        '<div class="sn-work">' +
         '<div class="sn-mini">' + area.tabs.map((t) => {
           const first = (t.pages.find((x) => !x.hidden) || t.pages[0] || {}).route;
           return '<button data-act="openTab" data-id="' + t.id + '" data-route="' + first + '" title="' + E(t.label) + '">' + I(t.icon || 'layers', 16) + '</button>';
