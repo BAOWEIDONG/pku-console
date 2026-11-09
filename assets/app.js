@@ -157,6 +157,10 @@
       '</div>' +
       '<div class="sn-work">' +
         '<div class="sn-work-h"><b>' + E(space.title) + '</b><span>' + E(space.desc) + '</span></div>' +
+        '<div class="sn-mini">' + area.tabs.map((t) => {
+          const first = (t.pages.find((x) => !x.hidden) || t.pages[0] || {}).route;
+          return '<button data-act="openTab" data-id="' + t.id + '" data-route="' + first + '" title="' + E(t.label) + '">' + I(t.icon || 'layers', 16) + '</button>';
+        }).join('') + '</div>' +
         '<div class="sn-tree">' + (tree || '<div class="sn-empty">该工作区暂无可展示页面</div>') + '</div>' +
       '</div>' +
       '<div class="sn-foot">' +
@@ -706,6 +710,17 @@
       render(true);
       return;
     }
+    if (name === 'openTab') {
+      state.railCollapsed = false;
+      try { localStorage.setItem('pku-rail-collapsed', '0'); } catch (e) {}
+      const cur = (window.Fusion && Fusion.tabOf(state.app)) || {};
+      const arr = (state.openTabs[state.app] || [cur.id]).slice();
+      if (arr.indexOf(act.dataset.id) < 0) arr.push(act.dataset.id);
+      state.openTabs[state.app] = arr;
+      if (act.dataset.route && PAGES[act.dataset.route]) App.go(act.dataset.route);
+      else render(true);
+      return;
+    }
     if (name === 'tabToggle') {
       const id = act.dataset.id;
       const cur = (window.Fusion && Fusion.tabOf(state.app)) || {};
@@ -791,6 +806,7 @@
   });
 
   document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); state.railCollapsed = !state.railCollapsed; try { localStorage.setItem('pku-rail-collapsed', state.railCollapsed ? '1' : '0'); } catch (err) {} render(true); return; }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); App.cmdOpen(); }
     if (e.key === 'Escape') { UI.closeOverlay(); const m = document.querySelector('.role-menu'); if (m) m.remove(); }
   });
