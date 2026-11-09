@@ -1,0 +1,86 @@
+/* 侧栏重构 v2：浅色底 + 高对比文字 + 清晰层级 */
+.subnav {
+  background: linear-gradient(180deg, #f7faff 0%, #eef4fc 62%, #e9f0f9 100%) !important;
+  border-right: 1px solid #d5e2f2 !important;
+  width: 268px;
+}
+.side-brand { padding: 18px 16px 12px; display: flex; align-items: center; gap: 10px; }
+.side-name b { color: #0b1626 !important; font-size: 14px; }
+.side-name em { color: #6b7f99 !important; font-size: 10.5px; font-style: normal; }
+.sn-fold { color: #5b708c !important; }
+.sn-fold:hover { background: #e2ecfa !important; color: #0b63e5 !important; }
+
+/* 工作区 */
+.ws-picker { margin: 0 12px 10px; padding: 9px 9px 10px; background: #fff; border: 1px solid #dce7f5; border-radius: 12px; }
+.ws-picker-h { display: flex; justify-content: space-between; padding: 0 2px 7px; }
+.ws-picker-h span { color: #5b708c !important; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; }
+.ws-picker-h em { color: #8fa1b8 !important; font-size: 10px; font-style: normal; }
+.ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ws-tile { display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 8px; border: 1px solid transparent; background: #f4f8fd; }
+.ws-tile b { color: #3c4f68 !important; font-size: 11.5px; font-weight: 500; }
+.ws-tile:hover { background: #eaf2fd; }
+.ws-tile.on { background: #e6f0ff; border-color: #b7d3f8; }
+.ws-tile.on b { color: #0b5ad6 !important; font-weight: 600; }
+.ws-ic { width: 18px; height: 18px; border-radius: 6px; display: grid; place-items: center; color: #fff; flex: none; }
+
+/* 当前工作区 */
+.sn-work { border-top: 1px solid #dfe9f6; margin-top: 2px; }
+.sn-work-h b { color: #12233a !important; font-size: 12.5px; }
+.sn-work-h span { color: #6f819a !important; font-size: 10.5px; line-height: 1.5; }
+
+/* 分组与条目 */
+.sn-tree { padding: 4px 10px 10px; }
+.sn-sec { margin-bottom: 3px; }
+.sn-h { color: #3f5470 !important; font-size: 11.5px; font-weight: 600; padding: 7px 8px; border-radius: 8px; }
+.sn-h:hover { background: #e6effb; color: #0b1626 !important; }
+.sn-n { background: #e2ecfa !important; color: #4d6484 !important; font-weight: 600; }
+.sn-items { border-left: 1px solid #d9e6f6 !important; margin-left: 9px; padding-left: 5px; }
+.sn-item { color: #445a75 !important; font-size: 12.2px; padding: 7px 9px; border-radius: 7px; position: relative; }
+.sn-item:hover { background: #e9f1fc; color: #0b1626 !important; }
+.sn-item.on { background: #e2eeff !important; color: #0b5ad6 !important; font-weight: 600; }
+.sn-item.on::before { content: ""; position: absolute; left: -6px; top: 6px; bottom: 6px; width: 3px; border-radius: 3px; background: #0b63e5; }
+.sn-dot { background: #c3d2e6 !important; }
+.sn-item.on .sn-dot { background: #0b63e5 !important; box-shadow: 0 0 0 3px rgba(11,99,229,.12) !important; }
+.sn-empty { color: #8595ab !important; }
+
+/* 底部 */
+.sn-foot { border-top: 1px solid #dfe9f6 !important; background: rgba(255,255,255,.55); }
+.sn-foot button { color: #465c78 !important; font-size: 11.8px; }
+.sn-foot button:hover { background: #e6effb !important; color: #0b5ad6 !important; }
+
+/* 折叠态：只留图标，保证可点区域 */
+.rail-collapsed .subnav { width: 76px; }
+.rail-collapsed .ws-grid { grid-template-columns: 1fr; }
+.rail-collapsed .ws-tile { justify-content: center; padding: 8px 0; }
+.rail-collapsed .sn-items { border-left: 0; padding-left: 0; margin-left: 0; }
+.rail-collapsed .sn-item { justify-content: center; padding: 9px 0; }
+.rail-collapsed .sn-item::before { display: none; }
+.rail-collapsed .sn-foot button { justify-content: center; }
+
+/* 折叠态图标导航 */
+.sn-mini { display: none; }
+.rail-collapsed .sn-mini { display: grid; gap: 4px; padding: 8px 12px 4px; }
+.rail-collapsed .sn-mini button { width: 40px; height: 40px; margin: 0 auto; border-radius: 10px; display: grid; place-items: center; color: #4a607c; background: #fff; border: 1px solid #dbe7f5; }
+.rail-collapsed .sn-mini button:hover { background: #e8f1ff; color: #0b63e5; border-color: #b7d3f8; }
+.rail-collapsed .sn-tree { display: none; }
+.rail-collapsed .sn-work-h { display: none; }
+
+/* 分组说明与条目说明 */
+.sn-hint { font-size: 10.5px; line-height: 1.5; color: #7b8ea6; padding: 2px 8px 5px; }
+.sn-item { display: block; padding: 6px 9px; }
+.sn-t { display: flex; align-items: center; gap: 7px; font-size: 12.2px; }
+.sn-d { display: block; margin: 1px 0 0 12px; font-size: 10.5px; color: #7f92aa; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.sn-item.on .sn-d { color: #4d7fc4; }
+.sn-item:hover .sn-d { color: #5c7392; }
+.rail-collapsed .sn-d { display: none; }
+
+/* 工作区磁贴：名称 + 精简副标题，左对齐等宽 */
+.ws-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+.ws-tile { align-items: flex-start; min-height: 46px; padding: 7px 8px; }
+.ws-t .ws-t, .ws-t { display: block; min-width: 0; }
+.ws-tile b { display: block; font-size: 11.5px; line-height: 1.3; color: #2f4258 !important; white-space: nowrap; }
+.ws-tile em { display: block; margin-top: 2px; font-size: 9.5px; line-height: 1.3; color: #8194ac; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ws-tile.on b { color: #0b5ad6 !important; }
+.ws-tile.on em { color: #5b7fb0; }
+.rail-collapsed .ws-tile em { display: none; }
+.rail-collapsed .ws-tile { align-items: center; justify-content: center; min-height: 38px; }

@@ -1,0 +1,60 @@
+/* ============ 应用矩阵首页（新壳视觉，深色玻璃基调延续旧后台） ============ */
+:root {
+  --mx-bg: #08192c;
+  --mx-panel: rgba(13, 32, 56, .72);
+  --mx-line: rgba(126, 168, 216, .18);
+  --mx-text: #e8f0fa;
+  --mx-sub: #8fa7c4;
+}
+body { background: var(--mx-bg); color: var(--mx-text); }
+
+.mx-page { min-height: 100vh; padding: 40px 6vw 60px; }
+.mx-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+.mx-brand { display: flex; align-items: center; gap: 16px; }
+.mx-mark { width: 44px; height: 44px; border-radius: 12px; background: #0b63e5; display: grid; place-items: center; box-shadow: 0 8px 24px rgba(11, 99, 229, .4); }
+.mx-mark svg { width: 22px; height: 22px; }
+.mx-brand h1 { font-size: 22px; margin: 0; letter-spacing: .5px; }
+.mx-brand p { margin: 4px 0 0; color: var(--mx-sub); font-size: 13px; }
+.mx-side { display: flex; align-items: center; gap: 14px; }
+.mx-role { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mx-sub); background: var(--mx-panel); border: 1px solid var(--mx-line); padding: 6px 12px; border-radius: 999px; }
+.mx-role i { width: 22px; height: 22px; border-radius: 50%; background: #0b63e5; color: #fff; font-style: normal; display: grid; place-items: center; font-size: 12px; }
+.mx-live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--mx-sub); }
+.mx-live b { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399; }
+
+.mx-search { display: flex; align-items: center; gap: 10px; max-width: 560px; margin: 0 auto 34px; background: var(--mx-panel); border: 1px solid var(--mx-line); border-radius: 12px; padding: 12px 16px; color: var(--mx-sub); }
+.mx-search input { flex: 1; background: none; border: none; outline: none; color: var(--mx-text); font-size: 14px; }
+.mx-search kbd { background: rgba(126,168,216,.15); border-radius: 5px; padding: 2px 7px; font-size: 11px; }
+
+.mx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.mx-card { position: relative; text-align: left; background: var(--mx-panel); border: 1px solid var(--mx-line); border-radius: 16px; padding: 20px; cursor: pointer; color: var(--mx-text); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; overflow: hidden; }
+.mx-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--mc); opacity: .85; }
+.mx-card:hover { transform: translateY(-3px); border-color: var(--mc); box-shadow: 0 16px 40px rgba(0, 0, 0, .35); }
+.mx-card-top { display: flex; align-items: center; margin-bottom: 14px; }
+.mx-ic { width: 40px; height: 40px; border-radius: 10px; background: color-mix(in srgb, var(--mc) 18%, transparent); color: var(--mc); display: grid; place-items: center; }
+.mx-badge { margin-left: auto; background: #ef4444; color: #fff; border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 600; }
+.mx-badge-dirty { background: #f0b45e; color: #08192c; }
+.mx-name { font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
+.mx-name em { font-style: normal; font-size: 10px; letter-spacing: 1.5px; color: var(--mx-sub); }
+.mx-desc { margin: 8px 0 14px; font-size: 12.5px; line-height: 1.7; color: var(--mx-sub); min-height: 42px; }
+.mx-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.mx-tags span { font-size: 11px; color: #9db6d4; background: rgba(126,168,216,.1); border-radius: 5px; padding: 3px 8px; }
+.mx-go { position: absolute; right: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--mc); opacity: 0; transition: opacity .18s; }
+.mx-card:hover .mx-go { opacity: 1; }
+.mx-foot { margin-top: 36px; text-align: center; color: #647c9c; font-size: 12px; }
+
+/* ============ 子后台：复用旧 .shell/.subnav/.topbar，只补新壳的接缝 ============ */
+.mx-ws { padding: 10px 12px; border-bottom: 1px solid var(--mx-line); }
+.mx-ws-home { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--mx-line); background: rgba(126,168,216,.08); color: var(--mx-text); font-size: 12.5px; cursor: pointer; }
+.mx-ws-home:hover { background: rgba(126,168,216,.16); }
+.mx-ws-list { display: flex; flex-direction: column; gap: 2px; }
+.mx-ws-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: none; background: none; border-radius: 7px; color: var(--mx-sub); font-size: 12.5px; cursor: pointer; text-align: left; }
+.mx-ws-item:hover { background: rgba(126,168,216,.1); color: var(--mx-text); }
+.mx-ws-item.on { background: color-mix(in srgb, var(--wc, #0b63e5) 16%, transparent); color: var(--mx-text); }
+.mx-ws-item i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+
+/* 侧栏折叠态：隐藏文字 */
+.rail-collapsed .side-name, .rail-collapsed .mx-ws, .rail-collapsed .sn-work, .rail-collapsed .sn-foot { display: none; }
+
+/* 旧引擎 dock/overlay 在 legacy-root 内部也能正常浮层（层级兜底） */
+#legacy-root .overlay { z-index: 260; }
+#legacy-root .dock { z-index: 120; }
