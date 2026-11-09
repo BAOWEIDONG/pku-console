@@ -64,3 +64,12 @@
 .rail-collapsed .sn-mini button:hover { background: #e8f1ff; color: #0b63e5; border-color: #b7d3f8; }
 .rail-collapsed .sn-tree { display: none; }
 .rail-collapsed .sn-work-h { display: none; }
+
+/* 分组说明与条目说明 */
+.sn-hint { font-size: 10.5px; line-height: 1.5; color: #7b8ea6; padding: 2px 8px 5px; }
+.sn-item { display: block; padding: 6px 9px; }
+.sn-t { display: flex; align-items: center; gap: 7px; font-size: 12.2px; }
+.sn-d { display: block; margin: 1px 0 0 12px; font-size: 10.5px; color: #7f92aa; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.sn-item.on .sn-d { color: #4d7fc4; }
+.sn-item:hover .sn-d { color: #5c7392; }
+.rail-collapsed .sn-d { display: none; }
