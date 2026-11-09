@@ -1,6 +1,6 @@
 /* ============================================================================
    PKU Config Bridge v1
-   三端 H5 共用：读取运营中台发布的 config.json，应用主题、联系方式、
+   三端 H5 共用：读取运营中台发布的 config.json，应用联系方式、
    职工端模块显隐与服务上下架。所有改动可回退，不破坏前端默认值。
    ========================================================================== */
 (function () {
@@ -31,13 +31,7 @@
   function apply(cfg) {
     if (!cfg) return;
     applied = true;
-    var theme = cfg.theme || {};
-    var root = document.documentElement;
-    if (theme.primary) root.style.setProperty('--pku-primary', theme.primary);
-    if (theme.accent) root.style.setProperty('--pku-accent', theme.accent);
-    root.setAttribute('data-pku-config', cfg.version || '');
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta && theme.primary) meta.setAttribute('content', theme.primary);
+    document.documentElement.setAttribute('data-pku-config', cfg.version || '');
 
     var contact = cfg.contact || {};
     var map = {};

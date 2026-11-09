@@ -1,335 +1,36 @@
 {
-  "version": "9.2.0",
-  "updatedAt": "2026-11-05 18:22",
-  "brand": {
-    "name": "北大医疗",
-    "full": "北大医疗产业集团",
-    "slogan": "让优质医疗 触手可及",
-    "intro": "以北京大学国际医院为核心，覆盖综合、康复、专科与健康管理的医疗服务网络。",
-    "logoText": "北大医疗",
-    "primary": "#0B63E5",
-    "accent": "#0AA39A",
-    "englishName": "PKU HEALTHCARE"
-  },
+  "version": "v10-1000",
+  "generatedAt": "2026-11-9 12:06:33",
   "contact": {
-    "servicePhone": "400-820-8866",
-    "hotline": "010-6900 6688",
-    "email": "service@pkuhealthcare.com",
-    "address": "北京市昌平区生命科学园路 1 号",
-    "workHours": "08:00 – 17:30（周一至周五）",
-    "complaint": "400-820-8899"
-  },
-  "theme": {
-    "primary": "#0B63E5",
-    "accent": "#0AA39A",
-    "employeeWarm": true,
-    "radius": 18,
-    "fontScale": 100
-  },
-  "channelPages": {
-    "brand": {
-      "home": 1,
-      "hospitals": 1,
-      "departments": 1,
-      "team": 1,
-      "camp": 1,
-      "about": 1
-    },
-    "employee": {
-      "home": 1,
-      "services": 1,
-      "booking": 1,
-      "mine": 1,
-      "qa": 1,
-      "articles": 1
-    },
-    "camp": {
-      "dashboard": 1,
-      "checkin": 1,
-      "diet": 1,
-      "exercise": 1,
-      "mall": 1,
-      "reward": 1,
-      "ranking": 1,
-      "report": 1
-    }
-  },
-  "brandSite": {
-    "home": {
-      "heroTitle": "让优质医疗 触手可及",
-      "heroSub": "北大医疗 · 覆盖 6 省 11 城的医疗服务网络",
-      "entries": [
-        {
-          "id": "e1",
-          "title": "分院网络",
-          "sub": "6 省 11 城",
-          "on": true,
-          "order": 1
-        },
-        {
-          "id": "e2",
-          "title": "学科与科室",
-          "sub": "70 个临床科室",
-          "on": true,
-          "order": 2
-        },
-        {
-          "id": "e3",
-          "title": "师资团队",
-          "sub": "726 位医师",
-          "on": true,
-          "order": 3
-        },
-        {
-          "id": "e4",
-          "title": "北医健康营",
-          "sub": "第 7 期进行中",
-          "on": true,
-          "order": 4
-        }
-      ],
-      "stats": [
-        {
-          "key": "doctors",
-          "label": "医师",
-          "value": 726
-        },
-        {
-          "key": "experts",
-          "label": "专家",
-          "value": 57
-        },
-        {
-          "key": "nurses",
-          "label": "护理",
-          "value": 107
-        },
-        {
-          "key": "depts",
-          "label": "科室",
-          "value": 70
-        }
-      ],
-      "featuredCount": 6,
-      "brandStrip": [
-        "北京大学国际医院",
-        "北大医疗康复医院",
-        "北大医疗肿瘤医院",
-        "北大医疗淄博医院",
-        "北大医疗潞安医院",
-        "北大医疗株洲心血管医院"
-      ]
-    },
-    "institutions": [
-      {
-        "id": "i1",
-        "name": "北京大学国际医院",
-        "city": "北京 · 昌平",
-        "on": true
-      },
-      {
-        "id": "i2",
-        "name": "北大医疗康复医院",
-        "city": "北京 · 朝阳",
-        "on": true
-      },
-      {
-        "id": "i3",
-        "name": "北京大学国际医院健康管理中心",
-        "city": "北京 · 昌平",
-        "on": true
-      },
-      {
-        "id": "i4",
-        "name": "北大医疗肿瘤医院",
-        "city": "北京 · 丰台",
-        "on": true
-      },
-      {
-        "id": "i5",
-        "name": "北大医疗鲁中医院",
-        "city": "北京 · 海淀",
-        "on": false
-      },
-      {
-        "id": "i6",
-        "name": "北大医疗海洋石油医院",
-        "city": "天津 · 滨海",
-        "on": true
-      },
-      {
-        "id": "i7",
-        "name": "北大医疗淄博医院",
-        "city": "山东 · 淄博",
-        "on": true
-      },
-      {
-        "id": "i8",
-        "name": "北大医疗潞安医院",
-        "city": "山西 · 长治",
-        "on": true
-      },
-      {
-        "id": "i9",
-        "name": "北大医疗株洲心血管医院",
-        "city": "湖南 · 株洲",
-        "on": true
-      },
-      {
-        "id": "i10",
-        "name": "北大医疗深圳康复医院",
-        "city": "广东 · 深圳",
-        "on": true
-      },
-      {
-        "id": "i11",
-        "name": "深圳健康管理中心",
-        "city": "广东 · 深圳",
-        "on": true
-      }
-    ],
-    "doctors": [
-      {
-        "id": "doc1",
-        "name": "于存涛",
-        "title": "教授 主任医师",
-        "dept": "心外科",
-        "on": true
-      },
-      {
-        "id": "doc2",
-        "name": "刘小慧",
-        "title": "教授 · 主任医师",
-        "dept": "心血管内科",
-        "on": true
-      },
-      {
-        "id": "doc3",
-        "name": "于峰",
-        "title": "教授 主任医师",
-        "dept": "肾脏内科",
-        "on": true
-      },
-      {
-        "id": "doc4",
-        "name": "任汉云",
-        "title": "教授 · 主任医师",
-        "dept": "血液病门诊",
-        "on": true
-      },
-      {
-        "id": "doc5",
-        "name": "丁嘉祥",
-        "title": "主任医师",
-        "dept": "肾脏内科",
-        "on": true
-      },
-      {
-        "id": "doc6",
-        "name": "丁振强",
-        "title": "教授 主任医师",
-        "dept": "眼科门诊",
-        "on": true
-      },
-      {
-        "id": "doc7",
-        "name": "任凤学",
-        "title": "主任医师",
-        "dept": "心血管内科",
-        "on": true
-      },
-      {
-        "id": "doc8",
-        "name": "任明保",
-        "title": "主任医师",
-        "dept": "妇科",
-        "on": true
-      },
-      {
-        "id": "doc9",
-        "name": "李喆",
-        "title": "主任医师",
-        "dept": "男科",
-        "on": true
-      },
-      {
-        "id": "doc10",
-        "name": "任玉波",
-        "title": "主任医师",
-        "dept": "病理科门诊",
-        "on": true
-      },
-      {
-        "id": "doc11",
-        "name": "张伟",
-        "title": "项目督导",
-        "dept": "运营",
-        "on": true
-      },
-      {
-        "id": "doc12",
-        "name": "王雪",
-        "title": "注册营养师",
-        "dept": "营养",
-        "on": true
-      },
-      {
-        "id": "doc13",
-        "name": "刘洋",
-        "title": "康复治疗师",
-        "dept": "康复",
-        "on": true
-      },
-      {
-        "id": "doc14",
-        "name": "陈放",
-        "title": "康复治疗师",
-        "dept": "康复",
-        "on": true
-      }
-    ]
+    "servicePhone": "400-100-1063",
+    "hotline": "400-100-1063",
+    "address": "北京市昌平区中关村生命科学园生命园路1号"
   },
   "employee": {
     "site": {
-      "title": "北大医疗 · 职工健康服务",
-      "company": "示例科技有限公司",
-      "servicePhone": "400-820-8866",
-      "bannerInterval": 5,
-      "searchPlaceholder": "搜索服务，如 体检 / 睡眠 / 心理",
-      "entitlement": {
-        "annualExam": 1,
-        "eap": 6,
-        "clinic": true
-      },
-      "theme": "warm",
-      "autoPlay": true,
-      "dots": true
+      "title": "北大医疗 · 职工健康管理",
+      "servicePhone": "400-100-1063"
     },
     "modules": [
       {
         "id": "screen",
-        "name": "健康筛查",
-        "stab": "筛查"
+        "name": "健康筛查"
       },
       {
         "id": "chronic",
-        "name": "慢病管理",
-        "stab": "慢病"
+        "name": "慢病管理"
       },
       {
         "id": "medical",
-        "name": "就医服务",
-        "stab": "就医"
+        "name": "就医服务"
       },
       {
         "id": "special",
-        "name": "特色服务",
-        "stab": "特色"
+        "name": "特色服务"
       },
       {
         "id": "safety",
-        "name": "应急保障",
-        "stab": "应急"
+        "name": "应急保障"
       }
     ],
     "services": [
@@ -337,1608 +38,190 @@
         "id": "annual-exam",
         "name": "职工年度体检",
         "intro": "年度深度体检：基础检查、影像与肿瘤标志物一次完成，检后由医生统一解读并给出复查建议。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3190,
-            "settle": 6140,
-            "list": 8380,
-            "contract": 5650,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5100,
-            "settle": 9210,
-            "list": 12150,
-            "contract": 8290,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7020,
-            "settle": 11670,
-            "list": 15080,
-            "contract": 10440,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "status": "online"
       },
       {
         "id": "risk-report",
         "name": "检后管理 · 深度报告解读",
-        "intro": "由全科与专科医生对近 3–6 个月体检报告逐项解读，标出需要复查和干预的指标。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1860,
-            "settle": 3410,
-            "list": 4540,
-            "contract": 3140,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 2980,
-            "settle": 5120,
-            "list": 6580,
-            "contract": 4600,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 4090,
-            "settle": 6480,
-            "list": 8170,
-            "contract": 5800,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "由全科与专科医生对近 3–6 个月体检报告逐项解读，标出需要复查和干预的指标，给出下一步就医建议。",
+        "status": "online"
       },
       {
         "id": "risk-survey",
         "name": "健康风险调研问卷",
-        "intro": "围绕心脑血管、五高一重、睡眠与心理 4 个维度自评，生成个人风险画像与干预建议。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3320,
-            "settle": 6980,
-            "list": 8660,
-            "contract": 6420,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5310,
-            "settle": 10470,
-            "list": 12560,
-            "contract": 9420,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7300,
-            "settle": 13260,
-            "list": 15590,
-            "contract": 11870,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "围绕心脑血管、五高一重、睡眠与心理 4 个维度自评，10 分钟生成个人风险画像与干预建议。",
+        "status": "online"
       },
       {
         "id": "inpatient",
         "name": "住院体检服务",
-        "intro": "检查、休养、管理一体化的沉浸式体检，护士全程陪诊。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3350,
-            "settle": 5220,
-            "list": 6990,
-            "contract": 4800,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5360,
-            "settle": 7830,
-            "list": 10140,
-            "contract": 7050,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7370,
-            "settle": 9920,
-            "list": 12580,
-            "contract": 8870,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "检查、休养、管理一体化的沉浸式体检：2 天 1 晚院内完成深度筛查，护士全程陪诊，不占用工作时间。",
+        "status": "online"
       },
       {
         "id": "gastro",
         "name": "无痛胃肠镜检查",
-        "intro": "麻醉下完成胃镜与肠镜联合检查，发现息肉可同期处理。",
-        "status": "draft",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3240,
-            "settle": 6180,
-            "list": 7560,
-            "contract": 5690,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5180,
-            "settle": 9270,
-            "list": 10960,
-            "contract": 8340,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7130,
-            "settle": 11740,
-            "list": 13610,
-            "contract": 10510,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "麻醉下完成胃镜与肠镜联合检查，独立诊区、专家与资深护士操作，发现息肉可同期处理。",
+        "status": "online"
       },
       {
         "id": "cancer",
         "name": "重疾筛查服务",
-        "intro": "围绕肺、胃、结直肠、乳腺等高发癌种的分层筛查。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2150,
-            "settle": 3790,
-            "list": 4620,
-            "contract": 3490,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 3440,
-            "settle": 5690,
-            "list": 6700,
-            "contract": 5120,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 4730,
-            "settle": 7200,
-            "list": 8320,
-            "contract": 6440,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "覆盖 10 种高发恶性肿瘤与 4 类心脑血管疾病，按低 / 中 / 高风险三级分层，给出随访与干预策略。",
+        "status": "online"
       },
       {
         "id": "cpet",
         "name": "心肺运动 CPET 筛查",
-        "intro": "运动前心肺功能评估，为运动处方提供安全边界。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3450,
-            "settle": 5190,
-            "list": 7100,
-            "contract": 4770,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5520,
-            "settle": 7790,
-            "list": 10300,
-            "contract": 7010,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7590,
-            "settle": 9860,
-            "list": 12780,
-            "contract": 8820,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 0
+        "intro": "在运动负荷下监测气体交换与心电指标，评估心肺适能与运动风险，当场出具报告并制定个体化运动处方。",
+        "status": "online"
       },
       {
         "id": "sleep",
         "name": "医疗级多导睡眠监测",
-        "intro": "院内睡眠监测，评估睡眠结构与呼吸暂停风险。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2880,
-            "settle": 4600,
-            "list": 5900,
-            "contract": 4230,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 4610,
-            "settle": 6900,
-            "list": 8560,
-            "contract": 6210,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 6340,
-            "settle": 8740,
-            "list": 10620,
-            "contract": 7820,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 0
+        "intro": "院内整夜监测脑电、眼电、肌电、血氧与呼吸事件，计算 AHI 与睡眠结构，区分中枢性与阻塞性呼吸暂停。",
+        "status": "online"
       },
       {
         "id": "occupational",
         "name": "职业病筛查服务",
-        "intro": "按岗位危害因素定制职业健康检查。",
-        "status": "online",
-        "cat": "健康筛查",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3350,
-            "settle": 5300,
-            "list": 7220,
-            "contract": 4880,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 5360,
-            "settle": 7950,
-            "list": 10470,
-            "contract": 7160,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 7370,
-            "settle": 10070,
-            "list": 13000,
-            "contract": 9010,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee",
-          "web"
-        ],
-        "bookable": 1
+        "intro": "依据《职业健康检查管理办法》开展岗前、在岗、离岗检查，报告具法律效力，可按危害因素定制项目。",
+        "status": "online"
       },
       {
         "id": "fivehigh",
         "name": "五高一重管理服务",
-        "intro": "血压、血糖、血脂、尿酸、体重与重疾风险的长期共管。",
-        "status": "online",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1590,
-            "settle": 3180,
-            "list": 3930,
-            "contract": 2930,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 2540,
-            "settle": 4770,
-            "list": 5700,
-            "contract": 4290,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 3500,
-            "settle": 6040,
-            "list": 7070,
-            "contract": 5410,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 1
+        "intro": "围绕血压、血脂、血糖、尿酸、同型半胱氨酸与体重，建档分层、线上线下干预、异常三级响应与转诊。",
+        "status": "online"
       },
       {
         "id": "heart",
         "name": "心脑健康训练营",
-        "intro": "面向心脑血管高风险人群的线上训练营。",
-        "status": "online",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1590,
-            "settle": 2430,
-            "list": 3300,
-            "contract": 2240,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 2540,
-            "settle": 3650,
-            "list": 4790,
-            "contract": 3280,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 3500,
-            "settle": 4620,
-            "list": 5940,
-            "contract": 4130,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 0
+        "intro": "开营日医护带设备到企做全面“摸底”，之后 365 天分五阶段管理，从指标、饮食、运动到用药逐项改善。",
+        "status": "online"
       },
       {
         "id": "weight",
         "name": "减重训练营",
-        "intro": "28 天代谢重塑，营养、运动与行为干预结合。",
-        "status": "online",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 860,
-            "settle": 1330,
-            "list": 1820,
-            "contract": 1220,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 1380,
-            "settle": 2000,
-            "list": 2640,
-            "contract": 1800,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 1890,
-            "settle": 2530,
-            "list": 3280,
-            "contract": 2260,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 1
+        "intro": "90 天医学减重：营养师与运动康复师双师带队，每日三餐点评、运动打卡与异常指标预警。",
+        "status": "online"
       },
       {
         "id": "lung",
         "name": "肺结节管理服务",
-        "intro": "肺结节分层管理与随访提醒。",
-        "status": "online",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1270,
-            "settle": 2700,
-            "list": 3300,
-            "contract": 2480,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 2030,
-            "settle": 4050,
-            "list": 4790,
-            "contract": 3650,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 2790,
-            "settle": 5130,
-            "list": 5940,
-            "contract": 4590,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 0
+        "intro": "抓住 5–8mm 黄金窗口期：专业团队解读影像、制定随访节奏，配合心理疏导与中西医结合干预。",
+        "status": "online"
       },
       {
         "id": "tcm",
         "name": "中医康复综合解决服务",
-        "intro": "中医内科、针灸与推拿综合干预。",
-        "status": "draft",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 830,
-            "settle": 1260,
-            "list": 1700,
-            "contract": 1160,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 1330,
-            "settle": 1890,
-            "list": 2470,
-            "contract": 1700,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 1830,
-            "settle": 2390,
-            "list": 3060,
-            "contract": 2140,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 0
+        "intro": "针对职场亚健康与慢性疲劳：中医养生咨询、眼部金汤熏蒸、骨骼健康调理与黄帝内针组合。",
+        "status": "online"
       },
       {
         "id": "rehab",
         "name": "远程居家康复健康指导",
-        "intro": "术后与慢病居家康复的远程指导。",
-        "status": "online",
-        "cat": "慢病管理",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2490,
-            "settle": 3810,
-            "list": 5100,
-            "contract": 3510,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 3980,
-            "settle": 5720,
-            "list": 7400,
-            "contract": 5140,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 5480,
-            "settle": 7240,
-            "list": 9180,
-            "contract": 6480,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee",
-          "wxwork",
-          "h5-camp"
-        ],
-        "bookable": 0
+        "intro": "术后、伤后居家阶段，康复医师与治疗师通过视频评估与指导，配合 3 次随访闭环，避免“回家养着”错过窗口期。",
+        "status": "online"
       },
       {
         "id": "fast",
         "name": "职工就医快通服务",
-        "intro": "挂号、检查、住院的绿色通道与陪诊。",
-        "status": "online",
-        "cat": "就医服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1190,
-            "settle": 1790,
-            "list": 2400,
-            "contract": 1650,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 1900,
-            "settle": 2690,
-            "list": 3480,
-            "contract": 2420,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 2620,
-            "settle": 3400,
-            "list": 4320,
-            "contract": 3040,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee"
-        ],
-        "bookable": 1
+        "intro": "专属企康服务台、专家号源协调、全程陪诊、住院床位安排，把“跑一天”变成“请半天”。",
+        "status": "online"
       },
       {
         "id": "second",
         "name": "专家线上二次诊疗咨询",
-        "intro": "针对重大诊断的专家二次意见。",
-        "status": "online",
-        "cat": "就医服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3760,
-            "settle": 6410,
-            "list": 8750,
-            "contract": 5900,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 6020,
-            "settle": 9620,
-            "list": 12690,
-            "contract": 8650,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 8270,
-            "settle": 12180,
-            "list": 15750,
-            "contract": 10900,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee"
-        ],
-        "bookable": 1
+        "intro": "确诊后由国内权威专家复核诊断与治疗方案，必要时组织 MDT 多学科会诊，出具书面第二诊疗意见。",
+        "status": "online"
       },
       {
         "id": "cloud",
         "name": "北大国际医院云门诊",
-        "intro": "线上视频问诊与处方流转。",
-        "status": "online",
-        "cat": "就医服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1630,
-            "settle": 3330,
-            "list": 4240,
-            "contract": 3060,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 2610,
-            "settle": 5000,
-            "list": 6150,
-            "contract": 4500,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 3590,
-            "settle": 6330,
-            "list": 7630,
-            "contract": 5660,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee"
-        ],
-        "bookable": 1
+        "intro": "北大国际医院互联网诊疗平台：线上复诊开方、开具检查单、医保实时结算、药品配送到家。",
+        "status": "online"
       },
       {
         "id": "clinic",
         "name": "企业医务室",
-        "intro": "企业内设医务室的运营与医护派驻。",
-        "status": "online",
-        "cat": "就医服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1910,
-            "settle": 3680,
-            "list": 5000,
-            "contract": 3390,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 3060,
-            "settle": 5520,
-            "list": 7250,
-            "contract": 4970,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 4200,
-            "settle": 6990,
-            "list": 9000,
-            "contract": 6260,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-employee"
-        ],
-        "bookable": 0
+        "intro": "云端医务室、健康小屋、集团版医务室三种模式按需定制，把常见病处置、慢病管理与急救搬到办公楼下。",
+        "status": "online"
       },
       {
         "id": "onsite",
         "name": "专家入企健管服务",
-        "intro": "专家团队进企业开展健康咨询与评估。",
-        "status": "online",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2260,
-            "settle": 3440,
-            "list": 4700,
-            "contract": 3160,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 3620,
-            "settle": 5160,
-            "list": 6820,
-            "contract": 4640,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 4970,
-            "settle": 6540,
-            "list": 8460,
-            "contract": 5850,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 0
+        "intro": "把三甲医院专家请进企业：1V1 咨询、专家团义诊、健康讲座与驻场健康管理，按基础 / 标准 / 尊享三档配置。",
+        "status": "online"
       },
       {
         "id": "lecture",
         "name": "健康科普服务",
-        "intro": "按企业需求定制健康科普讲座。",
-        "status": "online",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 3860,
-            "settle": 5590,
-            "list": 7160,
-            "contract": 5140,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 6180,
-            "settle": 8390,
-            "list": 10380,
-            "contract": 7550,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 8490,
-            "settle": 10620,
-            "list": 12890,
-            "contract": 9500,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 1
+        "intro": "40+ 专科专家、200+ 定制主题，按行业与二十四节气排全年健康日历，线上直播与线下沙龙结合。",
+        "status": "online"
       },
       {
         "id": "eap",
         "name": "心理健康管理服务（EAP）",
-        "intro": "压力、情绪、职场关系与家庭议题的心理支持。",
-        "status": "online",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2700,
-            "settle": 5630,
-            "list": 7050,
-            "contract": 5180,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 4320,
-            "settle": 8450,
-            "list": 10220,
-            "contract": 7600,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 5940,
-            "settle": 10700,
-            "list": 12690,
-            "contract": 9570,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 1
+        "intro": "医疗级 EAP：40+ 专职心理咨询医师、可开处方，覆盖测评、咨询、危机干预与管理者支持。",
+        "status": "online"
       },
       {
         "id": "travel",
         "name": "医旅康养服务",
-        "intro": "结合体检、康复与疗休养的康养行程。",
-        "status": "draft",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 1220,
-            "settle": 2360,
-            "list": 3000,
-            "contract": 2170,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 1950,
-            "settle": 3540,
-            "list": 4350,
-            "contract": 3190,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 2680,
-            "settle": 4480,
-            "list": 5400,
-            "contract": 4010,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 0
+        "intro": "康复评估 + 康养疗愈 + 文化游学：在温泉、园林与康复治疗中完成一次身心修复，适合劳模与退休职工疗休养。",
+        "status": "online"
       },
       {
         "id": "fivegood",
         "name": "五好生活",
-        "intro": "吃、动、睡、心、检五位一体的生活方式项目。",
-        "status": "online",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2770,
-            "settle": 4460,
-            "list": 6100,
-            "contract": 4100,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 4430,
-            "settle": 6690,
-            "list": 8850,
-            "contract": 6020,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 6090,
-            "settle": 8470,
-            "list": 10980,
-            "contract": 7580,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 0
+        "intro": "好好早筛、好好吃饭、好好运动、好好睡觉、好好放松：一站式企业健康福利平台，按 500/1000/2000 元档位采购。",
+        "status": "online"
       },
       {
         "id": "vip",
         "name": "企业家健康管理中心",
-        "intro": "企业家年度健康管理与专属医疗管家。",
-        "status": "online",
-        "cat": "特色服务",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 580,
-            "settle": 940,
-            "list": 1200,
-            "contract": 860,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 930,
-            "settle": 1410,
-            "list": 1740,
-            "contract": 1270,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 1280,
-            "settle": 1790,
-            "list": 2160,
-            "contract": 1600,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "h5-brand",
-          "h5-employee"
-        ],
-        "bookable": 0
+        "intro": "北大国际医院 710㎡ 专属健康空间：1+N 专家团队、全生命周期管理，支持 44 家商业保险直付。",
+        "status": "online"
       },
       {
         "id": "firstaid",
         "name": "职场急救培训服务",
-        "intro": "心肺复苏、AED 与常见急症处置培训。",
-        "status": "online",
-        "cat": "应急保障",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2550,
-            "settle": 3940,
-            "list": 4950,
-            "contract": 3620,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 4080,
-            "settle": 5910,
-            "list": 7180,
-            "contract": 5320,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 5610,
-            "settle": 7490,
-            "list": 8910,
-            "contract": 6700,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "web",
-          "wxwork"
-        ],
-        "bookable": 1
+        "intro": "北大医疗临床医师授课 + 美国心脏协会（AHA）国际认证，考核通过颁发全球 180 多国通用的急救证书。",
+        "status": "online"
       },
       {
         "id": "env",
         "name": "职场环境健康安全服务",
-        "intro": "环境消杀、集体疫苗接种与职业健康支持。",
-        "status": "online",
-        "cat": "应急保障",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2410,
-            "settle": 3260,
-            "list": 4500,
-            "contract": 3000,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 3860,
-            "settle": 4890,
-            "list": 6530,
-            "contract": 4400,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 5300,
-            "settle": 6190,
-            "list": 8100,
-            "contract": 5540,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "web",
-          "wxwork"
-        ],
-        "bookable": 0
+        "intro": "集体疫苗接种、办公区与食堂消杀、空气质量与饮用水检测，按季度形成环境健康报告。",
+        "status": "online"
       },
       {
         "id": "event",
         "name": "大型活动应急保障服务",
-        "intro": "年会、运动会等大型活动的现场医疗保障。",
-        "status": "online",
-        "cat": "应急保障",
-        "pricing": [
-          {
-            "id": "base",
-            "name": "标准版",
-            "cost": 2680,
-            "settle": 4780,
-            "list": 5840,
-            "contract": 4400,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "deep",
-            "name": "深度版",
-            "cost": 4290,
-            "settle": 7170,
-            "list": 8470,
-            "contract": 6450,
-            "tax": 6,
-            "unit": "次",
-            "validity": 365,
-            "times": 1
-          },
-          {
-            "id": "ent",
-            "name": "企业版",
-            "cost": 5900,
-            "settle": 9080,
-            "list": 10510,
-            "contract": 8130,
-            "tax": 6,
-            "unit": "人/年",
-            "validity": 365,
-            "times": 1
-          }
-        ],
-        "channels": [
-          "web",
-          "wxwork"
-        ],
-        "bookable": 1
+        "intro": "年会、运动会、开放日现场医护驻守，含 AED、担架与转运通道，重症可联动直升机与固定翼转运。",
+        "status": "online"
       }
     ]
+  },
+  "channelPages": {
+    "employee": {
+      "home": 1,
+      "services": 1,
+      "articles": 1,
+      "discover": 1,
+      "mine": 1
+    },
+    "brand": {
+      "home": 1,
+      "hospitals": 1,
+      "departments": 1,
+      "team": 1,
+      "camp": 1,
+      "about": 1
+    }
   },
   "versionall": {
-    "activity": {
-      "checkinStreak": true,
-      "weightMilestone": true,
-      "weeklyChallenge": true,
-      "luckyDraw": false,
-      "pointsMall": true,
-      "weeklyStart": "2026-10-19",
-      "weeklyWeeks": 4,
-      "milestoneSteps": [
-        3,
-        5,
-        8
-      ],
-      "luckyDrawScope": "complete28",
-      "entranceTitle": "连续打卡 21 天，把奖励带回家",
-      "entranceDesc": "每日三项打卡全部完成计 1 天，中断即重新计数"
-    },
-    "rankingOn": true,
-    "tiers": [
-      {
-        "id": "t1",
-        "name": "坚持 7 天 · 运动毛巾",
-        "stock": 40,
-        "active": true,
-        "requiredDays": 7
-      },
-      {
-        "id": "t2",
-        "name": "坚持 14 天 · 保温杯",
-        "stock": 22,
-        "active": true,
-        "requiredDays": 14
-      },
-      {
-        "id": "t3",
-        "name": "坚持 21 天 · 体脂秤",
-        "stock": 8,
-        "active": true,
-        "requiredDays": 21
-      },
-      {
-        "id": "t4",
-        "name": "全勤 28 天 · 运动手环",
-        "stock": 3,
-        "active": true,
-        "requiredDays": 28
-      },
-      {
-        "id": "t5",
-        "name": "坚持 7 天 · 定制水壶",
-        "stock": 50,
-        "active": true,
-        "requiredDays": 7
-      },
-      {
-        "id": "t6",
-        "name": "坚持 3 天 · 电子秤贴",
-        "stock": 0,
-        "active": false,
-        "requiredDays": 3
-      }
-    ]
-  },
-  "fivegood": {
-    "program": {
-      "name": "五好生活",
-      "slogan": "吃好 · 睡好 · 动好 · 心好 · 查好",
-      "status": "beta",
-      "cycle": "annual",
-      "launch": "2027-01-01",
-      "owner": "健康管理部",
-      "intro": "把一年拆成 12 个可执行的健康动作，用五个维度持续打分，让员工看得见自己在变好。"
-    },
-    "dims": [
-      {
-        "key": "eat",
-        "name": "吃好",
-        "icon": "🥗",
-        "color": "#0aa39a",
-        "weight": 25,
-        "metric": "膳食结构达标天数",
-        "target": 240,
-        "benefit": "营养评估 1 次 + 月度方案 12 次",
-        "tasks": 12,
-        "dataSource": "饮食打卡 + 食谱执行率",
-        "assess": "膳食结构评分（餐次/主食/蛋白/蔬果）",
-        "services": [
-          "fivehigh",
-          "weight",
-          "annual-exam"
-        ]
-      },
-      {
-        "key": "sleep",
-        "name": "睡好",
-        "icon": "🌙",
-        "color": "#6b5ce0",
-        "weight": 20,
-        "metric": "睡眠时长 ≥7h 天数",
-        "target": 200,
-        "benefit": "睡眠评估 2 次 + 改善计划",
-        "tasks": 8,
-        "dataSource": "手环/手机健康 + 手动记录 + 睡眠量表",
-        "assess": "PSQI 匹兹堡睡眠质量指数 + ISI 失眠严重度",
-        "services": [
-          "sleep",
-          "eap",
-          "heart"
-        ]
-      },
-      {
-        "key": "move",
-        "name": "动好",
-        "icon": "🏃",
-        "color": "#0b63e5",
-        "weight": 25,
-        "metric": "每周运动 ≥150 分钟周数",
-        "target": 40,
-        "benefit": "体测 4 次 + 运动处方 12 周",
-        "tasks": 12,
-        "dataSource": "运动打卡 + 可穿戴设备步数",
-        "assess": "周运动时长 / 强度分布 / 依从性",
-        "services": [
-          "weight",
-          "rehab",
-          "cpet"
-        ]
-      },
-      {
-        "key": "mind",
-        "name": "心好",
-        "icon": "💬",
-        "color": "#c8871a",
-        "weight": 15,
-        "metric": "压力自评达标月数",
-        "target": 10,
-        "benefit": "EAP 咨询 6 次 + 压力评估",
-        "tasks": 6,
-        "dataSource": "每日情绪打卡 + PHQ-2 / GAD-2 / PSS-10",
-        "assess": "情绪波动 + 压力得分（仅本人与咨询师可见）",
-        "services": [
-          "eap",
-          "lecture"
-        ]
-      },
-      {
-        "key": "check",
-        "name": "查好",
-        "icon": "🩺",
-        "color": "#d9503f",
-        "weight": 15,
-        "metric": "完成年度体检与复测",
-        "target": 2,
-        "benefit": "年度体检 1 次 + 报告解读 2 次",
-        "tasks": 2,
-        "dataSource": "体检记录 + 报告异常项 + 复查完成",
-        "assess": "异常项数量与转归 + 复查及时率",
-        "services": [
-          "annual-exam",
-          "risk-report",
-          "fast"
-        ]
-      }
-    ],
-    "tiers": [
-      {
-        "id": "fg-base",
-        "name": "基础版",
-        "price": 3980,
-        "settle": 2880,
-        "cost": 1640,
-        "benefits": "五维评估 + 12 次月度任务 + 年度报告",
-        "target": "全员普惠"
-      },
-      {
-        "id": "fg-plus",
-        "name": "进阶版",
-        "price": 6980,
-        "settle": 5200,
-        "cost": 3140,
-        "benefits": "基础版 + 营养师月度 1v1 + 体测 4 次",
-        "target": "高风险人群"
-      },
-      {
-        "id": "fg-pro",
-        "name": "尊享版",
-        "price": 12800,
-        "settle": 9800,
-        "cost": 6200,
-        "benefits": "进阶版 + 专属健康管家 + EAP 6 次 + 深度体检",
-        "target": "高管 / 核心人才"
-      }
-    ]
+    "rankingOn": true
   }
 }
