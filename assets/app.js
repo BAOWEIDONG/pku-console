@@ -244,7 +244,7 @@
     box.querySelectorAll('[data-space]').forEach((b) => b.addEventListener('click', () => {
       const def = WORKBENCHES.find((w) => w.id === b.dataset.space);
       close();
-      if (def) App.go(def.home);
+      if (def) App.go(def.home, null, { fromShell: true });
     }));
   }
 
@@ -355,7 +355,7 @@
         }
         state.route = fusionOwner;
         state.ctx = {};
-        state.app = wbOf(fusionOwner);
+        if (opts && opts.fromShell) state.app = wbOf(fusionOwner); // 只有用户主动点侧栏/工作区才切换
         state.origin = null;
         state.navOpen = false;
         document.body.classList.remove('nav-open');
@@ -377,14 +377,14 @@
       };
       state.history.push(from);
       if (state.history.length > 30) state.history.shift();
-      if (route === 'workbench') { state.app = 'command'; state.origin = null; }
+      if (route === 'workbench') { state.app = 'command'; state.origin = null; } // home 按钮属主动导航（shell 调用时带 fromShell）
       const targetApp = wbOf(route);
       const isGlobal = !!GLOBAL_ROUTES[route];
       const inNav = route === 'workbench' ||
         (NAV_OF[state.app] || []).some((g) => g.items.some((it) => it.id === route));
       if (!isGlobal && targetApp !== state.app && !inNav && !opts.keepApp) {
         state.origin = { route: from.route, app: from.app, label: (PAGES[from.route] || {}).title || '上一页' };
-        state.app = targetApp;
+        if (opts && opts.fromShell) state.app = targetApp; // 菜单只随用户主动导航切换
       } else if (route !== 'workbench' && from.route !== route &&
         (isGlobal || from.route === 'workbench' || targetApp !== state.app)) {
         state.origin = { route: from.route, app: from.app, label: (PAGES[from.route] || {}).title || '上一页' };
@@ -668,6 +668,7 @@
   };
 
   window.App = App;
+  window.__CONSOLE = { WORKBENCHES, state, GLOBAL_ROUTES, wbOf, APPS, canEdit, visible, G };
 
   /* ---------------------------------------------------------- events */
   const ALLOW_READONLY = /^(go|goPublish|back|preview|previewAll|export|cmdk|notify|togglePreview|closePreview|previewScreen|previewMode|roleMenu|switchSuper|clearCache|impact|search|filter|tab|seg|pickRole|previewRole)/;
@@ -676,7 +677,7 @@
     const sw = e.target.closest('[data-app]');
     if (sw) {
       const def = WORKBENCHES.find((a) => a.id === sw.dataset.app);
-      if (def) App.go(def.home);
+      if (def) App.go(def.home, null, { fromShell: true });
       return;
     }
     const col = e.target.closest('[data-collapse]');
@@ -692,7 +693,7 @@
       return;
     }
     const nav = e.target.closest('[data-nav]');
-    if (nav) { App.go(nav.dataset.nav); return; }
+    if (nav) { App.go(nav.dataset.nav, null, { fromShell: true }); return; }
     const tg = e.target.closest('[data-toggle]');
     if (tg) {
       if (!canEdit(state.route)) { UI.toast('当前角色仅可查看'); return; }
@@ -725,7 +726,7 @@
       const arr = (state.openTabs[state.app] || [cur.id]).slice();
       if (arr.indexOf(act.dataset.id) < 0) arr.push(act.dataset.id);
       state.openTabs[state.app] = arr;
-      if (act.dataset.route && PAGES[act.dataset.route]) App.go(act.dataset.route);
+      if (act.dataset.route && PAGES[act.dataset.route]) App.go(act.dataset.route, null, { fromShell: true });
       else render(true);
       return;
     }
@@ -747,7 +748,7 @@
     if (name === 'cmdk') { App.cmdOpen(); return; }
     if (name === 'cmd') { App.cmdOpen(); return; }
     if (name === 'back') { App.back(); return; }
-    if (name === 'home') { App.go('fuse-command'); return; }
+    if (name === 'home') { App.go('fuse-command', null, { fromShell: true }); return; }
     if (name === 'go' && act.dataset.id) { App.go(act.dataset.id); return; }
     if (name === 'impact') { App.go('g-impact'); return; }
     if (name === 'toggleNav') {
