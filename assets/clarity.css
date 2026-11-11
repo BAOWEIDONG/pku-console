@@ -121,3 +121,6 @@ input::placeholder, textarea::placeholder { color: #93a3b8 !important; }
 .rail-collapsed { --side: 76px !important; }
 .rail-collapsed .shell { grid-template-columns: 76px minmax(0, 1fr) !important; }
 .rail-collapsed .subnav { width: auto !important; min-width: 76px !important; }
+
+/* ---- 修复层 v3：去掉导航树缩进竖线（用户反馈左侧淡色竖长方形）---- */
+.sn-items { border-left: 0 !important; padding-left: 10px !important; margin-left: 0 !important; }
