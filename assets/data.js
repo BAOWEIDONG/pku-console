@@ -148,7 +148,7 @@
       dinner: { start: '17:00', end: '20:00', on: true },
       snack: { start: '14:00', end: '16:00', on: false }
     },
-    points: { weight: 2, diet: 1, exercise: 2, allDone: 2, comment: 1, weeklyBonus: 10, dailyCap: 8 },
+    points: { weight: 2, diet: 2, exercise: 2, allDone: 2, comment: 1, weeklyBonus: 10, dailyCap: 8 },
     lateGrace: 30,
     makeupDays: 2,
     requirePhoto: true
@@ -295,6 +295,10 @@
     status: '进行中', statusKey: 'live', start: '2026-10-19', end: '2026-11-15', day: 18, totalDays: 28,
     location: '北京 · 昌平 · 北京大学国际医院', host: '北京大学国际医院',
     summary: '由北医系统专家与健康管理团队联合带队，围绕营养、运动、睡眠与慢病风险，为学员提供 28 天陪跑式健康管理。',
+    projects: [
+      { key: 'kfy', name: '康复医院 · 减重训练营', status: '在营 · 二期', legal: '北大医疗康复医院（现有合作主体）', scope: '28 天减重营已落地 7 期；二期功能清单（打卡看板/结营报告/积分商城）待甲方确认后报价', note: '与康复医院的合作是现有主体，二期在同主体上迭代' },
+      { key: 'gjyy', name: '国际医院 · 健康营', status: '新项目 · 筹备', legal: '北大医疗国际医院（独立法人，新签约主体）', scope: '新项目承接健康营；运动健康板块引入第三方服务商，H5 点击运动健康跳转服务商系统', note: '非主体变更、非合作结构调整：两家医院是两个独立项目；联合登录只传随机 ID，不传姓名/手机号/健康数据；旧项目数据默认不可用于新项目' }
+    ],
     highlights: [
       { label: '医学评估', value: '入营基线 + 结营复评' },
       { label: '营养干预', value: '一对一定制膳食方案' },
@@ -391,7 +395,7 @@
     ['cpet', 'screen', '心肺运动 CPET 筛查', 'Cardiopulmonary Exercise Testing', '属地履约', ['职工福利费', '企康'], ['运动风险评估', '含报告'], '运动前心肺功能评估，为运动处方提供安全边界。', '约 2 小时', '2 个工作日', 0],
     ['sleep', 'screen', '医疗级多导睡眠监测', 'Polysomnography', '属地履约', ['职工福利费', '企康'], ['住一晚', '含医生解读'], '院内睡眠监测，评估睡眠结构与呼吸暂停风险。', '1 晚', '3 个工作日', 0],
     ['occupational', 'screen', '职业病筛查服务', 'Occupational Disease Screening', '属地履约', ['企康', '安全生产费'], ['入企采样', '合规报告'], '按岗位危害因素定制职业健康检查。', '按人数', '7 个工作日', 1],
-    ['fivehigh', 'chronic', '五高一重管理服务', 'Five-High Chronic Management', '全国履约', ['企康', '职工福利费'], ['12 周', '健康管家'], '血压、血糖、血脂、尿酸、体重与重疾风险的长期共管。', '12 周', '每周随访', 1],
+    ['fivehigh', 'chronic', '五高一重管理服务', 'Five-High Chronic Management', '全国履约', ['企康', '职工福利费'], ['12 周', '健康管家'], '血压、血糖、血脂、尿酸、同型半胱氨酸五项指标与重疾风险的长期共管。', '12 周', '每周随访', 1],
     ['heart', 'chronic', '心脑健康训练营', 'Cardio-Cerebral Health Camp', '全国履约', ['企康'], ['8 周', '小组制'], '面向心脑血管高风险人群的线上训练营。', '8 周', '结营评估', 0],
     ['weight', 'chronic', '减重训练营', 'Weight Management Camp', '全国履约', ['企康', '职工福利费'], ['28 天', '营养师带练'], '28 天代谢重塑，营养、运动与行为干预结合。', '28 天', '结营报告', 1],
     ['lung', 'chronic', '肺结节管理服务', 'Pulmonary Nodule Management', '全国履约', ['企康'], ['12 个月', '影像随访'], '肺结节分层管理与随访提醒。', '12 个月', '按随访节点', 0],

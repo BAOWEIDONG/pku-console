@@ -351,6 +351,13 @@
               { label: '所属医院', render: (r) => '<span class="small mut">' + E(r.hospital) + '</span>' }
             ], c.roster.map((r) => Object.assign({ _id: r.id }, r))) }) +
         '</div><div class="stack">' +
+          K.panel({ title: '双项目结构', sub: '康复医院减重营 × 国际医院健康营（两个独立项目）', body:
+            '<div class="stack" style="gap:10px">' + (c.projects || []).map((p) =>
+              '<div style="padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff">' +
+              '<div class="row" style="gap:8px"><b style="font-size:12.5px">' + E(p.name) + '</b><span class="pill ' + (p.status.indexOf('在营') >= 0 ? 'green' : 'amber') + '">' + E(p.status) + '</span></div>' +
+              '<div class="small mut" style="margin-top:5px">' + E(p.legal) + '</div>' +
+              '<div class="small" style="margin-top:5px;line-height:1.6">' + E(p.scope) + '</div>' +
+              '<div class="note" style="margin-top:7px;font-size:11px">' + E(p.note) + '</div></div>').join('') + '</div>' }) +
           K.panel({ title: '四大亮点', body: '<div class="stack" style="gap:10px">' + c.highlights.map((h, i) =>
             '<div class="frow"><input class="input" value="' + E(h.label) + '" data-set="brand.camp.highlights.' + i + '.label">' +
             '<input class="input" value="' + E(h.value) + '" data-set="brand.camp.highlights.' + i + '.value"></div>').join('') + '</div>' }) +

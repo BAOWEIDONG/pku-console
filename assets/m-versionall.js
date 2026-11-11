@@ -565,7 +565,7 @@
             UI.fNum({ label: '批注互动奖励', value: p.comment, path: 'versionall.checkin.points.comment' }) +
             '</div>' }) +
           K.panel({ title: '上限与周期', body: '<div class="stack" style="gap:14px">' +
-            UI.fNum({ label: '每日积分上限', value: p.dailyCap, path: 'versionall.checkin.points.dailyCap', hint: '防止刷分，超出部分不计入' }) +
+            UI.fNum({ label: '每日积分上限', value: p.dailyCap, path: 'versionall.checkin.points.dailyCap', hint: '冻结口径：饮食每日封顶 6 分（每餐营养师批注 0/1/2），运动另计' }) +
             UI.fNum({ label: '每周全勤奖励', value: p.weeklyBonus, path: 'versionall.checkin.points.weeklyBonus' }) +
             '</div><div class="note">按当前规则，满勤学员 28 天最多可获得 <b class="tnum">' + (p.dailyCap * 28 + p.weeklyBonus * 4) + '</b> 积分。</div>' }) +
         '</div>';

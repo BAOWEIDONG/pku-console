@@ -65,6 +65,9 @@
     { id: 'b1', name: '五好生活 · 年度会员', code: 'PKG-FG-01', type: 'bundle', status: 'online', price: 6980, settle: 5200, cost: 3140, audience: '企业员工 / 个人', svcCount: 5, sold: 186, owner: '健康管理部', desc: '吃好、睡好、动好、心好、查好，一年期全维度健康管理会员。' },
     { id: 'b2', name: '职工年度体检 + 检后管理', code: 'PKG-SCR-02', type: 'bundle', status: 'online', price: 1680, settle: 1280, cost: 720, audience: '企业团检', svcCount: 3, sold: 742, owner: '健康管理中心', desc: '体检 + 报告解读 + 异常复查转诊，企业团检主力包。' },
     { id: 'b3', name: '五高一重 · 12 周共管', code: 'PKG-CHR-03', type: 'bundle', status: 'online', price: 4980, settle: 3980, cost: 2140, audience: '高风险人群', svcCount: 4, sold: 231, owner: '健康管理部', desc: '评估 + 12 周干预 + 复测 + 结营报告。' },
+      { id: 'b5', name: '石油医院 · 减重系统（C端版）', code: 'PKG-SYM-01', type: 'bundle', status: 'draft', price: 10000, settle: 10000, cost: 6000, audience: 'C端个人用户', svcCount: 3, sold: 0, owner: '产品部', desc: '基于健康训练营系统去企业营期化：学员/营养师/教练三角色，保留积分商城，35 项 P0 功能。' },
+      { id: 'b6', name: '石油医院 · 慢病五高版', code: 'PKG-SYM-02', type: 'bundle', status: 'draft', price: 10000, settle: 10000, cost: 5500, audience: '五高风险人群', svcCount: 3, sold: 0, owner: '健康管理部', desc: '血压/血糖/血脂/尿酸/同型半胱氨酸五项共管，学员/健康管理师双角色，22 项 P0 功能。' },
+      { id: 'b7', name: '石油医院 · 五高一重打包版', code: 'PKG-SYM-03', type: 'bundle', status: 'draft', price: 10000, settle: 10000, cost: 6500, audience: '企业整体采购', svcCount: 4, sold: 0, owner: '产品部', desc: '减重+慢病打包：学员/医师/营养师/教练四角色协作，43 项 P0 功能；AI 功能走后续迭代。' },
     { id: 'b4', name: '企业家尊享年度', code: 'PKG-VIP-04', type: 'bundle', status: 'draft', price: 28800, settle: 23800, cost: 14600, audience: '企业家 / 高管', svcCount: 7, sold: 0, owner: '客户成功部', desc: '专属管家 + 深度体检 + 全球就医协助。' }
   ];
 
