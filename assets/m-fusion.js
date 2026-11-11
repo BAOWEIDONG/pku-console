@@ -16,8 +16,8 @@
       flow: ['发现信号', '分派责任', '配置调整', '统一发布'],
       tabs: [
         { id: 'today', label: '今日指挥', icon: 'grid', pages: [page('workbench', '今日指挥')] },
-        { id: 'insight', label: '经营洞察', icon: 'chart', pages: [page('g-insights', '经营洞察'), page('g-depth', '模块复盘'), page('rpt-report', '报表与口径')] },
-        { id: 'release', label: '发布与影响', icon: 'send', pages: [page('cmd-publish', '发布中心'), page('g-impact', '变更影响'), page('g-coverage', '前端功能地图')] }
+        { id: 'insight', label: '经营洞察', icon: 'chart', pages: [page('g-insights', '经营洞察', true), page('g-depth', '模块复盘', true), page('rpt-report', '报表与口径', true)] },
+        { id: 'release', label: '发布与影响', icon: 'send', pages: [page('cmd-publish', '发布中心'), page('g-impact', '变更影响', true), page('g-coverage', '前端功能地图', true)] }
       ]
     },
     customer: {
@@ -40,22 +40,22 @@
         { id: 'booking', label: '预约与履约', icon: 'calendar', pages: [
           page('v-fulfill', '履约工作台'),
           page('e-bookings', '预约订单'),
-          page('trd-sla', '超时与升级'),
-          page('trd-slots', '时段与占号'),
-          page('trd-capacity', '排班与产能')
+          page('trd-sla', '超时与升级', true),
+          page('trd-slots', '时段与占号', true),
+          page('trd-capacity', '排班与产能', true)
         ] },
         { id: 'settle', label: '结算', icon: 'chart', pages: [
           page('trd-settle', '结算与对账'),
-          page('trd-diff', '结算差异'),
+          page('trd-diff', '结算差异', true),
           page('trd-refund', '退款与冲销'),
-          page('trd-invoice', '开票与回款'),
+          page('trd-invoice', '开票与回款', true),
           page('trd-payable', '服务商应付')
         ] },
         { id: 'org', label: '上下游', icon: 'link', pages: [
           page('up-companies', '业务公司（甲方）'),
           page('up-providers', '服务商（乙方）'),
           page('e-orgs', '企业与权益'),
-          page('g-contracts', '合同台账'), page('g-accounts', '客户账号')
+          page('g-contracts', '合同台账'), page('g-accounts', '客户账号', true)
         ] }
       ]
     },
@@ -68,19 +68,19 @@
         { id: 'services', label: '服务目录', icon: 'package', pages: [
           page('svc-catalog', '服务商品'),
           page('svc-detail', '商品详情', true),
-          page('svc-360', '服务 360')
+          page('svc-360', '服务 360', true)
         ] },
         { id: 'goods', label: '实物商品', icon: 'gift', pages: [page('svc-goods', '实物商品')] },
         { id: 'pricing', label: '价格与履约', icon: 'sliders', pages: [
           page('svc-pricing', '价格与政策'),
           page('svc-bundles', '服务包与组合'),
-          page('trd-stock', '库存与预留'),
-          page('g-orgs', '服务机构'),
+          page('trd-stock', '库存与预留', true),
+          page('g-orgs', '服务机构', true),
           page('e-booking', '预约设置')
         ] },
         { id: 'surface', label: '端上服务', icon: 'phone', pages: [
           page('e-services', '职工端服务详情'),
-          page('e-dashboard', '服务概览')
+          page('e-dashboard', '服务概览', true)
         ] }
       ]
     },
@@ -93,17 +93,17 @@
         { id: 'workbench', label: '健康工作台', icon: 'user', pages: [
           page('h-profiles', '健康档案'),
           page('h-overview', '管理总览'),
-          page('h-risk', '风险与缺口')
+          page('h-risk', '风险与缺口', true)
         ] },
         { id: 'service', label: '服务履约', icon: 'stethoscope', pages: [page('h-service-flow', '健康服务履约台')] },
         { id: 'plan', label: '计划与随访', icon: 'clock', pages: [
           page('h-plans', '管理计划'),
           page('h-followups', '随访工作台'),
-          page('h-programs', '干预项目')
+          page('h-programs', '干预项目', true)
         ] },
         { id: 'result', label: '结果与报告', icon: 'chart', pages: [
-          page('h-outcomes', '结果评估'),
-          page('h-enterprise', '企业健康报告')
+          page('h-outcomes', '结果评估', true),
+          page('h-enterprise', '企业健康报告', true)
         ] }
       ]
     },
@@ -117,26 +117,26 @@
           page('fg-overview', '五好生活'),
           page('fg-members', '会员运营'),
           page('fg-report', '月度报告'),
-          page('fg-loop', '运营闭环')
+          page('fg-loop', '运营闭环', true)
         ] },
         { id: 'five-content', label: '内容与转化', icon: 'heart', pages: [
-          page('fg-eat', '吃好 · 食谱'),
-          page('fg-sleep', '睡好 · 睡眠'),
-          page('fg-move', '动好 · 运动'),
-          page('fg-mind', '心好 · 心理'),
-          page('fg-check', '查好 · 体检'),
-          page('fg-meal', '餐次配置'),
-          page('fg-version', '食谱版本'),
-          page('fg-convert', '食谱转化'),
-          page('fg-ab', 'A/B 实验'),
+          page('fg-eat', '吃好 · 食谱', true),
+          page('fg-sleep', '睡好 · 睡眠', true),
+          page('fg-move', '动好 · 运动', true),
+          page('fg-mind', '心好 · 心理', true),
+          page('fg-check', '查好 · 体检', true),
+          page('fg-meal', '餐次配置', true),
+          page('fg-version', '食谱版本', true),
+          page('fg-convert', '食谱转化', true),
+          page('fg-ab', 'A/B 实验', true),
           page('fg-survey', '评估问卷'),
-          page('fg-reco', '推荐规则')
+          page('fg-reco', '推荐规则', true)
         ] },
         { id: 'five-members', label: '会员与任务', icon: 'users', pages: [
           page('fg-tasks', '任务与发布'),
           page('fg-coach', '打卡审核'),
-          page('fg-escalation', '信号与升级'),
-          page('fg-privacy', '授权与隐私'),
+          page('fg-escalation', '信号与升级', true),
+          page('fg-privacy', '授权与隐私', true),
           page('fg-config', '评分与权重')
         ] },
         { id: 'camp', label: '减重营', icon: 'activity', pages: [
@@ -149,22 +149,22 @@
           page('v-attendance', '出勤看板'),
           page('v-content', '活动与课程'),
           page('v-messages', '消息与公告'),
-          page('v-accounts', '账号管理'),
-          page('v-activities', '活动与入口')
+          page('v-accounts', '账号管理', true),
+          page('v-activities', '活动与入口', true)
         ] },
         { id: 'camp-rules', label: '规则与报告', icon: 'target', pages: [
           page('v-rules', '打卡规则'),
-          page('v-points-rules', '积分规则'),
-          page('v-metrics', '健康指标库'),
+          page('v-points-rules', '积分规则', true),
+          page('v-metrics', '健康指标库', true),
           page('v-questionnaire', '入营问卷'),
           page('v-tiers', '连续打卡奖励'),
           page('v-products', '积分商城'),
-          page('v-badges', '徽章体系'),
-          page('v-ranking', '排行榜'),
+          page('v-badges', '徽章体系', true),
+          page('v-ranking', '排行榜', true),
           page('v-stats', '营期统计'),
           page('v-report', '结营报告'),
-          page('v-enterprise', '企业健康报告'),
-          page('v-supervisor', '督导总览')
+          page('v-enterprise', '企业健康报告', true),
+          page('v-supervisor', '督导总览', true)
         ] }
       ]
     },
@@ -175,14 +175,14 @@
       flow: ['创建内容', '选择投放端', '配置入口', '发布观察'],
       tabs: [
         { id: 'brand', label: '品牌站', icon: 'layout', pages: [
-          page('b-dashboard', '门户概览'),
+          page('b-dashboard', '门户概览', true),
           page('b-home', '首页内容'),
-          page('content-banners', '轮播与开屏'),
+          page('content-banners', '轮播与开屏', true),
           page('b-hospitals', '分院网络'),
-          page('b-departments', '学科与科室'),
+          page('b-departments', '学科与科室', true),
           page('b-team', '师资团队'),
           page('b-camp', '健康营展示页'),
-          page('b-about', '品牌页'),
+          page('b-about', '品牌页', true),
           page('b-site', '站点设置')
         ] },
         { id: 'employee', label: '职工端', icon: 'stethoscope', pages: [
@@ -192,14 +192,14 @@
           page('e-qa', '深度问答')
         ] },
         { id: 'assets', label: '内容与素材', icon: 'image', pages: [
-          page('g-content', '内容中心'),
-          page('media-lib', '图片素材库'),
-          page('g-brand', '品牌与主体'),
-          page('g-theme', '主题与入口')
+          page('g-content', '内容中心', true),
+          page('media-lib', '图片素材库', true),
+          page('g-brand', '品牌与主体', true),
+          page('g-theme', '主题与入口', true)
         ] },
         { id: 'channels', label: '渠道与入口', icon: 'link', pages: [
-          page('chn-map', '渠道图谱'),
-          page('chn-channels', '渠道入口')
+          page('chn-map', '渠道图谱', true),
+          page('chn-channels', '渠道入口', true)
         ] }
       ]
     },
@@ -210,16 +210,16 @@
       flow: ['沉淀公共资源', '建立关联', '授权与治理', '发布与审计'],
       tabs: [
         { id: 'commons', label: '公共资源', icon: 'link', pages: [
-          page('lib-assets', '共享资产库'),
+          page('lib-assets', '共享资产库', true),
           page('lib-benefits', '权益与券'),
-          page('lib-rules', '规则模板'),
-          page('lib-templates', '项目模板'),
-          page('g-graph', '关系图谱'),
-          page('g-gaps', '关联缺口')
+          page('lib-rules', '规则模板', true),
+          page('lib-templates', '项目模板', true),
+          page('g-graph', '关系图谱', true),
+          page('g-gaps', '关联缺口', true)
         ] },
         { id: 'access', label: '权限与设置', icon: 'lock', pages: [
           page('g-roles', '角色与权限'),
-          page('g-fields', '字段级权限'),
+          page('g-fields', '字段级权限', true),
           page('s-settings', '系统设置')
         ] },
         { id: 'release', label: '发布与日志', icon: 'send', pages: [
