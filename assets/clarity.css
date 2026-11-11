@@ -71,3 +71,53 @@ input::placeholder, textarea::placeholder { color: #93a3b8 !important; }
 
 /* ---- 状态 pill：底色加浓一档，保证可读 ---- */
 .pill { font-weight: 600 !important; }
+
+/* ==========================================================================
+   修复层 v2（2026-11-11）：
+   ① fusion 页头视图条布局漂移  ② 侧栏注释小字截断
+   ③ 选中项竖条与竖线重叠  ④ 侧栏收起后内容区宽度不跟随
+   ========================================================================== */
+
+/* ---- ① 五好等内容页：fv-views 视图按钮条 —— 固定换行显示，不再挤压标题 ----
+   病根：.fv-views margin-left:auto + max-width:52% 挤在标题行右侧，
+   每个房间视图数不同（1~11 个按钮），点一次按钮布局就重排一次。
+   改法：视图条独占一行，固定高度，不参与标题行布局。 */
+.fusion-viewline { flex-wrap: wrap !important; row-gap: 8px; }
+.fusion-viewline .fv-views {
+  flex-basis: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  order: 3;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  padding-bottom: 2px;
+}
+.fusion-viewline .fv-views button { flex: none !important; }
+.fusion-viewline .fv-title, .fusion-viewline .fv-actions { flex: none; }
+.fv-title { min-width: 0; }
+.fv-title b { white-space: nowrap; }
+.fv-title span { display: none !important; }   /* 描述文字挪出标题行，布局稳定 */
+
+/* ---- ② 侧栏条目注释小字：两行省略，不再截成半截 ---- */
+.sn-item { white-space: normal !important; }
+.sn-item .sn-d {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  text-overflow: unset !important;
+  line-height: 1.5 !important;
+}
+
+/* ---- ③ 侧栏选中竖条：对齐到条目内左缘，不再压在树上 ---- */
+.sn-items { padding-left: 9px !important; margin-left: 8px !important; }
+.sn-item.on::before { left: 0 !important; top: 4px !important; bottom: 4px !important; width: 3px !important; }
+.sn-item { overflow: hidden; }
+
+/* ---- ④ 侧栏收起/展开：内容区宽度跟随 ----
+   病根：v9.css 用 !important 把 .shell 列宽锁死在 var(--side)。
+   改法：收起态改 --side 变量本身，让网格列随动。 */
+.rail-collapsed { --side: 76px !important; }
+.rail-collapsed .shell { grid-template-columns: 76px minmax(0, 1fr) !important; }
+.rail-collapsed .subnav { width: auto !important; min-width: 76px !important; }
